@@ -1,9 +1,37 @@
-// 云对象教程: https://uniapp.dcloud.net.cn/uniCloud/cloud-obj
-// jsdoc语法提示教程：https://ask.dcloud.net.cn/docs/#//ask.dcloud.net.cn/article/129
+/**
+ * task-logs-co 云对象
+ *
+ * 功能说明：
+ * - 任务操作日志管理
+ * - 提供日志记录、查询功能
+ * - 支持按项目、用户、任务维度查询日志
+ *
+ * 主要方法：
+ * - getAllLogs: 获取所有动态（用于动态页面）
+ * - addLog: 记录任务操作日志
+ * - getTaskLogs: 获取指定任务的操作日志
+ *
+ * 权限说明：
+ * - 所有接口需要登录（通过 _before 钩子验证 token）
+ * - 日志查询仅返回用户有权限访问的项目数据
+ *
+ * @module task-logs-co
+ * @see https://uniapp.dcloud.net.cn/uniCloud/cloud-obj
+ */
 const uniIdCommon = require('uni-id-common')
 
 module.exports = {
-	_before: async function() { // 通用预处理器
+	/**
+	 * 前置钩子 - 验证用户登录状态
+	 *
+	 * 功能说明：
+	 * - 验证客户端传递的 token 是否有效
+	 * - 解析 token 获取用户 ID 存储到 this.userInfo
+	 * - 初始化数据库连接
+	 *
+	 * @throws {Object} TOKEN_INVALID - token 缺失或无效
+	 */
+	_before: async function() {
 		this.db = uniCloud.database()
 
 		// 使用 uni-id-common 验证 token 获取用户信息

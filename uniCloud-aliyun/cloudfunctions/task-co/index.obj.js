@@ -1,9 +1,41 @@
-// 云对象教程: https://uniapp.dcloud.net.cn/uniCloud/cloud-obj
-// jsdoc语法提示教程：https://ask.dcloud.net.cn/docs/#//ask.dcloud.net.cn/article/129
+/**
+ * task-co 云对象
+ *
+ * 功能说明：
+ * - 任务管理相关的后端接口
+ * - 提供任务增删改查、状态变更、附件管理等功能
+ * - 支持 URL 化调用（addTask, updateTask）
+ *
+ * 主要方法：
+ * - addTask: 新增任务（支持URL化）
+ * - updateTask: 更新任务（支持URL化）
+ * - deleteTask: 删除任务
+ * - changeState: 修改任务状态
+ * - deleteAttachment: 删除任务附件
+ * - getTaskList: 获取任务列表
+ * - getUserLogs: 获取用户动态
+ * - getProjectLogs: 获取项目动态
+ *
+ * 权限说明：
+ * - 所有接口需要登录（通过 _before 钩子验证 token）
+ *
+ * @module task-co
+ * @see https://uniapp.dcloud.net.cn/uniCloud/cloud-obj
+ */
 const uniIdCommon = require('uni-id-common')
 
 module.exports = {
-	_before: async function() { // 通用预处理器
+	/**
+	 * 前置钩子 - 验证用户登录状态
+	 *
+	 * 功能说明：
+	 * - 验证客户端传递的 token 是否有效
+	 * - 解析 token 获取用户 ID 存储到 this.userInfo
+	 * - 初始化数据库连接
+	 *
+	 * @throws {Object} TOKEN_INVALID - token 缺失或无效
+	 */
+	_before: async function() {
 		this.db = uniCloud.database()
 
 		// 使用 uni-id-common 验证 token 获取用户信息
@@ -36,19 +68,35 @@ module.exports = {
 		this.originalParams = this.getParams()
 	},
 
+	/**
+	 * 后置钩子 - 统一处理返回结果
+	 *
+	 * 功能说明：
+	 * - 统一处理错误和结果返回
+	 * - 可用于记录操作日志（当前已禁用）
+	 */
 	_after: async function(error, result) {
-		// 如果发生错误，直接返回错误
 		if (error) {
 			throw error
 		}
-
-		// 返回结果（暂时禁用日志记录，排查问题）
 		return result
 	},
 
 	/**
 	 * 获取用户动态
-	 * @param {Object} params 查询参数
+	 *
+	 * 功能说明：
+	 * - 查询指定用户的操作动态记录
+	 * - 支持时间范围筛选和分页
+	 * - 关联用户信息和项目信息
+	 *
+	 * @param {Object} params - 查询参数
+	 * @param {string} [params.user_id] - 用户ID，不传则查询所有用户
+	 * @param {number} [params.start_time] - 开始时间戳
+	 * @param {number} [params.end_time] - 结束时间戳
+	 * @param {number} [params.page=1] - 页码
+	 * @param {number} [params.pageSize=20] - 每页数量
+	 * @returns {Object} { errCode, errMsg, data: { list, total, page, pageSize } }
 	 */
 	async getUserLogs(params = {}) {
 		const db = uniCloud.database()
@@ -158,7 +206,19 @@ module.exports = {
 
 	/**
 	 * 获取项目动态
-	 * @param {Object} params 查询参数
+	 *
+	 * 功能说明：
+	 * - 查询指定项目的操作动态记录
+	 * - 支持时间范围筛选和分页
+	 * - 关联用户信息
+	 *
+	 * @param {Object} params - 查询参数
+	 * @param {string} params.project_id - 项目ID（必填）
+	 * @param {number} [params.start_time] - 开始时间戳
+	 * @param {number} [params.end_time] - 结束时间戳
+	 * @param {number} [params.page=1] - 页码
+	 * @param {number} [params.pageSize=20] - 每页数量
+	 * @returns {Object} { errCode, errMsg, data: { list, total, page, pageSize } }
 	 */
 	async getProjectLogs(params = {}) {
 		if (!params.project_id) {
@@ -258,8 +318,17 @@ module.exports = {
 	},
 	/**
 	 * 修改任务状态
-	 * @param {String} taskId 任务ID
-	 * @param {Number} newStatus 新状态 0-未开始 1-进行中 2-已完成
+	 *
+	 * 功能说明：
+	 * - 更新任务的状态（未开始/进行中/已完成）
+	 * - 完成任务时自动记录完成人和完成时间
+	 * - 重新打开任务时清除完成信息
+	 *
+	 * @param {string} taskId - 任务ID
+	 * @param {number} newStatus - 新状态：0-未开始, 1-进行中, 2-已完成
+	 * @returns {Object} { errCode: 0, errMsg: '状态更新成功' }
+	 * @throws {Object} TASK_NOT_FOUND - 任务不存在
+	 * @throws {Object} STATUS_UNCHANGED - 状态未变化
 	 */
 	async changeState(taskId, newStatus) {
 		// 参数校验
@@ -332,9 +401,20 @@ module.exports = {
 	},
 	/**
 	 * 删除任务附件
-	 * @param {String} taskId 任务ID
-	 * @param {Number} index 附件索引
-	 * @param {Object} item 附件项
+	 *
+	 * 功能说明：
+	 * - 删除任务的指定附件
+	 * - 同时从云存储中删除文件
+	 * - 验证附件索引和文件ID匹配
+	 *
+	 * @param {string} taskId - 任务ID
+	 * @param {number} index - 附件在数组中的索引
+	 * @param {Object} item - 附件信息对象
+	 * @param {string} item.fileID - 云存储文件ID
+	 * @returns {Object} { errCode: 0, errMsg: '删除成功' }
+	 * @throws {Object} TASK_NOT_FOUND - 任务不存在
+	 * @throws {Object} ATTACHMENT_NOT_FOUND - 附件不存在
+	 * @throws {Object} ATTACHMENT_NOT_MATCH - 附件信息不匹配
 	 */
 	async deleteAttachment(taskId, index, item) {
 		// 参数校验
@@ -416,16 +496,23 @@ module.exports = {
 		}
 	},
 	/**
-	 * 新增任务（支持url化调用）
-	 * @param {Object} params 任务参数
-	 * @param {String} params.project_id 项目ID
-	 * @param {String} params.title 任务标题
-	 * @param {String} [params.content] 任务内容
-	 * @param {String} [params.group_id] 分组ID
-	 * @param {String} [params.assignee] 负责人ID
-	 * @param {Number} [params.deadline] 截止日期（时间戳）
-	 * @param {Number} [params.priority] 优先级
-	 * @param {Number} [params.order] 排序号
+	 * 新增任务
+	 *
+	 * 功能说明：
+	 * - 创建新任务，支持 URL 化调用
+	 * - 通过 HTTP Body 传递参数（JSON 格式）
+	 * - 自动设置初始状态为未开始(0)
+	 *
+	 * @param {Object} body - HTTP Body 参数（JSON）
+	 * @param {string} body.project_id - 项目ID（必填）
+	 * @param {string} body.title - 任务标题（必填）
+	 * @param {string} [body.content] - 任务内容/描述
+	 * @param {string} [body.group_id] - 分组ID
+	 * @param {string} [body.assignee] - 负责人用户ID
+	 * @param {number} [body.deadline] - 截止日期时间戳
+	 * @param {number} [body.priority=1] - 优先级：0-较低, 1-普通, 2-较高, 3-最高
+	 * @param {number} [body.order=0] - 排序号
+	 * @returns {Object} { errCode: 0, errMsg: '任务添加成功', data: { task_id } }
 	 */
 	async addTask() {
 
@@ -475,13 +562,30 @@ module.exports = {
 		}
 	},
 	
+	/**
+	 * 更新任务
+	 *
+	 * 功能说明：
+	 * - 更新现有任务信息，支持 URL 化调用
+	 * - 通过 HTTP Body 传递参数（JSON 格式）
+	 * - 自动记录更新人和更新时间
+	 *
+	 * @param {Object} body - HTTP Body 参数（JSON）
+	 * @param {string} body.id - 任务ID（必填）
+	 * @param {string} [body.title] - 任务标题
+	 * @param {string} [body.content] - 任务内容/描述
+	 * @param {string} [body.project_id] - 项目ID
+	 * @param {string} [body.group_id] - 分组ID
+	 * @param {string} [body.assignee] - 负责人用户ID
+	 * @param {number} [body.deadline] - 截止日期时间戳
+	 * @param {number} [body.priority] - 优先级
+	 * @param {number} [body.status] - 状态
+	 * @param {number} [body.order] - 排序号
+	 * @returns {Object} { errCode: 0, errMsg: '任务更新成功', data: { task_id } }
+	 */
 	async updateTask() {
-
 		const httpInfo = this.getHttpInfo()
-
 		const params = JSON.parse(httpInfo.body)
-
-		console.log(typeof params);
 
 		console.log("updateTask receive:", params)
 
@@ -537,10 +641,16 @@ module.exports = {
 
 	/**
 	 * 删除任务
-	 * @param {Object} params 参数
-	 * @param {String} params.taskId 任务ID
-	 * @param {String} params.taskName 任务名称（用于记录日志）
-	 * @param {String} params.project_id 项目ID（用于记录日志）
+	 *
+	 * 功能说明：
+	 * - 删除指定任务
+	 * - 此操作不可恢复
+	 *
+	 * @param {Object} params - 参数对象
+	 * @param {string} params.taskId - 任务ID（必填）
+	 * @param {string} [params.taskName] - 任务名称（用于日志记录）
+	 * @param {string} [params.project_id] - 项目ID（用于日志记录）
+	 * @returns {Object} { errCode: 0, errMsg: '删除成功' }
 	 */
 	async deleteTask(params = {}) {
 		if (!params.taskId) {
@@ -567,9 +677,24 @@ module.exports = {
 		}
 	},
 
+	/**
+	 * 获取任务列表
+	 *
+	 * 功能说明：
+	 * - 分页获取指定项目的任务列表
+	 * - 支持按状态和负责人筛选
+	 * - 按创建时间倒序排列
+	 *
+	 * @param {Object} params - 查询参数
+	 * @param {string} params.project_id - 项目ID（必填）
+	 * @param {number} [params.status] - 任务状态筛选
+	 * @param {string} [params.assignee] - 负责人ID筛选
+	 * @param {number} [params.pageId=1] - 页码
+	 * @param {number} [params.pageSize=10] - 每页数量
+	 * @returns {Object} { errCode, errMsg, data: { list, total, pageId, pageSize } }
+	 */
 	async getTaskList(params = {}) {
 		try {
-			// 验证必填参数
 			if (!params.project_id) {
 				return {
 					errCode: 'PARAM_ERROR',
