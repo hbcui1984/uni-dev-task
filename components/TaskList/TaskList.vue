@@ -1,0 +1,1068 @@
+<template>
+  <view class="task-list-container">
+    <!-- 点击遮罩关闭下拉框 -->
+    <view v-if="openAssigneeTaskId" class="dropdown-backdrop" @click="closeAssigneeDropdown"></view>
+    <!-- 未分组任务 -->
+    <view class="task-group">
+      <uni-list class="task-list" v-if="ungroupedTasks.length > 0">
+        <view
+          v-for="item in ungroupedTasks"
+          :key="item._id"
+          class="task-item-wrapper"
+          :class="{ 'task-completing': completingTaskId === item._id }"
+          @click="handleTaskClick(item._id)"
+        >
+          <!-- PC端悬浮操作按钮 -->
+          <view class="task-hover-actions" v-if="isPC">
+            <view class="hover-action-btn hover-action-btn--danger" @click.stop="deleteTask(item._id)">
+              <uni-icons type="trash" size="14" color="#e74c3c"></uni-icons>
+            </view>
+            <view class="hover-action-btn" @click.stop="editTask(item._id)">
+              <uni-icons type="compose" size="14" color="#6c757d"></uni-icons>
+            </view>
+          </view>
+          <uni-list-item :clickable="true">
+            <template v-slot:header>
+              <checkbox @click.stop="finishTask(item._id)" color="#42b983" />
+            </template>
+            <template v-slot:body>
+              <view class="task-content">
+                <view class="task-title-row">
+                  <text class="task-title">{{ item.title }}</text>
+                  <view v-if="item.subtaskCount && item.subtaskCount.total > 0" class="subtask-badge">
+                    <uni-icons type="list" size="12" color="#6c757d"></uni-icons>
+                    <text :class="{ 'subtask-all-done': item.subtaskCount.completed === item.subtaskCount.total }">
+                      {{ item.subtaskCount.completed }}/{{ item.subtaskCount.total }}
+                    </text>
+                  </view>
+                </view>
+              </view>
+            </template>
+            <template v-slot:footer>
+              <view class="task-actions">
+                <view class="deadline" :class="{ 'overdue': isOverdue(item.deadline) }" @click.stop="handleDeadlineClick(item._id, item.deadline, $event)">
+                  {{ formatDeadline(item.deadline) }}
+                </view>
+                <text class="priority-tag" :class="`priority-${item.priority || 0}`" @click.stop="changePriority(item._id, item.priority)">
+                  {{ getPriorityText(item.priority) }}
+                </text>
+                <view class="assignee-wrapper">
+                  <view class="assignee" @click.stop="toggleAssigneeDropdown(item._id, item.assignee)">
+                    <image v-if="getAssigneeAvatar(item.assignee)" :src="getAssigneeAvatar(item.assignee)" class="assignee-avatar-small" mode="aspectFill"></image>
+                    <view v-else-if="getAssigneeName(item.assignee) !== '未分配'" class="assignee-avatar-small assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(getAssigneeName(item.assignee)) }">
+                      {{ getAssigneeName(item.assignee).slice(0,1) }}
+                    </view>
+                    <uni-icons v-else type="person" size="14" color="#42b983"></uni-icons>
+                  </view>
+                  <!-- 负责人下拉选择 -->
+                  <view v-if="openAssigneeTaskId === item._id" class="assignee-dropdown" @click.stop>
+                    <view class="assignee-dropdown-search">
+                      <uni-icons type="search" size="16" color="#999"></uni-icons>
+                      <input
+                        type="text"
+                        v-model="assigneeSearchKeyword"
+                        placeholder="输入关键字查询"
+                        class="assignee-search-input"
+                        @input="onAssigneeSearch"
+                      />
+                      <uni-icons type="person" size="16" color="#999"></uni-icons>
+                    </view>
+                    <scroll-view scroll-y class="assignee-dropdown-list">
+                      <!-- 无负责人选项 -->
+                      <view
+                        class="assignee-option"
+                        :class="{ 'assignee-option--selected': !getCurrentAssigneeId(item.assignee) }"
+                        @click.stop="selectAssignee(item._id, null)"
+                      >
+                        <view class="assignee-option-avatar">
+                          <uni-icons type="person" size="24" color="#42b983"></uni-icons>
+                        </view>
+                        <text class="assignee-option-name">无负责人</text>
+                        <uni-icons v-if="!getCurrentAssigneeId(item.assignee)" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+                      </view>
+                      <!-- 成员列表 -->
+                      <view
+                        v-for="member in filteredMembers"
+                        :key="member.value"
+                        class="assignee-option"
+                        :class="{ 'assignee-option--selected': getCurrentAssigneeId(item.assignee) === member.value }"
+                        @click.stop="selectAssignee(item._id, member.value)"
+                      >
+                        <image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
+                        <view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">
+                          {{ member.text.slice(0,1) }}
+                        </view>
+                        <text class="assignee-option-name">{{ member.text }}</text>
+                        <uni-icons v-if="getCurrentAssigneeId(item.assignee) === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+                      </view>
+                    </scroll-view>
+                  </view>
+                </view>
+              </view>
+            </template>
+          </uni-list-item>
+        </view>
+      </uni-list>
+
+      <!-- 未分组的添加新任务入口 -->
+      <view class="quick-add-section">
+        <view class="quick-add-trigger" @click="addTask('')">
+          <uni-icons type="plusempty" size="14" color="#42b983"></uni-icons>
+          <text>添加新任务</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 分组任务 -->
+    <view v-for="group in groupedTasks" :key="group._id" class="task-group">
+      <view class="group-header" @click="toggleGroupCollapse(group._id)">
+        <view class="group-header-left">
+          <uni-icons
+            :type="collapsedGroups[group._id] ? 'right' : 'bottom'"
+            size="14"
+            color="#6c757d"
+            class="collapse-icon"
+          ></uni-icons>
+          <text class="group-title">{{ group.name }}</text>
+          <text class="task-count">({{ group.tasks?.length || 0 }})</text>
+        </view>
+        <view class="group-actions" @click.stop>
+          <view class="group-action-btn" @click.stop="editGroup(group)">
+            <uni-icons type="compose" size="16" color="#6c757d"></uni-icons>
+          </view>
+          <view class="group-action-btn" @click.stop="archiveGroup(group)">
+            <uni-icons type="folder" size="16" color="#f0ad4e"></uni-icons>
+          </view>
+          <view class="group-action-btn group-action-btn--danger" @click.stop="deleteGroup(group)">
+            <uni-icons type="trash" size="16" color="#e74c3c"></uni-icons>
+          </view>
+        </view>
+      </view>
+      <view class="group-content" v-show="!collapsedGroups[group._id]">
+      <uni-list class="task-list" v-if="group.tasks?.length > 0">
+        <view
+          v-for="item in group.tasks"
+          :key="item._id"
+          class="task-item-wrapper"
+          :class="{ 'task-completing': completingTaskId === item._id }"
+          @click="handleTaskClick(item._id)"
+        >
+          <!-- PC端悬浮操作按钮 -->
+          <view class="task-hover-actions" v-if="isPC">
+            <view class="hover-action-btn hover-action-btn--danger" @click.stop="deleteTask(item._id)">
+              <uni-icons type="trash" size="14" color="#e74c3c"></uni-icons>
+            </view>
+            <view class="hover-action-btn" @click.stop="editTask(item._id)">
+              <uni-icons type="compose" size="14" color="#6c757d"></uni-icons>
+            </view>
+          </view>
+          <uni-list-item :clickable="true">
+            <template v-slot:header>
+              <checkbox @click.stop="finishTask(item._id)" color="#42b983" />
+            </template>
+            <template v-slot:body>
+              <view class="task-content">
+                <view class="task-title-row">
+                  <text class="task-title">{{ item.title }}</text>
+                  <view v-if="item.subtaskCount && item.subtaskCount.total > 0" class="subtask-badge">
+                    <uni-icons type="list" size="12" color="#6c757d"></uni-icons>
+                    <text :class="{ 'subtask-all-done': item.subtaskCount.completed === item.subtaskCount.total }">
+                      {{ item.subtaskCount.completed }}/{{ item.subtaskCount.total }}
+                    </text>
+                  </view>
+                </view>
+              </view>
+            </template>
+            <template v-slot:footer>
+              <view class="task-actions">
+                <view class="deadline" :class="{ 'overdue': isOverdue(item.deadline) }" @click.stop="handleDeadlineClick(item._id, item.deadline, $event)">
+                  {{ formatDeadline(item.deadline) }}
+                </view>
+                <text class="priority-tag" :class="`priority-${item.priority || 0}`" @click.stop="changePriority(item._id, item.priority)">
+                  {{ getPriorityText(item.priority) }}
+                </text>
+                <view class="assignee-wrapper">
+                  <view class="assignee" @click.stop="toggleAssigneeDropdown(item._id, item.assignee)">
+                    <image v-if="getAssigneeAvatar(item.assignee)" :src="getAssigneeAvatar(item.assignee)" class="assignee-avatar-small" mode="aspectFill"></image>
+                    <view v-else-if="getAssigneeName(item.assignee) !== '未分配'" class="assignee-avatar-small assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(getAssigneeName(item.assignee)) }">
+                      {{ getAssigneeName(item.assignee).slice(0,1) }}
+                    </view>
+                    <uni-icons v-else type="person" size="14" color="#42b983"></uni-icons>
+                  </view>
+                  <!-- 负责人下拉选择 -->
+                  <view v-if="openAssigneeTaskId === item._id" class="assignee-dropdown" @click.stop>
+                    <view class="assignee-dropdown-search">
+                      <uni-icons type="search" size="16" color="#999"></uni-icons>
+                      <input
+                        type="text"
+                        v-model="assigneeSearchKeyword"
+                        placeholder="输入关键字查询"
+                        class="assignee-search-input"
+                        @input="onAssigneeSearch"
+                      />
+                      <uni-icons type="person" size="16" color="#999"></uni-icons>
+                    </view>
+                    <scroll-view scroll-y class="assignee-dropdown-list">
+                      <!-- 无负责人选项 -->
+                      <view
+                        class="assignee-option"
+                        :class="{ 'assignee-option--selected': !getCurrentAssigneeId(item.assignee) }"
+                        @click.stop="selectAssignee(item._id, null)"
+                      >
+                        <view class="assignee-option-avatar">
+                          <uni-icons type="person" size="24" color="#42b983"></uni-icons>
+                        </view>
+                        <text class="assignee-option-name">无负责人</text>
+                        <uni-icons v-if="!getCurrentAssigneeId(item.assignee)" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+                      </view>
+                      <!-- 成员列表 -->
+                      <view
+                        v-for="member in filteredMembers"
+                        :key="member.value"
+                        class="assignee-option"
+                        :class="{ 'assignee-option--selected': getCurrentAssigneeId(item.assignee) === member.value }"
+                        @click.stop="selectAssignee(item._id, member.value)"
+                      >
+                        <image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
+                        <view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">
+                          {{ member.text.slice(0,1) }}
+                        </view>
+                        <text class="assignee-option-name">{{ member.text }}</text>
+                        <uni-icons v-if="getCurrentAssigneeId(item.assignee) === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+                      </view>
+                    </scroll-view>
+                  </view>
+                </view>
+              </view>
+            </template>
+          </uni-list-item>
+        </view>
+      </uni-list>
+      <!-- 空分组提示 -->
+      <view v-else class="empty-group-hint">
+        <text>暂无任务</text>
+      </view>
+
+      <!-- 分组的添加新任务入口 -->
+      <view class="quick-add-section">
+        <view class="quick-add-trigger" @click="addTask(group._id)">
+          <uni-icons type="plusempty" size="14" color="#42b983"></uni-icons>
+          <text>添加新任务</text>
+        </view>
+      </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+export default {
+  name: 'TaskList',
+  props: {
+    tasks: {
+      type: Array,
+      default: () => []
+    },
+    groups: {
+      type: Array,
+      default: () => []
+    },
+    members: {
+      type: Array,
+      default: () => []
+    },
+    hasFilter: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data() {
+    return {
+      openAssigneeTaskId: null,
+      assigneeSearchKeyword: '',
+      collapsedGroups: {},
+      completingTaskId: null  // 正在完成的任务ID，用于动画
+    }
+  },
+  computed: {
+    filteredMembers() {
+      if (!this.assigneeSearchKeyword) {
+        return this.members
+      }
+      const keyword = this.assigneeSearchKeyword.toLowerCase()
+      return this.members.filter(member =>
+        member.text.toLowerCase().includes(keyword) ||
+        (member.realName && member.realName.toLowerCase().includes(keyword))
+      )
+    },
+    ungroupedTasks() {
+      return this.tasks.filter(task => !this.getTaskGroupId(task))
+    },
+    groupedTasks() {
+      const mapped = this.groups.map(group => ({
+        ...group,
+        tasks: this.tasks.filter(task => this.getTaskGroupId(task) === group._id)
+      }))
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+
+      // 只有在有筛选条件时才过滤空分组
+      if (this.hasFilter) {
+        return mapped.filter(group => group.tasks.length > 0)
+      }
+      return mapped
+    },
+    isPC() {
+      // 判断是否为PC端
+      const systemInfo = uni.getSystemInfoSync()
+      console.log("system platform:", systemInfo.platform);
+
+      // H5环境下，通过屏幕宽度判断
+      // #ifdef H5
+      return systemInfo.windowWidth >= 768
+      // #endif
+
+      // 非H5环境，通过平台判断
+      // #ifndef H5
+      return systemInfo.platform === 'windows' || systemInfo.platform === 'mac' || systemInfo.platform === 'linux'
+      // #endif
+    }
+  },
+  methods: {
+    // 切换分组折叠状态
+    toggleGroupCollapse(groupId) {
+      this.collapsedGroups = {
+        ...this.collapsedGroups,
+        [groupId]: !this.collapsedGroups[groupId]
+      }
+    },
+
+    // 获取任务的分组ID（兼容联表查询数组和字符串两种格式）
+    getTaskGroupId(task) {
+      if (!task.group_id) return null
+      // 联表查询结果是数组
+      if (Array.isArray(task.group_id) && task.group_id.length > 0) {
+        return task.group_id[0]._id
+      }
+      // 直接存储的字符串ID
+      if (typeof task.group_id === 'string' && task.group_id) {
+        return task.group_id
+      }
+      return null
+    },
+
+    handleTaskClick(taskId) {
+      this.$emit('task-click', taskId)
+    },
+    finishTask(taskId) {
+      // 设置正在完成的任务ID，触发动画
+      this.completingTaskId = taskId
+      // 延迟发送事件，让动画先播放
+      setTimeout(() => {
+        this.$emit('finish-task', taskId)
+        // 动画完成后清除状态
+        setTimeout(() => {
+          this.completingTaskId = null
+        }, 100)
+      }, 400)
+    },
+    toggleAssigneeDropdown(taskId, currentAssignee) {
+      if (this.openAssigneeTaskId === taskId) {
+        this.closeAssigneeDropdown()
+      } else {
+        this.openAssigneeTaskId = taskId
+        this.assigneeSearchKeyword = ''
+      }
+    },
+    closeAssigneeDropdown() {
+      this.openAssigneeTaskId = null
+      this.assigneeSearchKeyword = ''
+    },
+    onAssigneeSearch() {
+      // 搜索时自动过滤，由 computed 属性处理
+    },
+    selectAssignee(taskId, memberId) {
+      this.$emit('set-assignee', { taskId, memberId })
+      this.closeAssigneeDropdown()
+    },
+    getCurrentAssigneeId(assignee) {
+      if (!assignee || !assignee.length) return null
+      return assignee[0]._id
+    },
+    getAssigneeAvatar(assignee) {
+      if (!assignee || !assignee.length) return null
+      const member = this.members.find(m => m.value === assignee[0]._id)
+      return member?.avatar || null
+    },
+    getAvatarColor(name) {
+      const colors = [
+        '#f56a00', '#7265e6', '#ffbf00', '#00a2ae',
+        '#87d068', '#108ee9', '#722ed1', '#eb2f96'
+      ]
+      const index = name.charCodeAt(0) % colors.length
+      return colors[index]
+    },
+    handleDeadlineClick(taskId, currentDeadline, event) {
+      console.log('点击设置截止日期', { taskId, currentDeadline, isPC: this.isPC, event })
+
+      // PC端：使用原生日期选择器
+      if (this.isPC) {
+        // #ifdef H5
+        // 创建一个临时的 input 元素
+        const input = document.createElement('input')
+        input.type = 'date'
+        input.style.position = 'fixed'
+        input.style.width = '1px'
+        input.style.height = '1px'
+        input.style.border = 'none'
+        input.style.padding = '0'
+        input.style.margin = '0'
+        input.style.zIndex = '9999'
+
+        // 尝试获取点击位置
+        let left = '50%'
+        let top = '50%'
+
+        try {
+          // 尝试从原生事件获取位置
+          if (event && event.mp && event.mp.currentTarget) {
+            const rect = event.mp.currentTarget.getBoundingClientRect()
+            left = rect.left + 'px'
+            top = rect.bottom + 'px'
+          } else if (event && event.currentTarget && typeof event.currentTarget.getBoundingClientRect === 'function') {
+            const rect = event.currentTarget.getBoundingClientRect()
+            left = rect.left + 'px'
+            top = rect.bottom + 'px'
+          } else if (event && event.detail) {
+            // 尝试从 detail 获取位置
+            left = (event.detail.x || event.detail.clientX || window.innerWidth / 2) + 'px'
+            top = (event.detail.y || event.detail.clientY || window.innerHeight / 2) + 'px'
+          }
+        } catch (e) {
+          console.warn('无法获取点击位置，使用默认位置', e)
+        }
+
+        input.style.left = left
+        input.style.top = top
+
+        input.value = currentDeadline ? new Date(currentDeadline).toISOString().split('T')[0] : ''
+
+        input.onchange = (e) => {
+          console.log('PC端日期选择', e.target.value)
+          this.$emit('save-deadline', taskId, e.target.value)
+          if (input.parentNode) {
+            document.body.removeChild(input)
+          }
+        }
+
+        input.onblur = () => {
+          setTimeout(() => {
+            if (input.parentNode) {
+              document.body.removeChild(input)
+            }
+          }, 200)
+        }
+
+        // 取消选择时也要清理
+        input.oncancel = () => {
+          if (input.parentNode) {
+            document.body.removeChild(input)
+          }
+        }
+
+        document.body.appendChild(input)
+
+        // 使用 setTimeout 确保 input 已添加到 DOM
+        setTimeout(() => {
+          try {
+            input.showPicker()
+          } catch (e) {
+            console.error('showPicker error:', e)
+            // 如果 showPicker 失败，尝试聚焦触发
+            input.focus()
+            input.click()
+          }
+        }, 0)
+        // #endif
+
+        // #ifndef H5
+        this.$emit('save-deadline', taskId, currentDeadline)
+        // #endif
+      } else {
+        // 移动端：打开日期选择器
+        this.$emit('open-deadline-picker', taskId, currentDeadline)
+      }
+    },
+    formatDeadline(deadline) {
+      if (!deadline) return '设置截止日期'
+      const date = new Date(deadline)
+      const today = new Date()
+      const diffDays = Math.ceil((date - today) / (1000 * 60 * 60 * 24))
+      
+      if (diffDays < 0) return `${Math.abs(diffDays)}天前`
+      if (diffDays === 0) return '今天'
+      if (diffDays === 1) return '明天'
+      if (diffDays <= 7) return `${diffDays}天后`
+      
+      return date.toLocaleDateString()
+    },
+    isOverdue(deadline) {
+      return deadline && new Date(deadline) < new Date()
+    },
+    getAssigneeName(assignee) {
+      if (!assignee || !assignee.length) return '未分配'
+      const member = this.members.find(m => m.value === assignee[0]._id)
+      return member ? member.text : assignee[0].nickname || '未知'
+    },
+    getPriorityText(priority) {
+      const priorityMap = {
+        0: '较低',
+        1: '普通',
+        2: '较高',
+        3: '最高'
+      }
+      return priorityMap[priority] || '普通'
+    },
+    editGroup(group) {
+      this.$emit('edit-group', group)
+    },
+    archiveGroup(group) {
+      this.$emit('archive-group', group)
+    },
+    deleteGroup(group) {
+      this.$emit('delete-group', group)
+    },
+    deleteTask(taskId) {
+      this.$emit('delete-task', taskId)
+    },
+    editTask(taskId) {
+      this.$emit('edit-task', taskId)
+    },
+    changePriority(taskId, currentPriority) {
+      this.$emit('change-priority', { taskId, priority: currentPriority })
+    },
+
+    // 添加任务（跳转到新增页面）
+    addTask(groupId) {
+      this.$emit('add-task', groupId)
+    }
+  }
+}
+</script>
+
+<style scoped>
+.task-list-container {
+  padding: 0 12px 12px 12px;
+  position: relative;
+}
+
+/* 下拉框遮罩 */
+.dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background-color: transparent;
+}
+
+.task-group {
+  margin-bottom: 24px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: visible;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.25s ease;
+}
+
+.task-group:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* 任务项包装器 - 用于悬浮操作 */
+.task-item-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.task-item-wrapper :deep(.uni-list-item) {
+  flex: 1;
+}
+
+/* PC端悬浮操作按钮 */
+.task-hover-actions {
+  position: absolute;
+  left: -70px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: #42b983;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(66, 185, 131, 0.3);
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.task-item-wrapper:hover .task-hover-actions {
+  opacity: 1;
+}
+
+.hover-action-btn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hover-action-btn:hover {
+  background-color: #ffffff;
+  transform: scale(1.1);
+}
+
+.hover-action-btn--danger:hover {
+  background-color: #fef2f2;
+}
+
+/* 空分组提示 */
+.empty-group-hint {
+  padding: 16px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #f8faf8;
+  border-bottom: 1px solid #e9ecef;
+  border-left: 3px solid #42b983;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.group-header:hover {
+  background-color: #f0fdf7;
+}
+
+.group-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collapse-icon {
+  transition: transform 0.2s ease;
+}
+
+.group-content {
+  transition: all 0.2s ease;
+}
+
+.group-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.group-header:hover .group-actions {
+  opacity: 1;
+}
+
+.group-action-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.group-action-btn:hover {
+  background-color: #e9ecef;
+}
+
+.group-action-btn--danger:hover {
+  background-color: #fef2f2;
+}
+
+.group-title {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.task-count {
+  color: #6c757d;
+  font-size: 12px;
+  margin-left: 8px;
+  font-weight: 500;
+}
+
+.task-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.task-title {
+  font-size: 14px;
+  color: #2c3e50;
+  line-height: 1.5;
+  font-weight: 500;
+  word-break: break-word;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+/* 优先级标签 */
+.priority-tag {
+  padding: 2px 0;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: 36px;
+  text-align: center;
+}
+
+.priority-0 {
+  background-color: #e6fcf5;
+  color: #42b983;
+}
+
+.priority-1 {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.priority-2 {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.priority-3 {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  background-color: #e6fcf5;
+  color: #359568;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.deadline {
+  font-size: 12px;
+  color: #6c757d;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: #f7f8fa;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  font-weight: 500;
+  min-width: 80px;
+  text-align: center;
+}
+
+.deadline:hover {
+  background-color: #e6fcf5;
+  color: #42b983;
+}
+
+.deadline.overdue {
+  color: #e74c3c;
+  background-color: #fdecea;
+}
+
+.deadline.overdue:hover {
+  background-color: #fbe2e0;
+}
+
+/* 负责人选择器 */
+.assignee-wrapper {
+  position: relative;
+}
+
+.assignee {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  background-color: #e6fcf5;
+  transition: all 0.25s ease;
+  width: 28px;
+  height: 28px;
+}
+
+.assignee:hover {
+  background-color: #d1f7e8;
+}
+
+.assignee-avatar-small {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.assignee-avatar-small.assignee-avatar-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 负责人下拉选择框 */
+.assignee-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 240px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.assignee-dropdown-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.assignee-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #333;
+  background: transparent;
+}
+
+.assignee-search-input::placeholder {
+  color: #999;
+}
+
+.assignee-dropdown-list {
+  max-height: 240px;
+  padding: 8px 0;
+}
+
+.assignee-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.assignee-option:hover {
+  background-color: #d1f7e8;
+}
+
+.assignee-option--selected {
+  background-color: #e6fcf5;
+}
+
+.assignee-option--selected:hover {
+  background-color: #c3f5de;
+}
+
+.assignee-option-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.assignee-option-avatar.assignee-avatar-text {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.assignee-option-name {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+/* 列表项优化 */
+.task-list :deep(.uni-list-item) {
+  transition: all 0.25s ease;
+  overflow: visible !important;
+}
+
+.task-list :deep(.uni-list-item__container) {
+  overflow: visible !important;
+}
+
+.task-list :deep(.uni-list-item__content) {
+  overflow: visible !important;
+}
+
+.task-list :deep(.uni-list-item__extra) {
+  overflow: visible !important;
+}
+
+.task-list :deep(.uni-list) {
+  overflow: visible !important;
+}
+
+.task-list :deep(.uni-list--border) {
+  overflow: visible !important;
+}
+
+.task-list :deep(.uni-list-item:hover) {
+  background-color: #f0fdf7;
+}
+
+/* Checkbox 样式优化 */
+.task-list :deep(checkbox .uni-checkbox-input) {
+  border-color: #42b983 !important;
+  border-width: 2px;
+  transition: all 0.2s ease;
+}
+
+.task-list :deep(checkbox .uni-checkbox-input:hover) {
+  border-color: #359568 !important;
+  background-color: #e6fcf5 !important;
+}
+
+.task-list :deep(checkbox .uni-checkbox-input.uni-checkbox-input-checked) {
+  background-color: #42b983 !important;
+  border-color: #42b983 !important;
+}
+
+/* 添加新任务入口 */
+.quick-add-section {
+  padding: 12px 16px;
+}
+
+.quick-add-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  color: #42b983;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-add-trigger:hover {
+  color: #359568;
+}
+
+.quick-add-trigger text {
+  font-weight: 500;
+}
+
+/* 子任务徽章 */
+.subtask-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background-color: #f3f4f6;
+  border-radius: 10px;
+  font-size: 11px;
+  color: #6c757d;
+  flex-shrink: 0;
+}
+
+.subtask-badge text {
+  font-weight: 500;
+}
+
+.subtask-badge .subtask-all-done {
+  color: #42b983;
+}
+
+/* 任务完成动画 */
+.task-completing {
+  animation: taskComplete 0.4s ease forwards;
+}
+
+@keyframes taskComplete {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+    background-color: transparent;
+  }
+  30% {
+    background-color: #d1f7e8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(50px);
+    background-color: #d1f7e8;
+  }
+}
+
+/* 完成动画时 checkbox 变绿 */
+.task-completing :deep(checkbox .uni-checkbox-input) {
+  background-color: #42b983 !important;
+  border-color: #42b983 !important;
+}
+
+.task-completing :deep(checkbox .uni-checkbox-input::after) {
+  border-color: #fff !important;
+}
+</style> 
