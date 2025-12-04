@@ -1,7 +1,7 @@
 {
     "name" : "uni-task",
     "appid" : "",
-    "description" : "应用描述",
+    "description" : "基于uni-app & uniCloud的任务管理系统",
     "versionName" : "1.0.0",
     "versionCode" : "100",
     "transformPx" : false,
@@ -83,9 +83,9 @@
                 "geolocation" : {},
                 "maps" : {
                     "amap" : {
-                        "name" : "adjkjkkjkljkjk",
-                        "appkey_ios" : "fsafsdddd",
-                        "appkey_android" : "fasdfasfds"
+                        "name" : "",
+                        "appkey_ios" : "",
+                        "appkey_android" : ""
                     }
                 }
             },
@@ -95,57 +95,13 @@
             "enable" : false
         }
     },
-    /* 快应用特有相关 */
-    "quickapp" : {},
-    "quickapp-native" : {
-        "icon" : "/static/logo.png",
-        "package" : "com.example.demo",
-        "features" : [
-            {
-                "name" : "system.clipboard"
-            }
-        ]
-    },
-    "quickapp-webview" : {
-        "icon" : "/static/logo.png",
-        "package" : "com.example.demo",
-        "minPlatformVersion" : 1070,
-        "versionName" : "1.0.0",
-        "versionCode" : 100
-    },
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "wx999bf02c8e05dfc9",
+        "appid" : "",
         "setting" : {
             "urlCheck" : false
         },
-        "usingComponents" : true,
-        "permission" : {
-            "scope.userLocation" : {
-                "desc" : "演示定位能力"
-            }
-        },
-        "uniStatistics" : {
-            "enable" : false
-        }
-    },
-    "mp-alipay" : {
-        "usingComponents" : true,
-        "uniStatistics" : {
-            "enable" : false
-        }
-    },
-    "mp-baidu" : {
-        "usingComponents" : true,
-        "uniStatistics" : {
-            "enable" : false
-        }
-    },
-    "mp-toutiao" : {
-        "usingComponents" : true,
-        "uniStatistics" : {
-            "enable" : false
-        }
+        "usingComponents" : true
     },
     "h5" : {
         "template" : "template.h5.html",
@@ -156,7 +112,7 @@
         "sdkConfigs" : {
             "maps" : {
                 "qqmap" : {
-                    "key" : "TKUBZ-D24AF-GJ4JY-JDVM2-IBYKK-KEBCU"
+                    "key" : ""
                 }
             }
         },
@@ -173,42 +129,7 @@
         "enable" : false,
         "debug" : false
     },
-    "mp-jd" : {
-        "uniStatistics" : {
-            "enable" : false
-        }
-    },
-    "mp-kuaishou" : {
-        "uniStatistics" : {
-            "enable" : false
-        }
-    },
-    "mp-lark" : {
-        "uniStatistics" : {
-            "enable" : false
-        }
-    },
-    "mp-qq" : {
-        "uniStatistics" : {
-            "enable" : false
-        }
-    },
-    "quickapp-webview-huawei" : {
-        "uniStatistics" : {
-            "enable" : false
-        }
-    },
-    "quickapp-webview-union" : {
-        "uniStatistics" : {
-            "enable" : false
-        }
-    },
     "locale" : "zh-Hans",
-    "mp-harmony" : {
-        "distribute" : {
-            "bundleName" : "com.atomicservice.5765880207855881895"
-        }
-    },
     "app-harmony" : {
         "distribute" : {
             "modules" : {
