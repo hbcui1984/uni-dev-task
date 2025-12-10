@@ -1,0 +1,65 @@
+/*每个页面公共css */
+
+uni-page {
+	background-color: rgb(244, 247, 237);
+}
+
+.container {
+	max-width: 1200px;
+	margin: 15px auto;
+	padding: 10px;
+}
+
+.uni-input-border,
+.uni-textarea-border {
+	/* width: auto; */
+	font-size: 14px;
+	color: #666;
+	border: 1px #e5e5e5 solid;
+	border-radius: 5px;
+	box-sizing: border-box;
+}
+
+.uni-button {
+	line-height: 2.0;
+	font-size: 16px;
+	padding: 5px 10px;
+}
+
+.task-list:hover {
+	background-color: #eee !important;
+}
+
+.uni-stealth {
+	visibility: hidden;
+}
+
+.task-item:hover .uni-stealth {
+	visibility: visible;
+}
+
+.deadline-item {
+	background-color: #fff;
+	display: flex;
+	align-items: center;
+	margin-right: 15px;
+	border: 1px solid #ccc;
+	padding: 5px 10px;
+	border-radius: 12px;
+	font-size: 13px;
+}
+
+.uni-task-delay {
+	border: 1px solid #e3e3e3;
+	border-radius: 10px;
+	background-color: #f9d8d5;
+	border-color: #df3c2f;
+	color: #df3c2f;
+}
+
+.task-completion-info{
+	color: #777;
+	font-size: 12px;
+	display: flex;
+	align-items: center;
+}
