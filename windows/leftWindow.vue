@@ -11,11 +11,10 @@
 		mapState,
 		mapActions
 	} from 'vuex'
-	import config from '@/admin.config.js'
 	export default {
 		data() {
 			return {
-				...config.sideBar,
+				staticMenu: [],
 				field: 'url as value, name as text, menu_id, parent_id, sort, icon, permission',
 				currentMenu: '/'
 			}
@@ -81,7 +80,7 @@
 				}
 				// #ifndef H5
 				if (url === "/") {
-					url = config.index.url;
+					url = '/pages/opendb-projects/list';
 				}
 				// #endif
 				// TODO 后续要调整

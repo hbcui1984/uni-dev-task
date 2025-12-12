@@ -39,6 +39,8 @@
 </template>
 
 <script>
+import { isOverdue, PRIORITY_OPTIONS } from '@/utils/task.js'
+
 export default {
 	name: 'TaskInfo',
 	props: {
@@ -55,13 +57,12 @@ export default {
 		return {
 			localAssignee: this.task.assignee || '',
 			localDeadline: this.task.deadline || '',
-			priorityOptions: ['低', '中', '高']
+			priorityOptions: PRIORITY_OPTIONS.map(p => p.text)
 		}
 	},
 	computed: {
 		isOverdue() {
-			if (!this.localDeadline) return false
-			return new Date(this.localDeadline) < new Date()
+			return isOverdue(this.localDeadline)
 		}
 	},
 	watch: {

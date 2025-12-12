@@ -1,14 +1,14 @@
 import App from './App'
 import store from './store'
-import plugin from './js_sdk/uni-admin/plugin'
+import {initUniIdPageStore} from './js_sdk/uni-id-pages/store.js'
 
 // #ifdef VUE3
 import {createSSRApp} from 'vue'
 
 export function createApp() {
 	const app = createSSRApp(App)
-	app.use(plugin)
 	app.use(store)
+	initUniIdPageStore(app)
 	return {app}
 }
 // #endif

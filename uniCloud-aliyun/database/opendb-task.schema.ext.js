@@ -47,15 +47,25 @@ module.exports = {
 			}
 
 			// 记录任务创建动态
-			await db.collection('opendb-task-logs').add({
+			const isSubTask = !!addDataList[0].parent_id
+			const logData = {
 				action_type: 'create',
 				task_id: taskId,
 				project_id: addDataList[0].project_id,
 				task_name: addDataList[0].title,
 				user_id: userInfo?.uid,
-				action_detail: `创建了任务「${addDataList[0].title}」`,
+				action_detail: isSubTask
+					? `创建了子任务「${addDataList[0].title}」`
+					: `创建了任务「${addDataList[0].title}」`,
 				create_time: Date.now()
-			})
+			}
+
+			// 如果是子任务，记录父任务ID，便于查询
+			if (addDataList[0].parent_id) {
+				logData.parent_task_id = addDataList[0].parent_id
+			}
+
+			await db.collection('opendb-task-logs').add(logData)
 			console.log("afterCreate completed, taskId:", taskId);
 		},
 		// 修改数据触发器
@@ -238,7 +248,7 @@ module.exports = {
 			}
 
 			// 记录任务更新动态
-			await db.collection('opendb-task-logs').add({
+			const logData = {
 				action_type: actionType,
 				task_id: oldData._id,
 				project_id: oldData.project_id,
@@ -251,7 +261,14 @@ module.exports = {
 					changes: changes
 				},
 				create_time: Date.now()
-			})
+			}
+
+			// 如果是子任务，记录父任务ID，便于查询
+			if (oldData.parent_id) {
+				logData.parent_task_id = oldData.parent_id
+			}
+
+			await db.collection('opendb-task-logs').add(logData)
 		},
 		
 		// 删除数据触发器
@@ -293,15 +310,25 @@ module.exports = {
 		
 			// 为每个被删除的任务记录动态
 			for (const task of deletedTasks) {
-				await db.collection('opendb-task-logs').add({
+				const isSubTask = !!task.parent_id
+				const logData = {
 					action_type: 'delete',
 					task_id: task._id,
 					project_id: task.project_id,
-					task_name: task.name,
+					task_name: task.title,
 					user_id: userInfo?.uid,
-					action_detail: `删除了任务 "${task.name}"`,
+					action_detail: isSubTask
+						? `删除了子任务「${task.title}」`
+						: `删除了任务「${task.title}」`,
 					create_time: Date.now()
-				})
+				}
+
+				// 如果是子任务，记录父任务ID，便于查询
+				if (task.parent_id) {
+					logData.parent_task_id = task.parent_id
+				}
+
+				await db.collection('opendb-task-logs').add(logData)
 			}
 		}
 		

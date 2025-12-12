@@ -3,7 +3,6 @@
 		mapActions,
 		mapMutations
 	} from 'vuex'
-	import config from '@/admin.config.js'
 	import {
 		version
 	} from './package.json'
@@ -27,15 +26,15 @@
 		},
 		onPageNotFound(msg) {
 			uni.redirectTo({
-				url: config.error.url
+				url: '/pages/error/404'
 			})
 		},
 		onLaunch: function() {
 			// #ifdef H5
 			console.log(
-				`%c uni-admin %c v${version} `,
+				`%c uni-task %c v${version} `,
 				'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
-				'background:#007aff ;padding: 1px; border-radius: 0 3px 3px 0;  color: #fff; font-weight: bold;'
+				'background:#42b983 ;padding: 1px; border-radius: 0 3px 3px 0;  color: #fff; font-weight: bold;'
 			)
 			// #endif
 			// #ifdef H5
@@ -88,8 +87,6 @@
 
 <style lang="scss">
 	@import '@/common/uni.css';
-	@import '@/common/uni-icons.css';
-	@import '@/common/admin-icons.css';
 	@import '@/common/theme.scss';
 	@import '@/common/global.scss';
 	@import '@/common/uni-task.css';

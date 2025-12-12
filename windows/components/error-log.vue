@@ -32,12 +32,17 @@
     import {
         mapState
     } from 'vuex'
-    import config from '@/admin.config.js'
-    const debugOptions = config.navBar.debug || {}
+
     export default {
         data() {
             return {
-                engines: debugOptions.engine || []
+                engines: [{
+                    name: '百度',
+                    url: 'https://www.baidu.com/baidu?wd=ERR_MSG'
+                }, {
+                    name: '谷歌',
+                    url: 'https://www.google.com/search?q=ERR_MSG'
+                }]
             };
         },
         computed: {

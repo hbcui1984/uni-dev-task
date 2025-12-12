@@ -69,8 +69,8 @@
 				</view>
 				<view class="stat-divider"></view>
 				<view class="stat-item">
-					<text class="stat-label">项目成员</text>
-					<text class="stat-value primary">{{ memberCount }}</text>
+					<text class="stat-label">已加入</text>
+					<text class="stat-value primary">{{ joinedCount }}</text>
 				</view>
 			</view>
 
@@ -162,9 +162,9 @@
 					user.nickname && user.nickname.toLowerCase().includes(this.searchKeyword.toLowerCase())
 				)
 			},
-			// 成员数量
-			memberCount() {
-				return this.members ? this.members.length : 0
+			// 已加入项目的人数（管理员 + 成员）
+			joinedCount() {
+				return this.users.filter(u => u.join_project).length
 			},
 			// 邀请链接
 			inviteLink() {
@@ -211,6 +211,23 @@
 			// 开关切换
 			switchChange(e, uid) {
 				const isChecked = e.detail.value
+
+				// 更新 users 数组中对应用户的状态
+				const user = this.users.find(u => u._id === uid)
+				if (user) {
+					user.join_project = isChecked
+					// 如果是添加成员，设置角色为成员；如果是移除，清空角色（除非是管理员）
+					if (isChecked) {
+						if (!user.role_in_project) {
+							user.role_in_project = '成员'
+						}
+					} else {
+						// 管理员不能通过开关移除
+						if (user.role_in_project !== '管理员') {
+							user.role_in_project = null
+						}
+					}
+				}
 
 				if (isChecked) {
 					// 添加成员
@@ -359,6 +376,14 @@
 	background-color: var(--color-bg-page);
 }
 
+/* ===== 内容容器限宽 ===== */
+.search-section,
+.member-list {
+	max-width: 800px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 /* ===== 搜索栏和统计 ===== */
 .search-section {
 	padding: var(--spacing-base);
@@ -367,32 +392,32 @@
 
 /* 统计信息卡片 */
 .stats-card {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
-	justify-content: space-around;
+	justify-content: center;
+	gap: var(--spacing-xl);
 	background-color: var(--color-white);
 	border-radius: var(--radius-md);
-	padding: var(--spacing-base);
+	padding: var(--spacing-sm) var(--spacing-xl);
 	margin-bottom: var(--spacing-md);
 	box-shadow: var(--shadow-sm);
 }
 
 .stat-item {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 	align-items: center;
-	flex: 1;
+	gap: var(--spacing-xs);
 }
 
 .stat-label {
-	font-size: var(--font-size-xs);
+	font-size: var(--font-size-sm);
 	color: var(--color-text-secondary);
-	margin-bottom: 4px;
 	font-weight: var(--font-weight-medium);
 }
 
 .stat-value {
-	font-size: var(--font-size-xxxl);
+	font-size: var(--font-size-xl);
 	font-weight: var(--font-weight-bold);
 	color: var(--color-text-primary);
 	line-height: 1.2;
@@ -404,7 +429,7 @@
 
 .stat-divider {
 	width: 1px;
-	height: 40px;
+	height: 20px;
 	background-color: var(--color-border);
 }
 
@@ -448,6 +473,16 @@
 /* ===== 成员列表 ===== */
 .member-list {
 	padding: 0 var(--spacing-base) var(--spacing-xxl);
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--spacing-md);
+}
+
+/* PC端双列布局 */
+@media (min-width: 640px) {
+	.member-list {
+		grid-template-columns: repeat(2, 1fr);
+	}
 }
 
 .member-card {
@@ -457,7 +492,6 @@
 	background-color: var(--color-white);
 	border-radius: var(--radius-md);
 	padding: var(--spacing-base);
-	margin-bottom: var(--spacing-md);
 	box-shadow: var(--shadow-sm);
 	transition: var(--transition-base);
 	border: 2px solid transparent;
@@ -551,8 +585,10 @@
 	transform: scale(0.9);
 }
 
+
 /* ===== 空状态 ===== */
 .empty-state {
+	grid-column: 1 / -1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -786,5 +822,14 @@
 
 .generate-btn:active {
 	transform: translateY(1px);
+}
+</style>
+
+<!-- 非 scoped 样式，用于覆盖 switch 组件颜色 -->
+<style>
+/* H5 平台 switch 选中颜色 */
+.uni-switch-input.uni-switch-input-checked {
+	background-color: #42b983 !important;
+	border-color: #42b983 !important;
 }
 </style>

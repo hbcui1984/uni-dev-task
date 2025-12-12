@@ -127,14 +127,17 @@
           <text class="task-count">({{ group.tasks?.length || 0 }})</text>
         </view>
         <view class="group-actions" @click.stop>
-          <view class="group-action-btn" @click.stop="editGroup(group)">
+          <view class="group-action-btn" @click.stop="editGroup(group)" title="编辑分组">
             <uni-icons type="compose" size="16" color="#6c757d"></uni-icons>
+            <text class="action-tooltip">编辑</text>
           </view>
-          <view class="group-action-btn" @click.stop="archiveGroup(group)">
-            <uni-icons type="folder" size="16" color="#f0ad4e"></uni-icons>
+          <view class="group-action-btn group-action-btn--archive" @click.stop="archiveGroup(group)" title="归档分组">
+            <uni-icons type="download" size="16" color="#b8860b"></uni-icons>
+            <text class="action-tooltip">归档</text>
           </view>
-          <view class="group-action-btn group-action-btn--danger" @click.stop="deleteGroup(group)">
+          <view class="group-action-btn group-action-btn--danger" @click.stop="deleteGroup(group)" title="删除分组">
             <uni-icons type="trash" size="16" color="#e74c3c"></uni-icons>
+            <text class="action-tooltip">删除</text>
           </view>
         </view>
       </view>
@@ -256,6 +259,8 @@
 </template>
 
 <script>
+import { formatDeadline, isOverdue, getPriorityText, getAvatarColor } from '@/utils/task.js'
+
 export default {
   name: 'TaskList',
   props: {
@@ -393,14 +398,7 @@ export default {
       const member = this.members.find(m => m.value === assignee[0]._id)
       return member?.avatar || null
     },
-    getAvatarColor(name) {
-      const colors = [
-        '#f56a00', '#7265e6', '#ffbf00', '#00a2ae',
-        '#87d068', '#108ee9', '#722ed1', '#eb2f96'
-      ]
-      const index = name.charCodeAt(0) % colors.length
-      return colors[index]
-    },
+    getAvatarColor,
     handleDeadlineClick(taskId, currentDeadline, event) {
       console.log('点击设置截止日期', { taskId, currentDeadline, isPC: this.isPC, event })
 
@@ -493,35 +491,15 @@ export default {
       }
     },
     formatDeadline(deadline) {
-      if (!deadline) return '设置截止日期'
-      const date = new Date(deadline)
-      const today = new Date()
-      const diffDays = Math.ceil((date - today) / (1000 * 60 * 60 * 24))
-      
-      if (diffDays < 0) return `${Math.abs(diffDays)}天前`
-      if (diffDays === 0) return '今天'
-      if (diffDays === 1) return '明天'
-      if (diffDays <= 7) return `${diffDays}天后`
-      
-      return date.toLocaleDateString()
+      return formatDeadline(deadline) || '设置截止日期'
     },
-    isOverdue(deadline) {
-      return deadline && new Date(deadline) < new Date()
-    },
+    isOverdue,
     getAssigneeName(assignee) {
       if (!assignee || !assignee.length) return '未分配'
       const member = this.members.find(m => m.value === assignee[0]._id)
       return member ? member.text : assignee[0].nickname || '未知'
     },
-    getPriorityText(priority) {
-      const priorityMap = {
-        0: '较低',
-        1: '普通',
-        2: '较高',
-        3: '最高'
-      }
-      return priorityMap[priority] || '普通'
-    },
+    getPriorityText,
     editGroup(group) {
       this.$emit('edit-group', group)
     },
@@ -684,6 +662,7 @@ export default {
 }
 
 .group-action-btn {
+  position: relative;
   width: 28px;
   height: 28px;
   display: flex;
@@ -696,6 +675,46 @@ export default {
 
 .group-action-btn:hover {
   background-color: #e9ecef;
+}
+
+/* 操作按钮 tooltip */
+.action-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 6px;
+  padding: 4px 8px;
+  background-color: #42b983;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(66, 185, 131, 0.3);
+}
+
+.action-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-bottom-color: #42b983;
+}
+
+.group-action-btn:hover .action-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.group-action-btn--archive:hover {
+  background-color: #fef6e6;
 }
 
 .group-action-btn--danger:hover {

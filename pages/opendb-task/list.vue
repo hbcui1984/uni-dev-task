@@ -313,7 +313,8 @@
 				]
 			},
 			hasActiveFilter() {
-				return !!(this.filterAssignee || this.filterPriority)
+				// 注意：filterPriority 可以是 0（较低），不能直接用 !! 判断
+				return !!(this.filterAssignee || this.filterPriority !== '')
 			},
 			// 使用 getTemp 构建联表查询，先过滤主表数据
 			dbCollection() {
@@ -338,8 +339,8 @@
 					mainTableConditions.assignee = this.filterAssignee
 				}
 
-				// 优先级筛选
-				if (this.filterPriority) {
+				// 优先级筛选（注意：0 是有效值，表示"较低"优先级）
+				if (this.filterPriority !== '') {
 					mainTableConditions.priority = this.filterPriority
 				}
 

@@ -387,6 +387,42 @@ module.exports = {
 
 			await this.db.collection('opendb-task').doc(taskId).update(updateData)
 
+			// 记录状态变更日志
+			const statusMap = { 0: '未开始', 1: '进行中', 2: '已完成' }
+			const isSubTask = !!oldTask.parent_id
+			let actionType = 'update'
+			let actionDetail = ''
+
+			if (newStatus === 2) {
+				actionType = 'complete'
+				actionDetail = isSubTask
+					? `完成了子任务「${oldTask.title}」`
+					: `完成了任务「${oldTask.title}」`
+			} else if (oldStatus === 2 && newStatus === 0) {
+				actionDetail = isSubTask
+					? `重新打开了子任务「${oldTask.title}」`
+					: `重新打开了任务「${oldTask.title}」`
+			} else {
+				actionDetail = `更新了任务「${oldTask.title}」：状态：${statusMap[oldStatus] || '未知'} → ${statusMap[newStatus] || '未知'}`
+			}
+
+			const logData = {
+				action_type: actionType,
+				task_id: taskId,
+				project_id: oldTask.project_id,
+				task_name: oldTask.title,
+				user_id: this.userInfo.uid,
+				action_detail: actionDetail,
+				create_time: Date.now()
+			}
+
+			// 如果是子任务，记录父任务ID，便于查询
+			if (oldTask.parent_id) {
+				logData.parent_task_id = oldTask.parent_id
+			}
+
+			await this.db.collection('opendb-task-logs').add(logData)
+
 			return {
 				errCode: 0,
 				errMsg: '状态更新成功'
@@ -653,6 +689,8 @@ module.exports = {
 	 * @returns {Object} { errCode: 0, errMsg: '删除成功' }
 	 */
 	async deleteTask(params = {}) {
+		console.log('deleteTask params:', params)
+
 		if (!params.taskId) {
 			return {
 				errCode: 'PARAM_ERROR',
@@ -661,8 +699,54 @@ module.exports = {
 		}
 
 		try {
+			// 先获取任务信息用于记录日志
+			const taskRes = await this.db.collection('opendb-task').doc(params.taskId).get()
+			console.log('deleteTask taskRes:', JSON.stringify(taskRes))
+
+			const task = taskRes.data && taskRes.data[0]
+			console.log('deleteTask task:', JSON.stringify(task))
+
+			if (!task) {
+				return {
+					errCode: 'TASK_NOT_FOUND',
+					errMsg: '任务不存在'
+				}
+			}
+
+			// 保存任务信息用于记录日志
+			const taskTitle = task.title
+			const taskProjectId = task.project_id
+			const isSubTask = !!task.parent_id
+			const parentTaskId = task.parent_id
+
 			// 删除任务
 			await this.db.collection('opendb-task').doc(params.taskId).remove()
+
+			// 记录删除日志
+			const actionDetail = isSubTask
+				? `删除了子任务「${taskTitle}」`
+				: `删除了任务「${taskTitle}」`
+
+			console.log('deleteTask adding log:', { actionDetail, taskProjectId, parentTaskId })
+
+			const logData = {
+				action_type: 'delete',
+				task_id: params.taskId,
+				project_id: taskProjectId,
+				task_name: taskTitle,
+				user_id: this.userInfo.uid,
+				action_detail: actionDetail,
+				create_time: Date.now()
+			}
+
+			// 如果是子任务，记录父任务ID，便于查询
+			if (parentTaskId) {
+				logData.parent_task_id = parentTaskId
+			}
+
+			await this.db.collection('opendb-task-logs').add(logData)
+
+			console.log('deleteTask log added successfully')
 
 			return {
 				errCode: 0,
@@ -751,8 +835,140 @@ module.exports = {
 			};
 		}
 
+	},
+
+	/**
+	 * 添加评论
+	 *
+	 * @param {Object} params - 参数对象
+	 * @param {string} params.task_id - 任务ID（必填）
+	 * @param {string} params.content - 评论内容（必填）
+	 * @param {Array} [params.mentioned_users] - 被@的用户ID列表
+	 * @returns {Object} { errCode: 0, errMsg: '评论成功', data: { comment_id } }
+	 */
+	async addComment(params = {}) {
+		if (!params.task_id || !params.content) {
+			return {
+				errCode: 'PARAM_ERROR',
+				errMsg: '任务ID和评论内容不能为空'
+			}
+		}
+
+		try {
+			// 获取任务信息
+			const taskRes = await this.db.collection('opendb-task').doc(params.task_id).get()
+			const task = taskRes.data && taskRes.data[0]
+
+			if (!task) {
+				return {
+					errCode: 'TASK_NOT_FOUND',
+					errMsg: '任务不存在'
+				}
+			}
+
+			// 添加评论
+			const commentData = {
+				task_id: params.task_id,
+				content: params.content,
+				user_id: this.userInfo.uid,
+				create_time: Date.now()
+			}
+
+			if (params.mentioned_users && params.mentioned_users.length > 0) {
+				commentData.mentioned_users = params.mentioned_users
+			}
+
+			const result = await this.db.collection('task-comments').add(commentData)
+
+			// 记录评论动态
+			const contentPreview = params.content.length > 30
+				? params.content.substring(0, 30) + '...'
+				: params.content
+
+			await this.db.collection('opendb-task-logs').add({
+				action_type: 'comment',
+				task_id: params.task_id,
+				project_id: task.project_id,
+				task_name: task.title,
+				user_id: this.userInfo.uid,
+				action_detail: `评论了任务「${task.title}」：${contentPreview}`,
+				create_time: Date.now()
+			})
+
+			return {
+				errCode: 0,
+				errMsg: '评论成功',
+				data: {
+					comment_id: result.id
+				}
+			}
+		} catch (e) {
+			console.error('addComment error:', e)
+			return {
+				errCode: 'ADD_COMMENT_FAILED',
+				errMsg: e.message
+			}
+		}
+	},
+
+	/**
+	 * 删除评论
+	 *
+	 * @param {Object} params - 参数对象
+	 * @param {string} params.comment_id - 评论ID（必填）
+	 * @returns {Object} { errCode: 0, errMsg: '删除成功' }
+	 */
+	async deleteComment(params = {}) {
+		if (!params.comment_id) {
+			return {
+				errCode: 'PARAM_ERROR',
+				errMsg: '评论ID不能为空'
+			}
+		}
+
+		try {
+			// 获取评论信息
+			const commentRes = await this.db.collection('task-comments').doc(params.comment_id).get()
+			const comment = commentRes.data && commentRes.data[0]
+
+			if (!comment) {
+				return {
+					errCode: 'COMMENT_NOT_FOUND',
+					errMsg: '评论不存在'
+				}
+			}
+
+			// 获取任务信息
+			const taskRes = await this.db.collection('opendb-task').doc(comment.task_id).get()
+			const task = taskRes.data && taskRes.data[0]
+
+			// 删除评论
+			await this.db.collection('task-comments').doc(params.comment_id).remove()
+
+			// 记录删除评论动态
+			if (task) {
+				await this.db.collection('opendb-task-logs').add({
+					action_type: 'delete_comment',
+					task_id: comment.task_id,
+					project_id: task.project_id,
+					task_name: task.title,
+					user_id: this.userInfo.uid,
+					action_detail: `删除了任务「${task.title}」的评论`,
+					create_time: Date.now()
+				})
+			}
+
+			return {
+				errCode: 0,
+				errMsg: '删除成功'
+			}
+		} catch (e) {
+			console.error('deleteComment error:', e)
+			return {
+				errCode: 'DELETE_COMMENT_FAILED',
+				errMsg: e.message
+			}
+		}
 	}
-
-
 
 }

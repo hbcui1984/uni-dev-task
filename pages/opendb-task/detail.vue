@@ -842,10 +842,12 @@
 					this.parentTask = null
 				}
 
-				this.loadSubTask();
+				// 先加载子任务，再加载动态（动态需要包含子任务的日志）
+				this.loadSubTask().then(() => {
+					this.loadTaskLogs();
+				});
 				this.getMembersList();
 				this.loadComments();
-				this.loadTaskLogs();
 				this.loadGroups();
 			},
 
@@ -872,16 +874,15 @@
 				})
 			},
 
-			loadSubTask() {
+			async loadSubTask() {
 				const task = uniCloud.database().collection('opendb-task').where({
 					parent_id: this.taskId
 				}).orderBy('create_date').getTemp()
 
 				const users = uniCloud.database().collection('uni-id-users').field("_id,nickname").getTemp()
 
-				uniCloud.database().collection(task, users).get().then(res => {
-					this.subTasks = res.result.data
-				})
+				const res = await uniCloud.database().collection(task, users).get()
+				this.subTasks = res.result.data
 			},
 
 			async getMembersList() {
@@ -908,15 +909,35 @@
 				})
 			},
 
-			// 加载任务动态
-			loadTaskLogs() {
-				const logs = uniCloud.database().collection('opendb-task-logs').where({
-					task_id: this.taskId
-				}).orderBy('create_time desc').getTemp()
+			// 加载任务动态（包括子任务的动态，即使子任务已被删除）
+			async loadTaskLogs() {
+				const db = uniCloud.database()
+				const dbCmd = db.command
 
-				const users = uniCloud.database().collection('uni-id-users').field("_id,nickname").getTemp()
+				// 获取当前存在的子任务ID列表（用于兼容旧日志）
+				const subTaskIds = this.subTasks.map(t => t._id).filter(id => id && !id.startsWith('temp_'))
 
-				uniCloud.database().collection(logs, users).get().then(res => {
+				// 查询条件：
+				// 1. task_id == 当前任务ID（主任务自己的动态）
+				// 2. task_id in 子任务ID列表（旧日志，没有 parent_task_id 字段）
+				// 3. parent_task_id == 当前任务ID（新日志，子任务被删除后仍能查到）
+				const orConditions = [
+					{ task_id: this.taskId },
+					{ parent_task_id: this.taskId }
+				]
+
+				// 如果有子任务，添加子任务ID的查询条件（兼容旧日志）
+				if (subTaskIds.length > 0) {
+					orConditions.push({ task_id: dbCmd.in(subTaskIds) })
+				}
+
+				const logs = db.collection('opendb-task-logs').where(
+					dbCmd.or(orConditions)
+				).orderBy('create_time desc').getTemp()
+
+				const users = db.collection('uni-id-users').field("_id,nickname").getTemp()
+
+				db.collection(logs, users).get().then(res => {
 					this.taskLogs = res.result.data
 				}).catch(e => {
 					console.error('loadTaskLogs error', e)
@@ -929,7 +950,9 @@
 					create: 'plusempty',
 					update: 'compose',
 					delete: 'trash',
-					complete: 'checkmarkempty'
+					complete: 'checkmarkempty',
+					comment: 'chat',
+					delete_comment: 'chat'
 				}
 				return iconMap[actionType] || 'info'
 			},
@@ -1307,31 +1330,43 @@
 				}
 			},
 
-			addComment() {
+			async addComment() {
 				if (!this.comment.trim()) {
 					uni.showToast({ title: '请输入评论内容', icon: 'none' })
 					return
 				}
 				uni.showLoading({})
 
-				// 构建评论数据
-				const commentData = {
-					task_id: this.taskId,
-					content: this.comment
-				}
+				try {
+					// 构建评论数据
+					const commentData = {
+						task_id: this.taskId,
+						content: this.comment
+					}
 
-				// 添加被@的用户ID列表
-				if (this.mentionedUsers.length > 0) {
-					commentData.mentioned_users = this.mentionedUsers.map(u => u.value)
-				}
+					// 添加被@的用户ID列表
+					if (this.mentionedUsers.length > 0) {
+						commentData.mentioned_users = this.mentionedUsers.map(u => u.value)
+					}
 
-				uniCloud.database().collection("task-comments").add(commentData).then(e => {
+					const taskObj = uniCloud.importObject('task-co')
+					const result = await taskObj.addComment(commentData)
+
+					if (result.errCode && result.errCode !== 0) {
+						throw new Error(result.errMsg || '评论失败')
+					}
+
 					this.comment = ''
 					this.mentionedUsers = []
 					uni.hideLoading()
 					uni.showToast({ title: '评论发表成功', icon: 'success' })
 					this.loadComments()
-				})
+					this.loadTaskLogs()
+				} catch (err) {
+					uni.hideLoading()
+					console.error('评论失败:', err)
+					uni.showToast({ title: '评论失败', icon: 'none' })
+				}
 			},
 
 			enableAddSub() {
@@ -1421,12 +1456,21 @@
 					title: '删除确认',
 					content: '确认删除此子任务吗？',
 					confirmColor: '#e74c3c',
-					success: (res) => {
+					success: async (res) => {
 						if (res.confirm) {
-							uniCloud.database().collection('opendb-task').doc(id).remove().then(e => {
+							try {
+								const taskObj = uniCloud.importObject('task-co')
+								const result = await taskObj.deleteTask({ taskId: id })
+								if (result.errCode && result.errCode !== 0) {
+									throw new Error(result.errMsg || '删除失败')
+								}
 								uni.showToast({ title: '子任务已删除', icon: 'success' })
-								this.loadSubTask();
-							})
+								await this.loadSubTask()
+								this.loadTaskLogs()
+							} catch (err) {
+								console.error('删除子任务失败:', err)
+								uni.showToast({ title: '删除失败', icon: 'none' })
+							}
 						}
 					}
 				})
@@ -1533,9 +1577,10 @@
 
 				uniCloud.database().collection('opendb-task').doc(this.currentTaskId).update({
 					'assignee': this.currentTaskAssignee
-				}).then((e) => {
+				}).then(async (e) => {
 					this.$refs['popup-assignee-set'].close()
-					this.loadSubTask()
+					// 先刷新子任务列表，完成后刷新动态列表
+					await this.loadSubTask()
 					// 数据库触发器会自动记录日志，这里只需刷新动态列表
 					this.loadTaskLogs()
 					this.resetAssigneePopup()
@@ -1582,8 +1627,8 @@
 					if (res.errCode && res.errCode !== 0) {
 						throw new Error(res.errMsg || '操作失败')
 					}
-					// 刷新子任务列表
-					this.loadSubTask()
+					// 刷新子任务列表，完成后刷新动态列表
+					await this.loadSubTask()
 					// 数据库触发器会自动记录日志，这里只需刷新动态列表
 					this.loadTaskLogs()
 				} catch (err) {
@@ -1665,12 +1710,21 @@
 					title: '删除确认',
 					content: '确认删除此评论吗？',
 					confirmColor: '#e74c3c',
-					success: (res) => {
+					success: async (res) => {
 						if (res.confirm) {
-							uniCloud.database().collection('task-comments').doc(id).remove().then(e => {
+							try {
+								const taskObj = uniCloud.importObject('task-co')
+								const result = await taskObj.deleteComment({ comment_id: id })
+								if (result.errCode && result.errCode !== 0) {
+									throw new Error(result.errMsg || '删除失败')
+								}
 								uni.showToast({ title: '评论已删除', icon: 'success' })
 								this.loadComments()
-							})
+								this.loadTaskLogs()
+							} catch (err) {
+								console.error('删除评论失败:', err)
+								uni.showToast({ title: '删除失败', icon: 'none' })
+							}
 						}
 					}
 				})

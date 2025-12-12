@@ -143,7 +143,8 @@
 			"path": "uni_modules/uni-id-pages/pages/login/login-withpwd",
 			"style": {
 				"navigationBarTitleText": "",
-				"topWindow": false
+				"topWindow": false,
+				"leftWindow": false
 			}
 		}, {
 			"path": "uni_modules/uni-id-pages/pages/login/login-smscode",
@@ -153,12 +154,16 @@
 		}, {
 			"path": "uni_modules/uni-id-pages/pages/register/register",
 			"style": {
-				"navigationBarTitleText": "注册"
+				"navigationBarTitleText": "注册",
+				"topWindow": false,
+				"leftWindow": false
 			}
 		}, {
 			"path": "uni_modules/uni-id-pages/pages/retrieve/retrieve",
 			"style": {
-				"navigationBarTitleText": "重置密码"
+				"navigationBarTitleText": "重置密码",
+				"topWindow": false,
+				"leftWindow": false
 			}
 		}, {
 			"path": "uni_modules/uni-id-pages/pages/common/webview/webview",

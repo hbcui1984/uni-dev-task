@@ -46,7 +46,7 @@
 				<view class="" style="position: relative;">
 					<view v-show="userInfo.nickname || userInfo.username || userInfo.mobile || userInfo.email"
 						class="navbar-user" @click="togglePopupMenu">
-						<view class="admin-icons-user user-icon" />
+						<uni-icons type="person-filled" size="20" color="#666" class="user-icon"></uni-icons>
 						<view class="username ml-s">
 							<text>{{userInfo.nickname || userInfo.username || userInfo.mobile || userInfo.email}}</text>
 						</view>
@@ -88,7 +88,6 @@
 	} from 'vuex'
 
 	import errorLog from '@/windows/components/error-log.vue'
-	import config from '@/admin.config.js'
 
 	export default {
 		components: {
@@ -107,7 +106,14 @@
 		},
 		data() {
 			return {
-				...config.navBar,
+				logo: '/static/logo.png',
+				themes: [{
+					text: '默认',
+					value: 'default'
+				}, {
+					text: '绿柔',
+					value: 'green'
+				}],
 				popupMenuOpened: false,
 				mpCapsule: 0,
 				currentPath: ''
@@ -546,13 +552,6 @@
 	}
 
 	/* 图标 hover 效果 */
-	.admin-icons-user {
-		transition: all 0.25s ease;
-	}
-
-	.navbar-user:hover .admin-icons-user {
-		color: #42b983;
-	}
 
 	/* uni-icons hover 效果 */
 	:deep(.uni-icons) {
