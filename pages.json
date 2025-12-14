@@ -206,40 +206,6 @@
 				"navigationBarTitleText": "实名认证"
 			}
 		}, {
-			"path": "uni_modules/uni-cms/pages/article/list/list",
-			"style": {
-				"navigationBarTitleText": "文章列表"
-			}
-		}, {
-			"path": "uni_modules/uni-cms/pages/article/add/add",
-			"style": {
-				"leftWindow": false,
-				"navigationBarTitleText": "新增文章"
-				// "topWindow": true
-			}
-		}, {
-			"path": "uni_modules/uni-cms/pages/article/edit/edit",
-			"style": {
-				"leftWindow": false,
-				"navigationBarTitleText": "编辑文章"
-				// "topWindow": true
-			}
-		}, {
-			"path": "uni_modules/uni-cms/pages/categories/list/list",
-			"style": {
-				"navigationBarTitleText": "分类列表"
-			}
-		}, {
-			"path": "uni_modules/uni-cms/pages/categories/add/add",
-			"style": {
-				"navigationBarTitleText": "新增分类"
-			}
-		}, {
-			"path": "uni_modules/uni-cms/pages/categories/edit/edit",
-			"style": {
-				"navigationBarTitleText": "编辑分类"
-			}
-		}, {
 			"path": "uni_modules/uni-media-library/pages/index/index",
 			"style": {
 				"navigationBarTitleText": "媒体库"
@@ -259,6 +225,48 @@
 			}
 		}
 	],
+	"tabBar": {
+		"color": "#6c757d",
+		"selectedColor": "#42b983",
+		"borderStyle": "white",
+		"backgroundColor": "#ffffff",
+		"iconfontSrc": "uni_modules/uni-icons/components/uni-icons/uniicons.ttf",
+		"list": [
+			{
+				"pagePath": "pages/opendb-projects/list",
+				"iconfont": {
+					"text": "\ue6a9",
+					"selectedText": "\ue6c8",
+					"fontSize": "22px",
+					"color": "#6c757d",
+					"selectedColor": "#42b983"
+				},
+				"text": "项目"
+			},
+			{
+				"pagePath": "pages/opendb-task/myTask",
+				"iconfont": {
+					"text": "\ue644",
+					"selectedText": "\ue644",
+					"fontSize": "22px",
+					"color": "#6c757d",
+					"selectedColor": "#42b983"
+				},
+				"text": "我的任务"
+			},
+			{
+				"pagePath": "pages/ucenter/ucenter",
+				"iconfont": {
+					"text": "\ue699",
+					"selectedText": "\ue69d",
+					"fontSize": "22px",
+					"color": "#6c757d",
+					"selectedColor": "#42b983"
+				},
+				"text": "我的"
+			}
+		]
+	},
 	"topWindow": {
 		"path": "windows/topWindow",
 		"style": {

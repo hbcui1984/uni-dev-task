@@ -421,3 +421,98 @@ switch {
 	color: var(--color-primary) !important;
 }
 /* #endif */
+
+/* ===== 移动端响应式变量 ===== */
+:root {
+	/* 安全区域 */
+	--safe-area-top: env(safe-area-inset-top, 0px);
+	--safe-area-bottom: env(safe-area-inset-bottom, 0px);
+	--safe-area-left: env(safe-area-inset-left, 0px);
+	--safe-area-right: env(safe-area-inset-right, 0px);
+
+	/* 触控友好的最小尺寸 */
+	--touch-target-min: 44px;
+	--touch-target-comfortable: 48px;
+
+	/* TabBar 相关 */
+	--tabbar-height: 50px;
+
+	/* 移动端间距 */
+	--spacing-mobile-page: 16px;
+	--spacing-mobile-card: 12px;
+	--spacing-mobile-list: 8px;
+
+	/* 移动端字体 */
+	--font-size-mobile-title: 22px;
+	--font-size-mobile-subtitle: 14px;
+	--font-size-mobile-body: 15px;
+	--font-size-mobile-caption: 12px;
+}
+
+/* ===== 移动端工具类 ===== */
+@media (max-width: 768px) {
+	/* 显示/隐藏 */
+	.hide-mobile { display: none !important; }
+	.show-mobile { display: block !important; }
+	.flex-mobile { display: flex !important; }
+
+	/* 移动端全宽 */
+	.full-width-mobile { width: 100% !important; }
+
+	/* 移动端间距 */
+	.p-mobile { padding: var(--spacing-mobile-page) !important; }
+	.px-mobile {
+		padding-left: var(--spacing-mobile-page) !important;
+		padding-right: var(--spacing-mobile-page) !important;
+	}
+	.py-mobile {
+		padding-top: var(--spacing-mobile-page) !important;
+		padding-bottom: var(--spacing-mobile-page) !important;
+	}
+
+	/* 安全区域底部内边距 */
+	.safe-area-bottom {
+		padding-bottom: calc(var(--spacing-base) + var(--safe-area-bottom)) !important;
+	}
+
+	/* TabBar 底部间距 */
+	.tabbar-safe {
+		padding-bottom: calc(var(--tabbar-height) + var(--safe-area-bottom)) !important;
+	}
+
+	/* 触控区域优化 */
+	.touch-target {
+		min-height: var(--touch-target-min);
+		min-width: var(--touch-target-min);
+	}
+}
+
+/* 桌面端显示/隐藏 */
+@media (min-width: 769px) {
+	.hide-desktop { display: none !important; }
+	.show-desktop { display: block !important; }
+	.flex-desktop { display: flex !important; }
+}
+
+/* 小屏手机优化 (iPhone SE 等) */
+@media (max-width: 375px) {
+	:root {
+		--font-size-base: 13px;
+		--spacing-base: 14px;
+		--spacing-mobile-page: 12px;
+	}
+
+	.compact-mobile {
+		padding: var(--spacing-sm) !important;
+	}
+}
+
+/* ===== H5 端 TabBar 响应式控制 ===== */
+/* #ifdef H5 */
+@media screen and (min-width: 800px) {
+	uni-tabbar,
+	.uni-tabbar {
+		display: none !important;
+	}
+}
+/* #endif */

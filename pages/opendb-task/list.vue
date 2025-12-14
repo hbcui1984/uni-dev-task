@@ -40,8 +40,8 @@
 			</view>
 		</view>
 
-		<!-- 任务操作栏 -->
-		<view class="task-actions">
+		<!-- 任务操作栏 - PC端完整版 -->
+		<view class="task-actions" v-if="isWideScreen">
 			<view class="task-actions__left">
 				<view class="task-label">任务</view>
 				<view class="task-btns">
@@ -62,6 +62,23 @@
 			>
 				<uni-icons type="settings" size="18" color="#fff"></uni-icons>
 				<view v-if="hasActiveFilter" class="filter-badge"></view>
+			</view>
+		</view>
+
+		<!-- 移动端精简操作栏 -->
+		<view class="mobile-task-header" v-else>
+			<view class="mobile-task-label">
+				<text>任务列表</text>
+				<text class="task-total-count" v-if="taskList.length">({{ taskList.length }})</text>
+			</view>
+			<view class="mobile-header-actions">
+				<view
+					class="mobile-filter-btn"
+					:class="{ 'mobile-filter-btn--active': hasActiveFilter }"
+					@click="openFilterPopup"
+				>
+					<uni-icons type="settings" size="18" :color="hasActiveFilter ? '#42b983' : '#6c757d'"></uni-icons>
+				</view>
 			</view>
 		</view>
 
@@ -143,6 +160,11 @@
 				<uni-icons type="checkmarkempty" size="16" color="#42b983"></uni-icons>
 				<text>已完成任务</text>
 			</view>
+		</view>
+
+		<!-- 移动端悬浮添加按钮 FAB -->
+		<view class="mobile-fab" v-if="!isWideScreen" @click="showMobileAddMenu">
+			<uni-icons type="plusempty" size="24" color="#fff"></uni-icons>
 		</view>
 
 		<!-- 设置负责人弹出层 -->
@@ -1025,6 +1047,23 @@
 			// 关闭优先级选择弹窗
 			closePriorityPopup() {
 				this.$refs['popup-priority'].close()
+			},
+
+			// 移动端添加菜单
+			showMobileAddMenu() {
+				uni.showActionSheet({
+					itemList: ['添加任务', '添加分组'],
+					success: (res) => {
+						switch (res.tapIndex) {
+							case 0:
+								this.addTask()
+								break
+							case 1:
+								this.addGroup()
+								break
+						}
+					}
+				})
 			}
 		}
 	}
@@ -1033,6 +1072,7 @@
 <style scoped>
 .container {
 	padding: 0 24px;
+	padding-bottom: 24px;
 	background-color: #f7f8fa;
 	min-height: 100vh;
 	max-width: 1200px;
@@ -1040,10 +1080,19 @@
 	box-sizing: border-box;
 }
 
+/* 移动端适配 */
+@media (max-width: 767px) {
+	.container {
+		padding: 0 12px;
+		padding-bottom: calc(12px + var(--safe-area-bottom, 0px));
+	}
+}
+
 /* 大屏幕适配 */
 @media (min-width: 1200px) {
 	.container {
 		padding: 0 40px;
+		padding-bottom: 40px;
 	}
 }
 
@@ -1129,6 +1178,23 @@
 	margin: 24px var(--spacing-base);
 }
 
+/* 移动端底部链接 */
+@media (max-width: 767px) {
+	.bottom-links {
+		gap: 8px;
+		margin: 16px 0;
+	}
+
+	.bottom-link {
+		padding: 12px 14px;
+		border-radius: 8px;
+	}
+
+	.bottom-link text {
+		font-size: 13px;
+	}
+}
+
 .bottom-link {
 	flex: 1;
 	display: flex;
@@ -1181,6 +1247,47 @@
 	border-radius: 12px;
 	box-shadow: 0 2px 8px rgba(66, 185, 131, 0.25);
 	transition: all 0.25s ease;
+}
+
+/* 移动端操作栏 */
+@media (max-width: 767px) {
+	.task-actions {
+		flex-wrap: wrap;
+		padding: 14px 16px;
+		gap: 12px;
+		margin: 12px 0;
+	}
+
+	.task-actions__left {
+		width: 100%;
+		justify-content: space-between;
+	}
+
+	.task-label {
+		font-size: 14px;
+	}
+
+	.task-label::before {
+		width: 3px;
+		height: 14px;
+		margin-right: 8px;
+	}
+
+	.task-btns {
+		gap: 8px;
+	}
+
+	.add-task-btn,
+	.add-group-btn {
+		padding: 6px 12px !important;
+		font-size: 12px !important;
+	}
+
+	.filter-trigger {
+		position: absolute;
+		right: 28px;
+		top: 14px;
+	}
 }
 
 .task-actions:hover {
@@ -1636,5 +1743,79 @@
 
 .priority-popup__btn:hover {
 	background-color: #e9ecef !important;
+}
+
+/* ===== 移动端精简头部 ===== */
+.mobile-task-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 4px;
+	margin-top: 8px;
+}
+
+.mobile-task-label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.mobile-task-label text:first-child {
+	font-size: 18px;
+	font-weight: 600;
+	color: #2c3e50;
+}
+
+.task-total-count {
+	font-size: 14px;
+	color: #6c757d;
+	font-weight: 500;
+}
+
+.mobile-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.mobile-filter-btn {
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 10px;
+	background-color: #f7f8fa;
+	transition: all 0.2s ease;
+}
+
+.mobile-filter-btn:active {
+	transform: scale(0.95);
+}
+
+.mobile-filter-btn--active {
+	background-color: #e6fcf5;
+}
+
+/* ===== 移动端悬浮添加按钮 FAB ===== */
+.mobile-fab {
+	position: fixed;
+	right: 20px;
+	bottom: calc(80px + var(--safe-area-bottom, 0px));
+	width: 56px;
+	height: 56px;
+	border-radius: 28px;
+	background: linear-gradient(135deg, #42b983 0%, #359568 100%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 16px rgba(66, 185, 131, 0.4);
+	z-index: 100;
+	transition: all 0.25s ease;
+}
+
+.mobile-fab:active {
+	transform: scale(0.92);
+	box-shadow: 0 2px 8px rgba(66, 185, 131, 0.3);
 }
 </style>

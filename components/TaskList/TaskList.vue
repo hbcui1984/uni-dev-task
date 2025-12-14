@@ -9,9 +9,15 @@
           v-for="item in ungroupedTasks"
           :key="item._id"
           class="task-item-wrapper"
-          :class="{ 'task-completing': completingTaskId === item._id }"
+          :class="[
+            { 'task-completing': completingTaskId === item._id },
+            { 'task-item-mobile': !isPC }
+          ]"
           @click="handleTaskClick(item._id)"
         >
+          <!-- 移动端：优先级颜色条 -->
+          <view v-if="!isPC" class="priority-bar" :class="`priority-bar--${item.priority || 0}`"></view>
+
           <!-- PC端悬浮操作按钮 -->
           <view class="task-hover-actions" v-if="isPC">
             <view class="hover-action-btn hover-action-btn--danger" @click.stop="deleteTask(item._id)">
@@ -21,7 +27,34 @@
               <uni-icons type="compose" size="14" color="#6c757d"></uni-icons>
             </view>
           </view>
-          <uni-list-item :clickable="true">
+
+          <!-- 移动端：简化布局 -->
+          <view v-if="!isPC" class="mobile-task-item" @click="handleTaskClick(item._id)">
+            <checkbox @click.stop="finishTask(item._id)" color="#42b983" class="mobile-checkbox" />
+            <view class="mobile-task-content">
+              <view class="mobile-task-title-row">
+                <text class="task-title">{{ item.title }}</text>
+                <view v-if="item.subtaskCount && item.subtaskCount.total > 0" class="subtask-badge">
+                  <uni-icons type="list" size="12" color="#6c757d"></uni-icons>
+                  <text :class="{ 'subtask-all-done': item.subtaskCount.completed === item.subtaskCount.total }">
+                    {{ item.subtaskCount.completed }}/{{ item.subtaskCount.total }}
+                  </text>
+                </view>
+              </view>
+              <view class="mobile-task-meta">
+                <view v-if="item.deadline" class="mobile-deadline" :class="{ 'overdue': isOverdue(item.deadline) }">
+                  {{ formatDeadline(item.deadline) }}
+                </view>
+                <text v-else class="mobile-no-deadline">无截止日期</text>
+              </view>
+            </view>
+            <view class="mobile-action-btn" @click.stop="showMobileActionMenu(item._id)">
+              <uni-icons type="more-filled" size="18" color="#6c757d"></uni-icons>
+            </view>
+          </view>
+
+          <!-- PC端：原有布局 -->
+          <uni-list-item v-else :clickable="true">
             <template v-slot:header>
               <checkbox @click.stop="finishTask(item._id)" color="#42b983" />
             </template>
@@ -147,9 +180,15 @@
           v-for="item in group.tasks"
           :key="item._id"
           class="task-item-wrapper"
-          :class="{ 'task-completing': completingTaskId === item._id }"
+          :class="[
+            { 'task-completing': completingTaskId === item._id },
+            { 'task-item-mobile': !isPC }
+          ]"
           @click="handleTaskClick(item._id)"
         >
+          <!-- 移动端：优先级颜色条 -->
+          <view v-if="!isPC" class="priority-bar" :class="`priority-bar--${item.priority || 0}`"></view>
+
           <!-- PC端悬浮操作按钮 -->
           <view class="task-hover-actions" v-if="isPC">
             <view class="hover-action-btn hover-action-btn--danger" @click.stop="deleteTask(item._id)">
@@ -159,7 +198,34 @@
               <uni-icons type="compose" size="14" color="#6c757d"></uni-icons>
             </view>
           </view>
-          <uni-list-item :clickable="true">
+
+          <!-- 移动端：简化布局 -->
+          <view v-if="!isPC" class="mobile-task-item" @click="handleTaskClick(item._id)">
+            <checkbox @click.stop="finishTask(item._id)" color="#42b983" class="mobile-checkbox" />
+            <view class="mobile-task-content">
+              <view class="mobile-task-title-row">
+                <text class="task-title">{{ item.title }}</text>
+                <view v-if="item.subtaskCount && item.subtaskCount.total > 0" class="subtask-badge">
+                  <uni-icons type="list" size="12" color="#6c757d"></uni-icons>
+                  <text :class="{ 'subtask-all-done': item.subtaskCount.completed === item.subtaskCount.total }">
+                    {{ item.subtaskCount.completed }}/{{ item.subtaskCount.total }}
+                  </text>
+                </view>
+              </view>
+              <view class="mobile-task-meta">
+                <view v-if="item.deadline" class="mobile-deadline" :class="{ 'overdue': isOverdue(item.deadline) }">
+                  {{ formatDeadline(item.deadline) }}
+                </view>
+                <text v-else class="mobile-no-deadline">无截止日期</text>
+              </view>
+            </view>
+            <view class="mobile-action-btn" @click.stop="showMobileActionMenu(item._id)">
+              <uni-icons type="more-filled" size="18" color="#6c757d"></uni-icons>
+            </view>
+          </view>
+
+          <!-- PC端：原有布局 -->
+          <uni-list-item v-else :clickable="true">
             <template v-slot:header>
               <checkbox @click.stop="finishTask(item._id)" color="#42b983" />
             </template>
@@ -515,6 +581,25 @@ export default {
     editTask(taskId) {
       this.$emit('edit-task', taskId)
     },
+    // 移动端操作菜单
+    showMobileActionMenu(taskId) {
+      uni.showActionSheet({
+        itemList: ['完成任务', '编辑任务', '删除任务'],
+        success: (res) => {
+          switch (res.tapIndex) {
+            case 0:
+              this.finishTask(taskId)
+              break
+            case 1:
+              this.editTask(taskId)
+              break
+            case 2:
+              this.deleteTask(taskId)
+              break
+          }
+        }
+      })
+    },
     changePriority(taskId, currentPriority) {
       this.$emit('change-priority', { taskId, priority: currentPriority })
     },
@@ -566,6 +651,28 @@ export default {
 
 .task-item-wrapper :deep(.uni-list-item) {
   flex: 1;
+}
+
+/* 移动端操作按钮 */
+.mobile-action-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #f7f8fa;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.mobile-action-btn:active {
+  background-color: #e6fcf5;
+  transform: translateY(-50%) scale(0.95);
 }
 
 /* PC端悬浮操作按钮 */
@@ -1083,5 +1190,107 @@ export default {
 
 .task-completing :deep(checkbox .uni-checkbox-input::after) {
   border-color: #fff !important;
+}
+
+/* ===== 移动端任务项样式 ===== */
+.task-item-mobile {
+  position: relative;
+  background-color: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.task-item-mobile:last-child {
+  border-bottom: none;
+}
+
+/* 优先级颜色条 */
+.priority-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+}
+
+.priority-bar--0 {
+  background-color: #42b983;
+}
+
+.priority-bar--1 {
+  background-color: #6b7280;
+}
+
+.priority-bar--2 {
+  background-color: #f59e0b;
+}
+
+.priority-bar--3 {
+  background-color: #ef4444;
+}
+
+/* 移动端任务项内容 */
+.mobile-task-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 12px 14px 16px;
+  gap: 12px;
+}
+
+.mobile-checkbox {
+  flex-shrink: 0;
+}
+
+.mobile-task-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-task-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.mobile-task-title-row .task-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-task-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-deadline {
+  font-size: 12px;
+  color: #6c757d;
+  padding: 2px 8px;
+  background-color: #f7f8fa;
+  border-radius: 4px;
+}
+
+.mobile-deadline.overdue {
+  color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.mobile-no-deadline {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* 移动端操作按钮调整 */
+.task-item-mobile .mobile-action-btn {
+  position: relative;
+  right: auto;
+  top: auto;
+  transform: none;
+  flex-shrink: 0;
 }
 </style> 

@@ -1920,6 +1920,69 @@
 	padding: 16px;
 }
 
+/* 移动端适配 */
+@media (max-width: 767px) {
+	.content-wrapper {
+		padding: 12px;
+	}
+
+	.card {
+		margin-bottom: 12px;
+		border-radius: 10px;
+	}
+
+	.card-header {
+		padding: 14px 16px;
+	}
+
+	.card-body {
+		padding: 14px 16px;
+	}
+
+	.task-header-card {
+		padding: 14px 16px;
+	}
+
+	.task-title {
+		font-size: 18px;
+	}
+
+	.task-meta-grid {
+		flex-direction: column;
+		gap: 0;
+	}
+
+	.meta-item {
+		justify-content: space-between;
+		padding: 12px 0;
+		border-bottom: 1px solid #f0f0f0;
+	}
+
+	.meta-item:last-child {
+		border-bottom: none;
+	}
+
+	.meta-label {
+		font-size: 14px;
+	}
+
+	/* 下拉菜单移动端优化 */
+	.assignee-dropdown,
+	.priority-dropdown,
+	.group-dropdown {
+		width: 220px;
+		left: auto;
+		right: 0;
+	}
+
+	/* 防止 iOS 输入框缩放 */
+	input,
+	textarea,
+	.assignee-search-input {
+		font-size: 16px;
+	}
+}
+
 /* ===== PC端页面标题栏 ===== */
 .pc-page-header {
 	display: flex;

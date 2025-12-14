@@ -26,12 +26,6 @@
 				<text class="uer-name" v-else>未登录</text>
 			</view>
 		</view>
-		<uni-grid class="grid" :column="4" :showBorder="false" :square="true">
-			<uni-grid-item class="item" v-for="(item,index) in gridList" @click.native="tapGrid(index)" :key="index">
-				<uni-icons class="icon" color="#42b983" :type="item.icon" size="26"></uni-icons>
-				<text class="text">{{item.text}}</text>
-			</uni-grid-item>
-		</uni-grid>
 		<uni-list class="center-list" v-for="(sublist , index) in ucenterList" :key="index">
 			<uni-list-item v-for="(item,i) in sublist" :title="item.title" link :rightText="item.rightText" :key="i"
 				:clickable="true" :to="item.to" @click="ucenterListClick(item)" :show-extra-icon="true"
@@ -72,23 +66,6 @@
 		// #endif
 		data() {
 			return {
-				gridList: [{
-						"text": "消息",
-						"icon": "chat"
-					},
-					{
-						"text": "上传",
-						"icon": "cloud-upload"
-					},
-					{
-						"text": "联系人",
-						"icon": "contact"
-					},
-					{
-						"text": "下载",
-						"icon": "download"
-					}
-				],
 				ucenterList: [
 					[
 						// #ifdef APP-PLUS
@@ -150,17 +127,7 @@
 						"icon": "info"
 					}]
 					// #endif
-				],
-				listStyles: {
-					"height": "150rpx", // 边框高度
-					"width": "150rpx", // 边框宽度
-					"border": { // 如果为 Boolean 值，可以控制边框显示与否
-						"color": "#eee", // 边框颜色
-						"width": "1px", // 边框宽度
-						"style": "solid", // 边框样式
-						"radius": "100%" // 边框圆角，支持百分比
-					}
-				}
+				]
 			}
 		},
 		onLoad() {
@@ -228,12 +195,6 @@
 				uni.navigateTo({
 					url: '/uni_modules/uni-id-pages/pages/userinfo/userinfo'
 				})
-			},
-			tapGrid(index) {
-				uni.showToast({
-					title: '你点击了第 ' + (index + 1) + ' 个',
-					icon: 'none'
-				});
 			},
 			/**
 			 * 去应用市场评分
@@ -475,29 +436,8 @@
 		height: 40rpx;
 	}
 
-	.grid {
-		background-color: #FFFFFF;
-		margin-bottom: 20rpx;
-		border-radius: 12px;
-		margin-left: 24rpx;
-		margin-right: 24rpx;
-		box-shadow: 0 2px 8px rgba(66, 185, 131, 0.08);
-		overflow: hidden;
-	}
-
-	/* PC 端 grid 优化 */
+	/* PC 端列表优化 */
 	@media screen and (min-width: 768px) {
-		.grid {
-			margin-left: 48rpx;
-			margin-right: 48rpx;
-			margin-bottom: 28rpx;
-			border-radius: 14px;
-		}
-
-		.uni-grid .text {
-			font-size: 15px;
-		}
-
 		.center-list {
 			margin-left: 48rpx;
 			margin-right: 48rpx;
@@ -507,56 +447,12 @@
 	}
 
 	@media screen and (min-width: 1200px) {
-		.grid {
-			margin-left: 64rpx;
-			margin-right: 64rpx;
-			margin-bottom: 32rpx;
-			border-radius: 16px;
-		}
-
-		.uni-grid .text {
-			font-size: 16px;
-		}
-
-		.uni-grid .item ::v-deep .uni-grid-item__box {
-			padding: 32rpx 0;
-		}
-
 		.center-list {
 			margin-left: 64rpx;
 			margin-right: 64rpx;
 			margin-bottom: 32rpx;
 			border-radius: 16px;
 		}
-	}
-
-	.uni-grid .text {
-		font-size: 14px;
-		height: 25px;
-		line-height: 25px;
-		color: #6c757d;
-		font-weight: 500;
-	}
-
-	.uni-grid .item ::v-deep .uni-grid-item__box {
-		justify-content: center;
-		align-items: center;
-		transition: all 0.25s ease;
-		padding: 20rpx 0;
-	}
-
-	.uni-grid .item:active ::v-deep .uni-grid-item__box {
-		background-color: #f0fdf7;
-	}
-
-	/* 图标颜色 */
-	.icon {
-		transition: all 0.25s ease;
-	}
-
-	.item:active .icon {
-		color: #42b983 !important;
-		transform: scale(1.1);
 	}
 
 	/* 列表样式优化 */

@@ -111,14 +111,24 @@
 		min-height: 100vh;
 		background: linear-gradient(to bottom, #fafdfb, #f7f8fa);
 		padding: 24px;
+		padding-bottom: calc(24px + var(--tabbar-height, 50px) + var(--safe-area-bottom, 0px));
 		max-width: 1400px;
 		margin: 0 auto;
+	}
+
+	/* 移动端容器优化 */
+	@media screen and (max-width: 767px) {
+		.container {
+			padding: 16px;
+			padding-bottom: calc(16px + var(--tabbar-height, 50px) + var(--safe-area-bottom, 0px));
+		}
 	}
 
 	/* PC 端容器优化 */
 	@media screen and (min-width: 768px) {
 		.container {
 			padding: 32px 48px;
+			padding-bottom: 32px;
 		}
 	}
 
@@ -194,6 +204,38 @@
 	.header-actions {
 		display: flex;
 		gap: 12px;
+	}
+
+	/* 移动端头部和按钮优化 */
+	@media screen and (max-width: 767px) {
+		.uni-header {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 16px;
+			padding: 16px;
+		}
+
+		.header-title {
+			text-align: center;
+		}
+
+		.title-text {
+			font-size: 20px;
+		}
+
+		.title-subtitle {
+			font-size: 12px;
+		}
+
+		.header-actions {
+			flex-direction: column;
+			gap: 10px;
+		}
+
+		.header-actions .uni-button {
+			width: 100%;
+			padding: 14px 20px;
+		}
 	}
 
 	.uni-button {

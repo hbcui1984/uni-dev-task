@@ -563,9 +563,16 @@ export default {
 	min-height: 100vh;
 	background: linear-gradient(to bottom, #fafdfb, #f7f8fa);
 	padding: 24px;
+	padding-bottom: calc(24px + var(--tabbar-height, 50px) + var(--safe-area-bottom, 0px));
+
+	@media screen and (max-width: 767px) {
+		padding: 16px;
+		padding-bottom: calc(16px + var(--tabbar-height, 50px) + var(--safe-area-bottom, 0px));
+	}
 
 	@media screen and (min-width: 768px) {
 		padding: 32px 48px;
+		padding-bottom: 32px;
 		max-width: 1200px;
 		margin: 0 auto;
 	}
@@ -576,12 +583,23 @@ export default {
 	display: flex;
 	align-items: baseline;
 	gap: 12px;
+
+	@media screen and (max-width: 767px) {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+		margin-bottom: 16px;
+	}
 }
 
 .page-title {
 	font-size: 24px;
 	font-weight: 700;
 	color: #2c3e50;
+
+	@media screen and (max-width: 767px) {
+		font-size: 22px;
+	}
 
 	@media screen and (min-width: 768px) {
 		font-size: 28px;
@@ -773,6 +791,11 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	flex-wrap: wrap;
+
+	@media screen and (max-width: 767px) {
+		gap: 6px;
+	}
 }
 
 .deadline {

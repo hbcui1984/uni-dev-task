@@ -4,9 +4,11 @@
 
 // 屏幕宽度断点常量
 export const BREAKPOINTS = {
-	MOBILE: 768,    // 移动端
-	TABLET: 800,    // 平板/窄屏PC
-	DESKTOP: 1200   // 宽屏PC
+	SMALL_MOBILE: 375,  // 小屏手机 (iPhone SE 等)
+	MOBILE: 768,        // 移动端
+	TABLET: 800,        // 平板/窄屏PC
+	LARGE_TABLET: 992,  // 大平板
+	DESKTOP: 1200       // 宽屏PC
 }
 
 /**
@@ -25,6 +27,15 @@ export function getWindowWidth() {
  */
 export function isWideScreen() {
 	return getWindowWidth() >= BREAKPOINTS.TABLET
+}
+
+/**
+ * 判断是否为小屏手机（<=375px）
+ * 适用于 iPhone SE 等小屏设备的特殊处理
+ * @returns {boolean}
+ */
+export function isSmallMobile() {
+	return getWindowWidth() <= BREAKPOINTS.SMALL_MOBILE
 }
 
 /**
@@ -52,6 +63,9 @@ export const responsiveMixin = {
 		isWideScreen() {
 			return isWideScreen()
 		},
+		isSmallMobile() {
+			return isSmallMobile()
+		},
 		isMobile() {
 			return isMobile()
 		},
@@ -65,6 +79,7 @@ export default {
 	BREAKPOINTS,
 	getWindowWidth,
 	isWideScreen,
+	isSmallMobile,
 	isMobile,
 	isDesktop,
 	responsiveMixin
