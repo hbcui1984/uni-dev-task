@@ -68,10 +68,10 @@
 										<text class="task-title">{{ task.title }}</text>
 									</view>
 									<view class="task-meta">
-										<view v-if="task.deadline" class="deadline" :class="{ 'overdue': isOverdue(task.deadline) }">
-											{{ formatDeadline(task.deadline) }}
+										<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, $event)">
+											{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 										</view>
-										<text class="priority-tag" :class="`priority-${task.priority || 0}`">
+										<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task, $event)">
 											{{ getPriorityText(task.priority) }}
 										</text>
 										<view class="assignee">
@@ -111,10 +111,10 @@
 											<text class="task-title">{{ child.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view v-if="child.deadline" class="deadline" :class="{ 'overdue': isOverdue(child.deadline) }">
-												{{ formatDeadline(child.deadline) }}
+											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }" @click.stop="openDeadlineEditor(child, $event)">
+												{{ child.deadline ? formatDeadline(child.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag" :class="`priority-${child.priority || 0}`">
+											<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="openPriorityEditor(child, $event)">
 												{{ getPriorityText(child.priority) }}
 											</text>
 											<view class="assignee">
@@ -155,10 +155,10 @@
 										<text class="task-title">{{ task.title }}</text>
 									</view>
 									<view class="task-meta">
-										<view v-if="task.deadline" class="deadline" :class="{ 'overdue': isOverdue(task.deadline) }">
-											{{ formatDeadline(task.deadline) }}
+										<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, $event)">
+											{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 										</view>
-										<text class="priority-tag" :class="`priority-${task.priority || 0}`">
+										<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task, $event)">
 											{{ getPriorityText(task.priority) }}
 										</text>
 										<view class="assignee">
@@ -198,10 +198,10 @@
 											<text class="task-title">{{ child.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view v-if="child.deadline" class="deadline" :class="{ 'overdue': isOverdue(child.deadline) }">
-												{{ formatDeadline(child.deadline) }}
+											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }" @click.stop="openDeadlineEditor(child, $event)">
+												{{ child.deadline ? formatDeadline(child.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag" :class="`priority-${child.priority || 0}`">
+											<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="openPriorityEditor(child, $event)">
 												{{ getPriorityText(child.priority) }}
 											</text>
 											<view class="assignee">
@@ -219,14 +219,21 @@
 				</view>
 			</view>
 		</view>
+
+		<!-- 快速编辑组件 -->
+		<TaskQuickEdit ref="quickEdit" @update="onQuickEditUpdate" />
 	</view>
 </template>
 
 <script>
 import { formatDeadline, isOverdue, getPriorityText, getAvatarColor } from '@/utils/task.js'
 import { getCurrentUser } from '@/utils/auth.js'
+import TaskQuickEdit from '@/components/TaskQuickEdit/TaskQuickEdit.vue'
 
 export default {
+	components: {
+		TaskQuickEdit
+	},
 	data() {
 		return {
 			loading: true,
@@ -553,7 +560,24 @@ export default {
 		formatDeadline,
 		isOverdue,
 		getPriorityText,
-		getAvatarColor
+		getAvatarColor,
+
+		// ========== 快速编辑 ==========
+
+		openDeadlineEditor(task, event) {
+			if (event) event.stopPropagation()
+			this.$refs.quickEdit.openDeadlineEditor(task)
+		},
+
+		openPriorityEditor(task, event) {
+			if (event) event.stopPropagation()
+			this.$refs.quickEdit.openPriorityEditor(task)
+		},
+
+		onQuickEditUpdate(data) {
+			// 数据已更新，刷新列表
+			this.loadMyTasks()
+		}
 	}
 }
 </script>
@@ -810,6 +834,32 @@ export default {
 .deadline.overdue {
 	color: #e74c3c;
 	background-color: #fdecea;
+}
+
+/* 可点击的截止日期和优先级样式 */
+.deadline--clickable {
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.deadline--clickable:hover {
+	background-color: #e6fcf5;
+	color: #42b983;
+}
+
+.deadline--clickable.overdue:hover {
+	background-color: #fad4d4;
+}
+
+.priority-tag--clickable {
+	cursor: pointer;
+	padding: 4px 10px;
+	border-radius: 6px;
+	transition: all 0.2s ease;
+}
+
+.priority-tag--clickable:hover {
+	background-color: #f0f0f0;
 }
 
 /* 列表项样式优化 */
