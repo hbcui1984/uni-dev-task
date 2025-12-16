@@ -197,12 +197,28 @@
 				}
 			},
 			navTo(path) {
-				uni.navigateTo({
-					url: path,
-					complete: () => {
-						this.currentPath = path
-					}
-				})
+				// TabBar 页面需要使用 switchTab
+				const tabBarPages = [
+					'/pages/opendb-projects/list',
+					'/pages/opendb-task/myTask',
+					'/pages/ucenter/ucenter'
+				]
+
+				if (tabBarPages.includes(path)) {
+					uni.switchTab({
+						url: path,
+						complete: () => {
+							this.currentPath = path
+						}
+					})
+				} else {
+					uni.navigateTo({
+						url: path,
+						complete: () => {
+							this.currentPath = path
+						}
+					})
+				}
 			},
 			changeTheme(e) {
 				const index = typeof e === 'object' ? e.detail.value : e
