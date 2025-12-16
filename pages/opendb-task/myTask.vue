@@ -90,10 +90,10 @@
 											<text class="task-title">{{ task.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view v-if="task.deadline" class="deadline" :class="{ 'overdue': isOverdue(task.deadline) }">
-												{{ formatDeadline(task.deadline) }}
+											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, $event)">
+												{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag" :class="`priority-${task.priority || 0}`">
+											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task, $event)">
 												{{ getPriorityText(task.priority) }}
 											</text>
 											<view class="assignee">
@@ -177,10 +177,10 @@
 											<text class="task-title">{{ task.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view v-if="task.deadline" class="deadline" :class="{ 'overdue': isOverdue(task.deadline) }">
-												{{ formatDeadline(task.deadline) }}
+											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, $event)">
+												{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag" :class="`priority-${task.priority || 0}`">
+											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task, $event)">
 												{{ getPriorityText(task.priority) }}
 											</text>
 											<view class="assignee">
