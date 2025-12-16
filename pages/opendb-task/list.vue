@@ -239,37 +239,15 @@
 			</view>
 		</uni-popup>
 
-		<!-- 优先级选择弹出层 -->
-		<uni-popup ref="popup-priority" type="center" background-color="#fff">
-			<view class="priority-popup">
-				<view class="priority-popup__header">
-					<text class="priority-popup__title">选择优先级</text>
-				</view>
-				<view class="priority-popup__content">
-					<view
-						v-for="item in priorityList"
-						:key="item.value"
-						class="priority-option"
-						:class="{ 'priority-option--selected': currentTaskPriority === item.value }"
-						@click="selectPriority(item.value)"
-					>
-						<view class="priority-option__tag" :class="`priority-${item.value}`">
-							{{ item.text }}
-						</view>
-						<uni-icons v-if="currentTaskPriority === item.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
-					</view>
-				</view>
-				<view class="priority-popup__footer">
-					<button class="priority-popup__btn" @click="closePriorityPopup">取消</button>
-				</view>
-			</view>
-		</uni-popup>
+		<!-- 任务快速编辑组件（优先级、截止日期） -->
+		<TaskQuickEdit ref="quickEdit" @update="onQuickEditUpdate" />
 	</view>
 </template>
 
 <script>
 	import CustomNavBar from '@/components/CustomNavBar/CustomNavBar.vue'
 	import TaskList from '@/components/TaskList/TaskList.vue'
+	import TaskQuickEdit from '@/components/TaskQuickEdit/TaskQuickEdit.vue'
 	import errorHandler from '@/utils/errorHandler.js'
 	import performanceUtils from '@/utils/performance.js'
 	import { responsiveMixin } from '@/utils/responsive.js'
@@ -279,7 +257,8 @@
 	export default {
 		components: {
 			CustomNavBar,
-			TaskList
+			TaskList,
+			TaskQuickEdit
 		},
 		mixins: [responsiveMixin],
 		data() {
@@ -312,14 +291,6 @@
 				filterPriority: '',
 				priorityOptions: [
 					{ value: '', text: '全部' },
-					{ value: 0, text: '较低' },
-					{ value: 1, text: '普通' },
-					{ value: 2, text: '较高' },
-					{ value: 3, text: '最高' }
-				],
-				// 优先级选择弹窗相关
-				currentTaskPriority: 1,
-				priorityList: [
 					{ value: 0, text: '较低' },
 					{ value: 1, text: '普通' },
 					{ value: 2, text: '较高' },
@@ -1008,45 +979,25 @@
 				return colors[index]
 			},
 
-			// 打开优先级选择弹窗
+			// 打开优先级选择弹窗（使用 TaskQuickEdit 组件）
 			openPriorityPopup({ taskId, priority }) {
-				this.currentTaskId = taskId
-				this.currentTaskPriority = priority ?? 1
-				this.$refs['popup-priority'].open()
+				const task = this.taskList.find(t => t._id === taskId)
+				if (task) {
+					this.$refs.quickEdit.openPriorityEditor(task)
+				}
 			},
 
-			// 选择优先级
-			async selectPriority(priority) {
-				if (priority === this.currentTaskPriority) {
-					this.closePriorityPopup()
-					return
-				}
-
-				try {
-					const db = uniCloud.database()
-					await db.collection('opendb-task').doc(this.currentTaskId).update({
-						priority: priority
-					})
-
-					// 更新本地数据
-					const taskIndex = this.taskList.findIndex(task => task._id === this.currentTaskId)
-					if (taskIndex !== -1) {
-						this.taskList[taskIndex].priority = priority
+			// 快速编辑更新回调
+			onQuickEditUpdate(data) {
+				const { type, taskId, value } = data
+				const taskIndex = this.taskList.findIndex(task => task._id === taskId)
+				if (taskIndex !== -1) {
+					if (type === 'priority') {
+						this.taskList[taskIndex].priority = value
+					} else if (type === 'deadline') {
+						this.taskList[taskIndex].deadline = value
 					}
-
-					this.closePriorityPopup()
-					uni.showToast({
-						title: '优先级已更新',
-						icon: 'success'
-					})
-				} catch (error) {
-					errorHandler.handleError(error, { showToast: true })
 				}
-			},
-
-			// 关闭优先级选择弹窗
-			closePriorityPopup() {
-				this.$refs['popup-priority'].close()
 			},
 
 			// 移动端添加菜单
@@ -1648,101 +1599,6 @@
 /* uni-popup 样式优化 */
 :deep(.uni-popup__wrapper) {
 	border-radius: 12px !important;
-}
-
-/* 优先级选择弹出层 */
-.priority-popup {
-	width: 280px;
-	border-radius: 12px;
-	overflow: hidden;
-}
-
-.priority-popup__header {
-	padding: 16px 20px;
-	border-bottom: 1px solid #f0f0f0;
-	text-align: center;
-}
-
-.priority-popup__title {
-	font-size: 16px;
-	font-weight: 600;
-	color: #2c3e50;
-}
-
-.priority-popup__content {
-	padding: 12px 16px;
-}
-
-.priority-option {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 12px 16px;
-	border-radius: 8px;
-	cursor: pointer;
-	transition: all 0.2s ease;
-	margin-bottom: 8px;
-}
-
-.priority-option:last-child {
-	margin-bottom: 0;
-}
-
-.priority-option:hover {
-	background-color: #f7f8fa;
-}
-
-.priority-option--selected {
-	background-color: #e6fcf5;
-}
-
-.priority-option__tag {
-	padding: 4px 12px;
-	border-radius: 6px;
-	font-size: 13px;
-	font-weight: 500;
-}
-
-.priority-option__tag.priority-0 {
-	background-color: #e6fcf5;
-	color: #42b983;
-}
-
-.priority-option__tag.priority-1 {
-	background-color: #f3f4f6;
-	color: #6b7280;
-}
-
-.priority-option__tag.priority-2 {
-	background-color: #fef3c7;
-	color: #d97706;
-}
-
-.priority-option__tag.priority-3 {
-	background-color: #fee2e2;
-	color: #dc2626;
-}
-
-.priority-popup__footer {
-	padding: 12px 16px;
-	border-top: 1px solid #f0f0f0;
-	background-color: #fafafa;
-}
-
-.priority-popup__btn {
-	width: 100%;
-	padding: 10px 0 !important;
-	border-radius: 8px !important;
-	font-size: 14px !important;
-	font-weight: 500 !important;
-	background-color: #f7f8fa !important;
-	color: #6c757d !important;
-	border: 1px solid #e9ecef !important;
-	transition: all 0.2s ease !important;
-}
-
-.priority-popup__btn:hover {
-	background-color: #e9ecef !important;
 }
 
 /* ===== 移动端精简头部 ===== */
