@@ -3,13 +3,15 @@
  *
  * 功能说明：
  * - 提供优先级快速选择弹窗
- * - 提供截止日期快速选择（PC端原生日期选择器，移动端picker-view）
+ * - 提供截止日期快速选择（使用 uni-datetime-picker）
+ * - 提供负责人快速切换
  * - 可被任何需要快速编辑任务的页面复用
  *
  * 使用方式：
  * 1. 在页面中引入组件：<TaskQuickEdit ref="quickEdit" @update="onTaskUpdate" />
  * 2. 调用方法：this.$refs.quickEdit.openPriorityEditor(task)
  * 3. 调用方法：this.$refs.quickEdit.openDeadlineEditor(task)
+ * 4. 调用方法：this.$refs.quickEdit.openAssigneeEditor(task, members)
 -->
 <template>
 	<view class="task-quick-edit">
@@ -39,29 +41,56 @@
 			</view>
 		</uni-popup>
 
-		<!-- 移动端日期选择弹出层 -->
-		<uni-popup ref="popup-deadline" type="bottom">
-			<view class="deadline-popup">
-				<view class="deadline-popup__header">
-					<text class="deadline-popup__cancel" @click="closeDeadlinePopup">取消</text>
-					<text class="deadline-popup__title">选择截止日期</text>
-					<text class="deadline-popup__confirm" @click="confirmDeadline">确定</text>
+		<!-- 隐藏的日期选择器 -->
+		<picker
+			ref="datePicker"
+			mode="date"
+			:value="selectedDate"
+			@change="onDeadlineChange"
+			style="position: absolute; left: -9999px; opacity: 0;"
+		>
+			<view>隐藏的日期选择器</view>
+		</picker>
+
+		<!-- 负责人选择弹出层 -->
+		<uni-popup ref="popup-assignee" type="center" background-color="#fff">
+			<view class="assignee-popup">
+				<view class="assignee-popup__header">
+					<text class="assignee-popup__title">选择负责人</text>
 				</view>
-				<view class="deadline-popup__content">
-					<picker-view :value="datePickerValue" @change="onDatePickerChange" class="date-picker-view">
-						<picker-view-column>
-							<view v-for="year in yearRange" :key="year" class="picker-item">{{ year }}年</view>
-						</picker-view-column>
-						<picker-view-column>
-							<view v-for="month in 12" :key="month" class="picker-item">{{ month }}月</view>
-						</picker-view-column>
-						<picker-view-column>
-							<view v-for="day in daysInMonth" :key="day" class="picker-item">{{ day }}日</view>
-						</picker-view-column>
-					</picker-view>
+				<view class="assignee-popup__content">
+					<view
+						class="assignee-option"
+						:class="{ 'assignee-option--selected': !currentAssignee }"
+						@click="selectAssignee('')"
+					>
+						<view class="assignee-option__info">
+							<view class="assignee-option__avatar assignee-option__avatar--empty">
+								<uni-icons type="person" size="16" color="#999"></uni-icons>
+							</view>
+							<text class="assignee-option__name">不指定</text>
+						</view>
+						<uni-icons v-if="!currentAssignee" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+					</view>
+					<view
+						v-for="member in memberList"
+						:key="member.value"
+						class="assignee-option"
+						:class="{ 'assignee-option--selected': currentAssignee === member.value }"
+						@click="selectAssignee(member.value)"
+					>
+						<view class="assignee-option__info">
+							<image v-if="member.avatar" :src="member.avatar" class="assignee-option__avatar" mode="aspectFill"></image>
+							<view v-else class="assignee-option__avatar assignee-option__avatar--text" :style="{ backgroundColor: getAvatarColor(member.text) }">
+								{{ member.text.slice(0, 1) }}
+							</view>
+							<text class="assignee-option__name">{{ member.text }}</text>
+						</view>
+						<uni-icons v-if="currentAssignee === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+					</view>
 				</view>
-				<view class="deadline-popup__actions">
-					<button class="deadline-popup__clear" @click="clearDeadline">清除截止日期</button>
+				<view class="assignee-popup__footer">
+					<button class="assignee-popup__btn" @click="closeAssigneePopup">取消</button>
 				</view>
 			</view>
 		</uni-popup>
@@ -69,40 +98,32 @@
 </template>
 
 <script>
+import { getAvatarColor } from '@/utils/task.js'
+
 export default {
 	name: 'TaskQuickEdit',
 	data() {
 		return {
 			currentTaskId: '',
+			currentProjectId: '',
+			// 优先级
 			currentPriority: 1,
-			currentDeadline: null,
 			priorityList: [
 				{ value: 0, text: '较低' },
 				{ value: 1, text: '普通' },
 				{ value: 2, text: '较高' },
 				{ value: 3, text: '最高' }
 			],
-			// 日期选择器相关
-			datePickerValue: [0, 0, 0],
-			selectedYear: new Date().getFullYear(),
-			selectedMonth: new Date().getMonth() + 1,
-			selectedDay: new Date().getDate()
-		}
-	},
-	computed: {
-		yearRange() {
-			const currentYear = new Date().getFullYear()
-			const years = []
-			for (let i = currentYear; i <= currentYear + 5; i++) {
-				years.push(i)
-			}
-			return years
-		},
-		daysInMonth() {
-			return new Date(this.selectedYear, this.selectedMonth, 0).getDate()
+			// 截止日期
+			selectedDate: '',
+			// 负责人
+			currentAssignee: '',
+			memberList: []
 		}
 	},
 	methods: {
+		getAvatarColor,
+
 		// ========== 优先级编辑 ==========
 
 		/**
@@ -157,17 +178,31 @@ export default {
 		/**
 		 * 打开截止日期选择器
 		 * @param {Object} task - 任务对象，需要包含 _id 和 deadline
+		 * @param {Object} position - 点击位置，格式 { left: number, top: number }
 		 */
-		openDeadlineEditor(task) {
+		openDeadlineEditor(task, position) {
 			this.currentTaskId = task._id
-			this.currentDeadline = task.deadline
+			const currentDeadline = task.deadline
+
+			// 将时间戳转换为日期字符串
+			if (currentDeadline) {
+				const date = new Date(currentDeadline)
+				this.selectedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+			} else {
+				this.selectedDate = ''
+			}
 
 			// PC 端使用原生日期选择器
 			if (this.isPC()) {
-				this.openNativeDatePicker(task.deadline)
+				this.openPCDatePicker(currentDeadline, position)
 			} else {
-				// 移动端使用 picker-view
-				this.openMobileDatePicker(task.deadline)
+				// 移动端触发隐藏的 picker
+				this.$nextTick(() => {
+					const pickerElement = this.$refs.datePicker
+					if (pickerElement) {
+						pickerElement.$el && pickerElement.$el.click()
+					}
+				})
 			}
 		},
 
@@ -178,19 +213,35 @@ export default {
 			return false
 		},
 
-		openNativeDatePicker(currentDeadline) {
+		openPCDatePicker(currentDeadline, position) {
 			// #ifdef H5
 			const input = document.createElement('input')
 			input.type = 'date'
 			input.style.position = 'fixed'
-			input.style.left = '-9999px'
-			document.body.appendChild(input)
+			input.style.width = '1px'
+			input.style.height = '1px'
+			input.style.border = 'none'
+			input.style.padding = '0'
+			input.style.margin = '0'
+			input.style.zIndex = '9999'
+			input.style.opacity = '0'
+
+			// 使用传入的位置
+			let left = '50%'
+			let top = '50%'
+
+			if (position && position.left !== undefined && position.top !== undefined) {
+				left = position.left + 'px'
+				top = position.top + 'px'
+			}
+
+			input.style.left = left
+			input.style.top = top
 
 			input.value = currentDeadline ? new Date(currentDeadline).toISOString().split('T')[0] : ''
 
 			input.onchange = async (e) => {
-				const value = e.target.value
-				await this.saveDeadline(value)
+				await this.saveDeadline(e.target.value)
 				if (input.parentNode) {
 					document.body.removeChild(input)
 				}
@@ -204,48 +255,23 @@ export default {
 				}, 200)
 			}
 
+			document.body.appendChild(input)
+
 			setTimeout(() => {
-				input.showPicker ? input.showPicker() : input.click()
+				try {
+					input.showPicker()
+				} catch (e) {
+					console.error('showPicker error:', e)
+					input.focus()
+					input.click()
+				}
 			}, 0)
 			// #endif
 		},
 
-		openMobileDatePicker(currentDeadline) {
-			const date = currentDeadline ? new Date(currentDeadline) : new Date()
-			this.selectedYear = date.getFullYear()
-			this.selectedMonth = date.getMonth() + 1
-			this.selectedDay = date.getDate()
-
-			const yearIndex = this.yearRange.indexOf(this.selectedYear)
-			this.datePickerValue = [
-				yearIndex >= 0 ? yearIndex : 0,
-				this.selectedMonth - 1,
-				this.selectedDay - 1
-			]
-
-			this.$refs['popup-deadline'].open()
-		},
-
-		onDatePickerChange(e) {
-			const values = e.detail.value
-			this.selectedYear = this.yearRange[values[0]]
-			this.selectedMonth = values[1] + 1
-			this.selectedDay = values[2] + 1
-		},
-
-		async confirmDeadline() {
-			const dateStr = `${this.selectedYear}-${String(this.selectedMonth).padStart(2, '0')}-${String(this.selectedDay).padStart(2, '0')}`
-			await this.saveDeadline(dateStr)
-			this.closeDeadlinePopup()
-		},
-
-		async clearDeadline() {
-			await this.saveDeadline(null)
-			this.closeDeadlinePopup()
-		},
-
-		closeDeadlinePopup() {
-			this.$refs['popup-deadline'].close()
+		async onDeadlineChange(e) {
+			const value = e.detail.value
+			await this.saveDeadline(value)
 		},
 
 		async saveDeadline(value) {
@@ -258,7 +284,7 @@ export default {
 				})
 
 				uni.showToast({
-					title: value ? '截止日期已更新' : '截止日期已清除',
+					title: deadline ? '截止日期已更新' : '截止日期已清除',
 					icon: 'success'
 				})
 
@@ -275,6 +301,90 @@ export default {
 					icon: 'none'
 				})
 			}
+		},
+
+		// ========== 负责人编辑 ==========
+
+		/**
+		 * 打开负责人选择器
+		 * @param {Object} task - 任务对象，需要包含 _id, assignee, project_id
+		 * @param {Array} members - 成员列表，格式：[{ value: userId, text: nickname, avatar: url }]
+		 */
+		async openAssigneeEditor(task, members) {
+			this.currentTaskId = task._id
+			this.currentProjectId = task.project_id
+			this.currentAssignee = task.assignee || ''
+
+			// 如果传入了成员列表，直接使用
+			if (members && members.length > 0) {
+				this.memberList = members
+				this.$refs['popup-assignee'].open()
+			} else if (task.project_id) {
+				// 否则根据项目ID加载成员
+				await this.loadProjectMembers(task.project_id)
+				this.$refs['popup-assignee'].open()
+			} else {
+				uni.showToast({
+					title: '无法获取成员列表',
+					icon: 'none'
+				})
+			}
+		},
+
+		async loadProjectMembers(projectId) {
+			try {
+				const projectObj = uniCloud.importObject('project-co')
+				const res = await projectObj.getMembersList(projectId)
+				this.memberList = res.map(member => ({
+					value: member._id,
+					text: member.nickname,
+					avatar: member.avatar
+				}))
+			} catch (e) {
+				console.error('加载项目成员失败:', e)
+				this.memberList = []
+			}
+		},
+
+		async selectAssignee(assigneeId) {
+			if (assigneeId === this.currentAssignee) {
+				this.closeAssigneePopup()
+				return
+			}
+
+			try {
+				const db = uniCloud.database()
+				await db.collection('opendb-task').doc(this.currentTaskId).update({
+					assignee: assigneeId || ''
+				})
+
+				this.closeAssigneePopup()
+				uni.showToast({
+					title: assigneeId ? '负责人已更新' : '已移除负责人',
+					icon: 'success'
+				})
+
+				// 获取负责人信息
+				const member = this.memberList.find(m => m.value === assigneeId)
+
+				// 通知父组件更新
+				this.$emit('update', {
+					type: 'assignee',
+					taskId: this.currentTaskId,
+					value: assigneeId,
+					memberInfo: member || null
+				})
+			} catch (error) {
+				console.error('更新负责人失败:', error)
+				uni.showToast({
+					title: '更新失败',
+					icon: 'none'
+				})
+			}
+		},
+
+		closeAssigneePopup() {
+			this.$refs['popup-assignee'].close()
 		}
 	}
 }
@@ -372,70 +482,97 @@ export default {
 	border-radius: 8px;
 }
 
-/* 日期选择弹窗样式 */
-.deadline-popup {
+/* 负责人弹窗样式 */
+.assignee-popup {
+	width: 300px;
+	max-height: 70vh;
 	background-color: #fff;
-	border-radius: 16px 16px 0 0;
+	border-radius: 12px;
 	overflow: hidden;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.deadline-popup__header {
+.assignee-popup__header {
+	padding: 16px;
+	border-bottom: 1px solid #f1f3f5;
+	text-align: center;
+}
+
+.assignee-popup__title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #2c3e50;
+}
+
+.assignee-popup__content {
+	max-height: 300px;
+	overflow-y: auto;
+	padding: 8px 0;
+}
+
+.assignee-option {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 16px 20px;
-	border-bottom: 1px solid #f1f3f5;
+	padding: 10px 16px;
+	cursor: pointer;
+	transition: all 0.2s ease;
 }
 
-.deadline-popup__cancel,
-.deadline-popup__confirm {
-	font-size: 15px;
-	padding: 4px 8px;
+.assignee-option:hover {
+	background-color: #f7f8fa;
 }
 
-.deadline-popup__cancel {
-	color: #6c757d;
+.assignee-option--selected {
+	background-color: #e6fcf5;
 }
 
-.deadline-popup__confirm {
-	color: #42b983;
-	font-weight: 600;
+.assignee-option__info {
+	display: flex;
+	align-items: center;
+	gap: 12px;
 }
 
-.deadline-popup__title {
-	font-size: 16px;
-	font-weight: 600;
-	color: #2c3e50;
+.assignee-option__avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	flex-shrink: 0;
 }
 
-.deadline-popup__content {
-	padding: 0 20px;
-}
-
-.date-picker-view {
-	height: 200px;
-}
-
-.picker-item {
+.assignee-option__avatar--text {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 16px;
+	font-size: 14px;
+	color: #fff;
+	font-weight: 500;
+}
+
+.assignee-option__avatar--empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #f1f3f5;
+}
+
+.assignee-option__name {
+	font-size: 14px;
 	color: #2c3e50;
 }
 
-.deadline-popup__actions {
-	padding: 16px 20px;
-	padding-bottom: calc(16px + env(safe-area-inset-bottom));
+.assignee-popup__footer {
+	padding: 12px 16px;
+	border-top: 1px solid #f1f3f5;
 }
 
-.deadline-popup__clear {
+.assignee-popup__btn {
 	width: 100%;
-	height: 44px;
-	line-height: 44px;
+	height: 40px;
+	line-height: 40px;
 	font-size: 14px;
-	color: #e74c3c;
-	background-color: #fdecea;
+	color: #6c757d;
+	background-color: #f7f8fa;
 	border: none;
 	border-radius: 8px;
 }

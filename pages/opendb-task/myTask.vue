@@ -68,13 +68,13 @@
 										<text class="task-title">{{ task.title }}</text>
 									</view>
 									<view class="task-meta">
-										<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, $event)">
+										<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
 											{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 										</view>
-										<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task, $event)">
+										<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task)">
 											{{ getPriorityText(task.priority) }}
 										</text>
-										<view class="assignee">
+										<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
 											<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
 											<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
 												{{ userNickname.slice(0,1) }}
@@ -90,13 +90,13 @@
 											<text class="task-title">{{ task.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, $event)">
+											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
 												{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task, $event)">
+											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task)">
 												{{ getPriorityText(task.priority) }}
 											</text>
-											<view class="assignee">
+											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
 												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
 												<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
 													{{ userNickname.slice(0,1) }}
@@ -111,13 +111,13 @@
 											<text class="task-title">{{ child.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }" @click.stop="openDeadlineEditor(child, $event)">
+											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }" @click.stop="openDeadlineEditor(child, project._id, $event)">
 												{{ child.deadline ? formatDeadline(child.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="openPriorityEditor(child, $event)">
+											<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="openPriorityEditor(child)">
 												{{ getPriorityText(child.priority) }}
 											</text>
-											<view class="assignee">
+											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(child, project._id)">
 												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
 												<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
 													{{ userNickname.slice(0,1) }}
@@ -155,13 +155,13 @@
 										<text class="task-title">{{ task.title }}</text>
 									</view>
 									<view class="task-meta">
-										<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, $event)">
+										<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
 											{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 										</view>
-										<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task, $event)">
+										<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task)">
 											{{ getPriorityText(task.priority) }}
 										</text>
-										<view class="assignee">
+										<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
 											<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
 											<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
 												{{ userNickname.slice(0,1) }}
@@ -177,13 +177,13 @@
 											<text class="task-title">{{ task.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, $event)">
+											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
 												{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task, $event)">
+											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task)">
 												{{ getPriorityText(task.priority) }}
 											</text>
-											<view class="assignee">
+											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
 												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
 												<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
 													{{ userNickname.slice(0,1) }}
@@ -198,13 +198,13 @@
 											<text class="task-title">{{ child.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }" @click.stop="openDeadlineEditor(child, $event)">
+											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }" @click.stop="openDeadlineEditor(child, project._id, $event)">
 												{{ child.deadline ? formatDeadline(child.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="openPriorityEditor(child, $event)">
+											<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="openPriorityEditor(child)">
 												{{ getPriorityText(child.priority) }}
 											</text>
-											<view class="assignee">
+											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(child, project._id)">
 												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
 												<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
 													{{ userNickname.slice(0,1) }}
@@ -564,14 +564,127 @@ export default {
 
 		// ========== 快速编辑 ==========
 
-		openDeadlineEditor(task, event) {
-			if (event) event.stopPropagation()
-			this.$refs.quickEdit.openDeadlineEditor(task)
+		// 判断是否 PC 端
+		isPC() {
+			// #ifdef H5
+			return window.innerWidth >= 768
+			// #endif
+			return false
 		},
 
-		openPriorityEditor(task, event) {
-			if (event) event.stopPropagation()
+		openDeadlineEditor(task, projectId, event) {
+			const taskId = task._id
+			const currentDeadline = task.deadline
+
+			// PC端：直接在这里处理，参考 TaskList.vue 的实现
+			if (this.isPC()) {
+				// #ifdef H5
+				const input = document.createElement('input')
+				input.type = 'date'
+				input.style.position = 'fixed'
+				input.style.width = '1px'
+				input.style.height = '1px'
+				input.style.border = 'none'
+				input.style.padding = '0'
+				input.style.margin = '0'
+				input.style.zIndex = '9999'
+
+				// 获取点击位置
+				let left = '50%'
+				let top = '50%'
+
+				try {
+					// uni-app 事件包装
+					if (event && event.mp && event.mp.currentTarget) {
+						const rect = event.mp.currentTarget.getBoundingClientRect()
+						left = rect.left + 'px'
+						top = rect.bottom + 'px'
+					} else if (event && event.currentTarget && typeof event.currentTarget.getBoundingClientRect === 'function') {
+						const rect = event.currentTarget.getBoundingClientRect()
+						left = rect.left + 'px'
+						top = rect.bottom + 'px'
+					} else if (event && event.target && typeof event.target.getBoundingClientRect === 'function') {
+						const rect = event.target.getBoundingClientRect()
+						left = rect.left + 'px'
+						top = rect.bottom + 'px'
+					} else if (event && event.detail) {
+						left = (event.detail.x || event.detail.clientX || window.innerWidth / 2) + 'px'
+						top = (event.detail.y || event.detail.clientY || window.innerHeight / 2) + 'px'
+					}
+				} catch (e) {
+					console.warn('无法获取点击位置', e)
+				}
+
+				input.style.left = left
+				input.style.top = top
+				input.value = currentDeadline ? new Date(currentDeadline).toISOString().split('T')[0] : ''
+
+				input.onchange = async (e) => {
+					await this.saveDeadline(taskId, e.target.value)
+					if (input.parentNode) {
+						document.body.removeChild(input)
+					}
+				}
+
+				input.onblur = () => {
+					setTimeout(() => {
+						if (input.parentNode) {
+							document.body.removeChild(input)
+						}
+					}, 200)
+				}
+
+				document.body.appendChild(input)
+
+				setTimeout(() => {
+					try {
+						input.showPicker()
+					} catch (e) {
+						input.focus()
+						input.click()
+					}
+				}, 0)
+				// #endif
+			} else {
+				// 移动端：使用 TaskQuickEdit 组件
+				const taskWithProject = { ...task, project_id: projectId }
+				this.$refs.quickEdit.openDeadlineEditor(taskWithProject, null)
+			}
+		},
+
+		async saveDeadline(taskId, value) {
+			try {
+				const db = uniCloud.database()
+				const deadline = value ? new Date(value).getTime() : null
+
+				await db.collection('opendb-task').doc(taskId).update({
+					deadline: deadline
+				})
+
+				uni.showToast({
+					title: deadline ? '截止日期已更新' : '截止日期已清除',
+					icon: 'success'
+				})
+
+				// 刷新列表
+				this.loadMyTasks()
+			} catch (error) {
+				console.error('更新截止日期失败:', error)
+				uni.showToast({
+					title: '更新失败',
+					icon: 'none'
+				})
+			}
+		},
+
+		openPriorityEditor(task) {
 			this.$refs.quickEdit.openPriorityEditor(task)
+		},
+
+		openAssigneeEditor(task, projectId) {
+			// 确保 task 有 project_id
+			const taskWithProject = { ...task, project_id: projectId }
+			this.$refs.quickEdit.openAssigneeEditor(taskWithProject)
 		},
 
 		onQuickEditUpdate(data) {
@@ -860,6 +973,18 @@ export default {
 
 .priority-tag--clickable:hover {
 	background-color: #f0f0f0;
+}
+
+.assignee--clickable {
+	cursor: pointer;
+	padding: 4px;
+	margin: -4px;
+	border-radius: 50%;
+	transition: all 0.2s ease;
+}
+
+.assignee--clickable:hover {
+	background-color: #e6fcf5;
 }
 
 /* 列表项样式优化 */
