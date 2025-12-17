@@ -811,7 +811,12 @@
 
 			handleLoad(data, ended, pagination) {
 				this.detailLoaded = true
-				this.assignee = data.assignee ? data.assignee : ''
+				// 兼容 JQL 联表数组格式和字符串格式
+				this.assignee = data.assignee
+					? (Array.isArray(data.assignee) && data.assignee.length > 0
+						? data.assignee[0]._id
+						: data.assignee)
+					: ''
 				this.deadline = data.deadline ? this.formatDate(data.deadline) : '';
 				this.oldDeadline = this.deadline;
 				this.attachments = data.attachments ? data.attachments : [];

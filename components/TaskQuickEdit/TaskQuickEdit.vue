@@ -310,12 +310,11 @@ export default {
 		 * @param {Object} task - 任务对象，需要包含 _id, assignee, project_id
 		 * @param {Array} members - 成员列表，格式：[{ value: userId, text: nickname, avatar: url }]
 		 */
-		// 获取 assignee ID，兼容字符串和数组格式
+		// 获取 assignee ID（JQL联表后为数组格式 [{_id, nickname}]）
 		getAssigneeId(assignee) {
 			if (!assignee) return ''
-			if (typeof assignee === 'string') return assignee
 			if (Array.isArray(assignee) && assignee.length > 0) {
-				return assignee[0]._id || assignee[0] || ''
+				return assignee[0]._id || ''
 			}
 			return ''
 		},

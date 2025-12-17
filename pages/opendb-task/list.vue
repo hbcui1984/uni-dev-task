@@ -609,35 +609,43 @@
 				})
 			},
 
-			// 处理设置负责人（内联下拉选择）
-			async handleSetAssignee({ taskId, memberId }) {
-				try {
-					const db = uniCloud.database()
-					await db.collection('opendb-task').doc(taskId).update({
-						assignee: memberId || ''
-					})
+			// 处理设置负责人（内联下拉选择）- 乐观更新
+			handleSetAssignee({ taskId, memberId }) {
+				const taskIndex = this.taskList.findIndex(task => task._id === taskId)
+				if (taskIndex === -1) return
 
-					// 更新本地数据
-					const taskIndex = this.taskList.findIndex(task => task._id === taskId)
-					if (taskIndex !== -1) {
-						if (memberId) {
-							const member = this.members.find(m => m.value === memberId)
-							this.taskList[taskIndex].assignee = [{
-								_id: memberId,
-								nickname: member?.text || '未知'
-							}]
-						} else {
-							this.taskList[taskIndex].assignee = []
-						}
-					}
+				// 保存旧值用于回滚
+				const oldAssignee = this.taskList[taskIndex].assignee
 
-					uni.showToast({
-						title: memberId ? '设置成功' : '已移除负责人',
-						icon: 'success'
-					})
-				} catch (error) {
-					errorHandler.handleError(error, { showToast: true })
+				// 乐观更新 UI
+				if (memberId) {
+					const member = this.members.find(m => m.value === memberId)
+					this.taskList[taskIndex].assignee = [{
+						_id: memberId,
+						nickname: member?.text || '未知'
+					}]
+				} else {
+					this.taskList[taskIndex].assignee = []
 				}
+
+				uni.showToast({
+					title: memberId ? '设置成功' : '已移除负责人',
+					icon: 'success'
+				})
+
+				// 后台同步到服务器
+				const db = uniCloud.database()
+				db.collection('opendb-task').doc(taskId).update({
+					assignee: memberId || ''
+				}).catch(error => {
+					// 失败时回滚
+					this.taskList[taskIndex].assignee = oldAssignee
+					uni.showToast({
+						title: '更新失败，已恢复',
+						icon: 'none'
+					})
+					console.error('更新负责人失败:', error)
+				})
 			},
 
 			// 打开负责人设置弹窗（保留作为备用）

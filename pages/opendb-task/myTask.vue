@@ -539,42 +539,27 @@ export default {
 					})
 				}
 
-				// 查询父任务信息
+				// 查询父任务信息（使用 JQL 联表查询获取负责人信息）
 				let parentTaskMap = {}
 				if (parentIds.length > 0) {
-					const { result: parentResult } = await db.collection('opendb-task')
-						.where({
-							_id: dbCmd.in(parentIds)
-						})
+					const taskTemp = db.collection('opendb-task')
+						.where({ _id: dbCmd.in(parentIds) })
 						.field('_id,title,assignee,group_id')
+						.getTemp()
+					const userTemp = db.collection('uni-id-users')
+						.field('_id,nickname')
+						.getTemp()
+
+					const { result: parentResult } = await db.collection(taskTemp, userTemp)
 						.get()
 
 					parentResult.data.forEach(p => {
+						// JQL联表后 assignee 是数组格式 [{_id, nickname}]
+						if (Array.isArray(p.assignee) && p.assignee.length > 0) {
+							p.assigneeName = p.assignee[0].nickname
+						}
 						parentTaskMap[p._id] = p
 					})
-
-					// 获取父任务负责人信息
-					const parentAssigneeIds = [...new Set(parentResult.data.map(p => p.assignee).filter(Boolean))]
-					if (parentAssigneeIds.length > 0) {
-						const { result: userResult } = await db.collection('uni-id-users')
-							.where({
-								_id: dbCmd.in(parentAssigneeIds)
-							})
-							.field('_id,nickname')
-							.get()
-
-						const userMap = {}
-						userResult.data.forEach(u => {
-							userMap[u._id] = u
-						})
-
-						// 将负责人名称添加到父任务
-						Object.values(parentTaskMap).forEach(p => {
-							if (p.assignee && userMap[p.assignee]) {
-								p.assigneeName = userMap[p.assignee].nickname
-							}
-						})
-					}
 				}
 
 				// 过滤掉已删除项目的任务（项目不存在于 projectMap 中的任务）
@@ -1071,42 +1056,98 @@ export default {
 			this.assigneeSearchKeyword = ''
 		},
 
-		async selectAssignee(taskId, memberId) {
-			const oldAssigneeId = this.currentAssigneeId
-			const oldMember = this.memberList.find(m => m.value === oldAssigneeId)
+		// 切换负责人 - 乐观更新
+		selectAssignee(taskId, memberId) {
+			const oldMember = this.memberList.find(m => m.value === this.currentAssigneeId)
 			const newMember = this.memberList.find(m => m.value === memberId)
 			const oldName = oldMember ? oldMember.text : '无'
 			const newName = newMember ? newMember.text : '无'
 
-			try {
-				const db = uniCloud.database()
-				await db.collection('opendb-task').doc(taskId).update({
-					assignee: memberId || ''
-				})
+			// 立即关闭下拉框并显示提示
+			this.closeAssigneeDropdown()
+			uni.showToast({
+				title: `负责人: ${oldName} → ${newName}`,
+				icon: 'none',
+				duration: 2000
+			})
 
-				this.closeAssigneeDropdown()
+			// 乐观更新：如果负责人不再是自己，从列表中移除任务
+			let removedTaskData = null
+			let removedFromProject = null
+			let removedFromGroup = null
 
-				uni.showToast({
-					title: `负责人: ${oldName} → ${newName}`,
-					icon: 'none',
-					duration: 2000
-				})
-
-				// 负责人变更后，任务可能不再属于"我的任务"
-				if (memberId !== this.userId) {
-					// 重新加载列表
-					this.loadMyTasks()
-				} else {
-					// 局部更新
-					this.updateLocalTask(taskId, { assignee: memberId })
-				}
-			} catch (error) {
-				console.error('更新负责人失败:', error)
-				uni.showToast({
-					title: '更新失败',
-					icon: 'none'
+			if (memberId !== this.userId) {
+				// 保存任务数据以便回滚
+				const result = this.findAndRemoveTask(taskId)
+				removedTaskData = result.task
+				removedFromProject = result.projectId
+				removedFromGroup = result.groupId
+			} else {
+				// 局部更新 assignee
+				this.updateLocalTask(taskId, {
+					assignee: [{
+						_id: memberId,
+						nickname: newMember?.text || '未知'
+					}]
 				})
 			}
+
+			// 后台同步到服务器
+			const db = uniCloud.database()
+			db.collection('opendb-task').doc(taskId).update({
+				assignee: memberId || ''
+			}).catch(error => {
+				console.error('更新负责人失败:', error)
+				uni.showToast({
+					title: '更新失败，已恢复',
+					icon: 'none'
+				})
+				// 回滚：恢复被移除的任务或重新加载
+				if (removedTaskData) {
+					this.loadMyTasks() // 简单回滚方式
+				}
+			})
+		},
+
+		// 查找并移除任务（返回任务数据用于回滚）
+		findAndRemoveTask(taskId) {
+			for (const project of this.projectList) {
+				// 检查未分组任务
+				const ungroupedIndex = project.ungroupedTasks.findIndex(t => t._id === taskId)
+				if (ungroupedIndex !== -1) {
+					const task = project.ungroupedTasks.splice(ungroupedIndex, 1)[0]
+					return { task, projectId: project._id, groupId: null }
+				}
+				// 检查子任务
+				for (const parentTask of project.ungroupedTasks) {
+					if (parentTask.children) {
+						const childIndex = parentTask.children.findIndex(c => c._id === taskId)
+						if (childIndex !== -1) {
+							const task = parentTask.children.splice(childIndex, 1)[0]
+							return { task, projectId: project._id, groupId: null, parentId: parentTask._id }
+						}
+					}
+				}
+				// 检查分组任务
+				for (const group of project.groups) {
+					const taskIndex = group.tasks.findIndex(t => t._id === taskId)
+					if (taskIndex !== -1) {
+						const task = group.tasks.splice(taskIndex, 1)[0]
+						return { task, projectId: project._id, groupId: group._id }
+					}
+					// 检查分组内的子任务
+					for (const parentTask of group.tasks) {
+						if (parentTask.children) {
+							const childIndex = parentTask.children.findIndex(c => c._id === taskId)
+							if (childIndex !== -1) {
+								const task = parentTask.children.splice(childIndex, 1)[0]
+								return { task, projectId: project._id, groupId: group._id, parentId: parentTask._id }
+							}
+						}
+					}
+				}
+			}
+			return { task: null, projectId: null, groupId: null }
 		},
 
 		onQuickEditUpdate(data) {

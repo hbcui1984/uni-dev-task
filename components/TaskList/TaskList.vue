@@ -502,18 +502,22 @@ export default {
       this.$emit('set-assignee', { taskId, memberId })
       this.closeAssigneeDropdown()
     },
+    // 获取负责人ID（JQL联表后为数组格式 [{_id, nickname}]）
     getCurrentAssigneeId(assignee) {
       if (!assignee) return null
-      // 兼容字符串格式和数组格式
-      if (typeof assignee === 'string') {
-        return assignee
-      }
       if (Array.isArray(assignee) && assignee.length > 0) {
-        return assignee[0]._id || assignee[0]
+        return assignee[0]._id
       }
       return null
     },
+    // 获取负责人头像
     getAssigneeAvatar(assignee) {
+      if (!assignee) return null
+      // 优先从联表数据获取
+      if (Array.isArray(assignee) && assignee.length > 0 && assignee[0].avatar_file?.url) {
+        return assignee[0].avatar_file.url
+      }
+      // 从 members 列表获取
       const assigneeId = this.getCurrentAssigneeId(assignee)
       if (!assigneeId) return null
       const member = this.members.find(m => m.value === assigneeId)
@@ -615,16 +619,18 @@ export default {
       return formatDeadline(deadline) || '设置截止日期'
     },
     isOverdue,
+    // 获取负责人名称（JQL联表后为数组格式 [{_id, nickname}]）
     getAssigneeName(assignee) {
+      if (!assignee) return '未分配'
+      // 优先从联表数据获取
+      if (Array.isArray(assignee) && assignee.length > 0 && assignee[0].nickname) {
+        return assignee[0].nickname
+      }
+      // 从 members 列表获取
       const assigneeId = this.getCurrentAssigneeId(assignee)
       if (!assigneeId) return '未分配'
       const member = this.members.find(m => m.value === assigneeId)
-      if (member) return member.text
-      // 如果是数组格式，尝试获取 nickname
-      if (Array.isArray(assignee) && assignee[0]?.nickname) {
-        return assignee[0].nickname
-      }
-      return '未知'
+      return member?.text || '未知'
     },
     getPriorityText,
     editGroup(group) {

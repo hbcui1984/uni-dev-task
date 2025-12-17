@@ -209,14 +209,19 @@
 						this.totalCount = countRes.result.total
 					}
 
-					// 查询数据，按完成时间倒序
-					const { result } = await db.collection('opendb-task')
+					// 查询数据，使用 JQL 联表获取负责人信息
+					const taskTemp = db.collection('opendb-task')
 						.where(where)
 						.field('_id,title,assignee,group_id,completion_date,create_date')
 						.orderBy('completion_date desc, create_date desc')
 						.skip((this.page - 1) * this.pageSize)
 						.limit(this.pageSize)
-						.get()
+						.getTemp()
+					const userTemp = db.collection('uni-id-users')
+						.field('_id,nickname')
+						.getTemp()
+
+					const { result } = await db.collection(taskTemp, userTemp).get()
 
 					if (clear) {
 						this.tasks = result.data
@@ -326,10 +331,13 @@
 				})
 			},
 
-			// 获取负责人名称
-			getAssigneeName(assigneeId) {
-				if (!assigneeId) return ''
-				return this.memberMap[assigneeId] || ''
+			// 获取负责人名称（JQL联表后为数组格式 [{_id, nickname}]）
+			getAssigneeName(assignee) {
+				if (!assignee) return ''
+				if (Array.isArray(assignee) && assignee.length > 0) {
+					return assignee[0].nickname || ''
+				}
+				return ''
 			},
 
 			// 获取分组名称
