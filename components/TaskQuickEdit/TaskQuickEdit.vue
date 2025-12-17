@@ -310,10 +310,20 @@ export default {
 		 * @param {Object} task - 任务对象，需要包含 _id, assignee, project_id
 		 * @param {Array} members - 成员列表，格式：[{ value: userId, text: nickname, avatar: url }]
 		 */
+		// 获取 assignee ID，兼容字符串和数组格式
+		getAssigneeId(assignee) {
+			if (!assignee) return ''
+			if (typeof assignee === 'string') return assignee
+			if (Array.isArray(assignee) && assignee.length > 0) {
+				return assignee[0]._id || assignee[0] || ''
+			}
+			return ''
+		},
+
 		async openAssigneeEditor(task, members) {
 			this.currentTaskId = task._id
 			this.currentProjectId = task.project_id
-			this.currentAssignee = task.assignee || ''
+			this.currentAssignee = this.getAssigneeId(task.assignee)
 
 			// 如果传入了成员列表，直接使用
 			if (members && members.length > 0) {
@@ -353,6 +363,12 @@ export default {
 			}
 
 			try {
+				// 获取原负责人和新负责人信息
+				const oldMember = this.memberList.find(m => m.value === this.currentAssignee)
+				const newMember = this.memberList.find(m => m.value === assigneeId)
+				const oldName = oldMember ? oldMember.text : '无'
+				const newName = newMember ? newMember.text : '无'
+
 				const db = uniCloud.database()
 				await db.collection('opendb-task').doc(this.currentTaskId).update({
 					assignee: assigneeId || ''
@@ -360,19 +376,19 @@ export default {
 
 				this.closeAssigneePopup()
 				uni.showToast({
-					title: assigneeId ? '负责人已更新' : '已移除负责人',
-					icon: 'success'
+					title: `负责人: ${oldName} → ${newName}`,
+					icon: 'none',
+					duration: 2000
 				})
-
-				// 获取负责人信息
-				const member = this.memberList.find(m => m.value === assigneeId)
 
 				// 通知父组件更新
 				this.$emit('update', {
 					type: 'assignee',
 					taskId: this.currentTaskId,
 					value: assigneeId,
-					memberInfo: member || null
+					oldAssignee: this.currentAssignee,
+					oldMemberInfo: oldMember || null,
+					memberInfo: newMember || null
 				})
 			} catch (error) {
 				console.error('更新负责人失败:', error)

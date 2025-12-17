@@ -220,9 +220,33 @@ module.exports = {
 				changes.push(`截止日期：${formatDate(oldData.deadline)} → ${formatDate(updateData.deadline)}`)
 			}
 
-			// 6. 负责人变化（只记录ID变化，前端需要根据ID显示名称）
+			// 6. 负责人变化
 			if ('assignee' in updateData && updateData.assignee !== oldData.assignee) {
-				changes.push(`负责人已变更`)
+				// 查询新旧负责人名称
+				let oldAssigneeName = '无'
+				let newAssigneeName = '无'
+
+				const userIds = [oldData.assignee, updateData.assignee].filter(Boolean)
+				if (userIds.length > 0) {
+					const userRes = await db.collection('uni-id-users')
+						.where({ _id: db.command.in(userIds) })
+						.field({ _id: true, nickname: true })
+						.get()
+
+					const userMap = {}
+					for (const user of userRes.data || []) {
+						userMap[user._id] = user.nickname || '未知用户'
+					}
+
+					if (oldData.assignee && userMap[oldData.assignee]) {
+						oldAssigneeName = userMap[oldData.assignee]
+					}
+					if (updateData.assignee && userMap[updateData.assignee]) {
+						newAssigneeName = userMap[updateData.assignee]
+					}
+				}
+
+				changes.push(`负责人：${oldAssigneeName} → ${newAssigneeName}`)
 			}
 
 			// 7. 分组变化

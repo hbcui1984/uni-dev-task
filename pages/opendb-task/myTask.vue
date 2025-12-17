@@ -12,6 +12,9 @@
 -->
 <template>
 	<view class="my-task-page">
+		<!-- 点击遮罩关闭下拉框 -->
+		<view v-if="openAssigneeTaskId || openPriorityTaskId" class="dropdown-backdrop" @click="closeAllDropdowns"></view>
+
 		<!-- 页面标题 -->
 		<view class="page-header">
 			<text class="page-title">我的任务</text>
@@ -71,13 +74,45 @@
 										<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
 											{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 										</view>
-										<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task)">
-											{{ getPriorityText(task.priority) }}
-										</text>
-										<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
-											<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
-											<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
-												{{ userNickname.slice(0,1) }}
+										<view class="priority-wrapper">
+											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="togglePriorityDropdown(task)">
+												{{ getPriorityText(task.priority) }}
+											</text>
+											<view v-if="openPriorityTaskId === task._id" class="priority-dropdown" @click.stop>
+												<view v-for="opt in priorityOptions" :key="opt.value" class="priority-option" :class="{ 'priority-option--selected': currentPriority === opt.value }" @click.stop="selectPriority(task._id, opt.value)">
+													<view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
+													<text class="priority-option-label">{{ opt.label }}</text>
+													<uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
+												</view>
+											</view>
+										</view>
+										<view class="assignee-wrapper">
+											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
+												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
+												<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
+													{{ userNickname.slice(0,1) }}
+												</view>
+											</view>
+											<!-- 负责人下拉选择 -->
+											<view v-if="openAssigneeTaskId === task._id" class="assignee-dropdown" @click.stop>
+												<view class="assignee-dropdown-search">
+													<uni-icons type="search" size="16" color="#999"></uni-icons>
+													<input type="text" v-model="assigneeSearchKeyword" placeholder="输入关键字查询" class="assignee-search-input" />
+													<uni-icons type="person" size="16" color="#999"></uni-icons>
+												</view>
+												<scroll-view scroll-y class="assignee-dropdown-list">
+													<view class="assignee-option" :class="{ 'assignee-option--selected': !currentAssigneeId }" @click.stop="selectAssignee(task._id, null)">
+														<view class="assignee-option-avatar assignee-option-avatar--empty"><uni-icons type="person" size="20" color="#42b983"></uni-icons></view>
+														<text class="assignee-option-name">无负责人</text>
+														<uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+													</view>
+													<view v-for="member in filteredMembers" :key="member.value" class="assignee-option" :class="{ 'assignee-option--selected': currentAssigneeId === member.value }" @click.stop="selectAssignee(task._id, member.value)">
+														<image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
+														<view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">{{ member.text.slice(0,1) }}</view>
+														<text class="assignee-option-name">{{ member.text }}</text>
+														<uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+													</view>
+												</scroll-view>
 											</view>
 										</view>
 									</view>
@@ -93,13 +128,45 @@
 											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
 												{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task)">
-												{{ getPriorityText(task.priority) }}
-											</text>
-											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
-												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
-												<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
-													{{ userNickname.slice(0,1) }}
+											<view class="priority-wrapper">
+												<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="togglePriorityDropdown(task)">
+													{{ getPriorityText(task.priority) }}
+												</text>
+												<view v-if="openPriorityTaskId === task._id" class="priority-dropdown" @click.stop>
+													<view v-for="opt in priorityOptions" :key="opt.value" class="priority-option" :class="{ 'priority-option--selected': currentPriority === opt.value }" @click.stop="selectPriority(task._id, opt.value)">
+														<view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
+														<text class="priority-option-label">{{ opt.label }}</text>
+														<uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
+													</view>
+												</view>
+											</view>
+											<view class="assignee-wrapper">
+												<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
+													<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
+													<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
+														{{ userNickname.slice(0,1) }}
+													</view>
+												</view>
+												<!-- 负责人下拉选择 -->
+												<view v-if="openAssigneeTaskId === task._id" class="assignee-dropdown" @click.stop>
+													<view class="assignee-dropdown-search">
+														<uni-icons type="search" size="16" color="#999"></uni-icons>
+														<input type="text" v-model="assigneeSearchKeyword" placeholder="输入关键字查询" class="assignee-search-input" />
+														<uni-icons type="person" size="16" color="#999"></uni-icons>
+													</view>
+													<scroll-view scroll-y class="assignee-dropdown-list">
+														<view class="assignee-option" :class="{ 'assignee-option--selected': !currentAssigneeId }" @click.stop="selectAssignee(task._id, null)">
+															<view class="assignee-option-avatar assignee-option-avatar--empty"><uni-icons type="person" size="20" color="#42b983"></uni-icons></view>
+															<text class="assignee-option-name">无负责人</text>
+															<uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+														</view>
+														<view v-for="member in filteredMembers" :key="member.value" class="assignee-option" :class="{ 'assignee-option--selected': currentAssigneeId === member.value }" @click.stop="selectAssignee(task._id, member.value)">
+															<image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
+															<view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">{{ member.text.slice(0,1) }}</view>
+															<text class="assignee-option-name">{{ member.text }}</text>
+															<uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+														</view>
+													</scroll-view>
 												</view>
 											</view>
 										</view>
@@ -114,13 +181,45 @@
 											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }" @click.stop="openDeadlineEditor(child, project._id, $event)">
 												{{ child.deadline ? formatDeadline(child.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="openPriorityEditor(child)">
-												{{ getPriorityText(child.priority) }}
-											</text>
-											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(child, project._id)">
-												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
-												<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
-													{{ userNickname.slice(0,1) }}
+											<view class="priority-wrapper">
+												<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="togglePriorityDropdown(child)">
+													{{ getPriorityText(child.priority) }}
+												</text>
+												<view v-if="openPriorityTaskId === child._id" class="priority-dropdown" @click.stop>
+													<view v-for="opt in priorityOptions" :key="opt.value" class="priority-option" :class="{ 'priority-option--selected': currentPriority === opt.value }" @click.stop="selectPriority(child._id, opt.value)">
+														<view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
+														<text class="priority-option-label">{{ opt.label }}</text>
+														<uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
+													</view>
+												</view>
+											</view>
+											<view class="assignee-wrapper">
+												<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(child, project._id)">
+													<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
+													<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
+														{{ userNickname.slice(0,1) }}
+													</view>
+												</view>
+												<!-- 负责人下拉选择 -->
+												<view v-if="openAssigneeTaskId === child._id" class="assignee-dropdown" @click.stop>
+													<view class="assignee-dropdown-search">
+														<uni-icons type="search" size="16" color="#999"></uni-icons>
+														<input type="text" v-model="assigneeSearchKeyword" placeholder="输入关键字查询" class="assignee-search-input" />
+														<uni-icons type="person" size="16" color="#999"></uni-icons>
+													</view>
+													<scroll-view scroll-y class="assignee-dropdown-list">
+														<view class="assignee-option" :class="{ 'assignee-option--selected': !currentAssigneeId }" @click.stop="selectAssignee(child._id, null)">
+															<view class="assignee-option-avatar assignee-option-avatar--empty"><uni-icons type="person" size="20" color="#42b983"></uni-icons></view>
+															<text class="assignee-option-name">无负责人</text>
+															<uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+														</view>
+														<view v-for="member in filteredMembers" :key="member.value" class="assignee-option" :class="{ 'assignee-option--selected': currentAssigneeId === member.value }" @click.stop="selectAssignee(child._id, member.value)">
+															<image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
+															<view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">{{ member.text.slice(0,1) }}</view>
+															<text class="assignee-option-name">{{ member.text }}</text>
+															<uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+														</view>
+													</scroll-view>
 												</view>
 											</view>
 										</view>
@@ -158,13 +257,44 @@
 										<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
 											{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 										</view>
-										<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task)">
-											{{ getPriorityText(task.priority) }}
-										</text>
-										<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
-											<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
-											<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
-												{{ userNickname.slice(0,1) }}
+										<view class="priority-wrapper">
+											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="togglePriorityDropdown(task)">
+												{{ getPriorityText(task.priority) }}
+											</text>
+											<view v-if="openPriorityTaskId === task._id" class="priority-dropdown" @click.stop>
+												<view v-for="opt in priorityOptions" :key="opt.value" class="priority-option" :class="{ 'priority-option--selected': currentPriority === opt.value }" @click.stop="selectPriority(task._id, opt.value)">
+													<view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
+													<text class="priority-option-label">{{ opt.label }}</text>
+													<uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
+												</view>
+											</view>
+										</view>
+										<view class="assignee-wrapper">
+											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
+												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
+												<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
+													{{ userNickname.slice(0,1) }}
+												</view>
+											</view>
+											<view v-if="openAssigneeTaskId === task._id" class="assignee-dropdown" @click.stop>
+												<view class="assignee-dropdown-search">
+													<uni-icons type="search" size="16" color="#999"></uni-icons>
+													<input type="text" v-model="assigneeSearchKeyword" placeholder="输入关键字查询" class="assignee-search-input" />
+													<uni-icons type="person" size="16" color="#999"></uni-icons>
+												</view>
+												<scroll-view scroll-y class="assignee-dropdown-list">
+													<view class="assignee-option" :class="{ 'assignee-option--selected': !currentAssigneeId }" @click.stop="selectAssignee(task._id, null)">
+														<view class="assignee-option-avatar assignee-option-avatar--empty"><uni-icons type="person" size="20" color="#42b983"></uni-icons></view>
+														<text class="assignee-option-name">无负责人</text>
+														<uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+													</view>
+													<view v-for="member in filteredMembers" :key="member.value" class="assignee-option" :class="{ 'assignee-option--selected': currentAssigneeId === member.value }" @click.stop="selectAssignee(task._id, member.value)">
+														<image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
+														<view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">{{ member.text.slice(0,1) }}</view>
+														<text class="assignee-option-name">{{ member.text }}</text>
+														<uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+													</view>
+												</scroll-view>
 											</view>
 										</view>
 									</view>
@@ -180,13 +310,44 @@
 											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
 												{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="openPriorityEditor(task)">
-												{{ getPriorityText(task.priority) }}
-											</text>
-											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
-												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
-												<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
-													{{ userNickname.slice(0,1) }}
+											<view class="priority-wrapper">
+												<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="togglePriorityDropdown(task)">
+													{{ getPriorityText(task.priority) }}
+												</text>
+												<view v-if="openPriorityTaskId === task._id" class="priority-dropdown" @click.stop>
+													<view v-for="opt in priorityOptions" :key="opt.value" class="priority-option" :class="{ 'priority-option--selected': currentPriority === opt.value }" @click.stop="selectPriority(task._id, opt.value)">
+														<view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
+														<text class="priority-option-label">{{ opt.label }}</text>
+														<uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
+													</view>
+												</view>
+											</view>
+											<view class="assignee-wrapper">
+												<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
+													<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
+													<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
+														{{ userNickname.slice(0,1) }}
+													</view>
+												</view>
+												<view v-if="openAssigneeTaskId === task._id" class="assignee-dropdown" @click.stop>
+													<view class="assignee-dropdown-search">
+														<uni-icons type="search" size="16" color="#999"></uni-icons>
+														<input type="text" v-model="assigneeSearchKeyword" placeholder="输入关键字查询" class="assignee-search-input" />
+														<uni-icons type="person" size="16" color="#999"></uni-icons>
+													</view>
+													<scroll-view scroll-y class="assignee-dropdown-list">
+														<view class="assignee-option" :class="{ 'assignee-option--selected': !currentAssigneeId }" @click.stop="selectAssignee(task._id, null)">
+															<view class="assignee-option-avatar assignee-option-avatar--empty"><uni-icons type="person" size="20" color="#42b983"></uni-icons></view>
+															<text class="assignee-option-name">无负责人</text>
+															<uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+														</view>
+														<view v-for="member in filteredMembers" :key="member.value" class="assignee-option" :class="{ 'assignee-option--selected': currentAssigneeId === member.value }" @click.stop="selectAssignee(task._id, member.value)">
+															<image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
+															<view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">{{ member.text.slice(0,1) }}</view>
+															<text class="assignee-option-name">{{ member.text }}</text>
+															<uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+														</view>
+													</scroll-view>
 												</view>
 											</view>
 										</view>
@@ -201,13 +362,44 @@
 											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }" @click.stop="openDeadlineEditor(child, project._id, $event)">
 												{{ child.deadline ? formatDeadline(child.deadline) : '设置日期' }}
 											</view>
-											<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="openPriorityEditor(child)">
-												{{ getPriorityText(child.priority) }}
-											</text>
-											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(child, project._id)">
-												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
-												<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
-													{{ userNickname.slice(0,1) }}
+											<view class="priority-wrapper">
+												<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="togglePriorityDropdown(child)">
+													{{ getPriorityText(child.priority) }}
+												</text>
+												<view v-if="openPriorityTaskId === child._id" class="priority-dropdown" @click.stop>
+													<view v-for="opt in priorityOptions" :key="opt.value" class="priority-option" :class="{ 'priority-option--selected': currentPriority === opt.value }" @click.stop="selectPriority(child._id, opt.value)">
+														<view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
+														<text class="priority-option-label">{{ opt.label }}</text>
+														<uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
+													</view>
+												</view>
+											</view>
+											<view class="assignee-wrapper">
+												<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(child, project._id)">
+													<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
+													<view v-else class="assignee-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(userNickname) }">
+														{{ userNickname.slice(0,1) }}
+													</view>
+												</view>
+												<view v-if="openAssigneeTaskId === child._id" class="assignee-dropdown" @click.stop>
+													<view class="assignee-dropdown-search">
+														<uni-icons type="search" size="16" color="#999"></uni-icons>
+														<input type="text" v-model="assigneeSearchKeyword" placeholder="输入关键字查询" class="assignee-search-input" />
+														<uni-icons type="person" size="16" color="#999"></uni-icons>
+													</view>
+													<scroll-view scroll-y class="assignee-dropdown-list">
+														<view class="assignee-option" :class="{ 'assignee-option--selected': !currentAssigneeId }" @click.stop="selectAssignee(child._id, null)">
+															<view class="assignee-option-avatar assignee-option-avatar--empty"><uni-icons type="person" size="20" color="#42b983"></uni-icons></view>
+															<text class="assignee-option-name">无负责人</text>
+															<uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+														</view>
+														<view v-for="member in filteredMembers" :key="member.value" class="assignee-option" :class="{ 'assignee-option--selected': currentAssigneeId === member.value }" @click.stop="selectAssignee(child._id, member.value)">
+															<image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
+															<view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">{{ member.text.slice(0,1) }}</view>
+															<text class="assignee-option-name">{{ member.text }}</text>
+															<uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+														</view>
+													</scroll-view>
 												</view>
 											</view>
 										</view>
@@ -242,7 +434,23 @@ export default {
 			userAvatar: '',
 			projectList: [],
 			expandedProjects: {},
-			totalCount: 0
+			totalCount: 0,
+			// 负责人下拉选择
+			openAssigneeTaskId: null,
+			currentAssigneeId: null,
+			currentProjectIdForAssignee: null,
+			assigneeSearchKeyword: '',
+			memberList: [],
+			membersLoading: false,
+			// 优先级下拉选择
+			openPriorityTaskId: null,
+			currentPriority: 0,
+			priorityOptions: [
+				{ value: 0, label: '较低', color: '#6c757d' },
+				{ value: 1, label: '普通', color: '#42b983' },
+				{ value: 2, label: '较高', color: '#f39c12' },
+				{ value: 3, label: '最高', color: '#e74c3c' }
+			]
 		}
 	},
 	onLoad() {
@@ -263,6 +471,17 @@ export default {
 			uni.stopPullDownRefresh()
 		})
 	},
+	computed: {
+		filteredMembers() {
+			if (!this.assigneeSearchKeyword) {
+				return this.memberList
+			}
+			const keyword = this.assigneeSearchKeyword.toLowerCase()
+			return this.memberList.filter(member =>
+				member.text.toLowerCase().includes(keyword)
+			)
+		}
+	},
 	methods: {
 		async loadMyTasks() {
 			if (!this.userId) {
@@ -282,7 +501,7 @@ export default {
 						assignee: this.userId,
 						status: dbCmd.neq(2) // 未完成的任务
 					})
-					.field('_id,title,deadline,priority,status,project_id,group_id,parent_id')
+					.field('_id,title,deadline,priority,status,project_id,group_id,parent_id,assignee')
 					.orderBy('deadline', 'asc')
 					.limit(500)
 					.get()
@@ -661,13 +880,13 @@ export default {
 					deadline: deadline
 				})
 
+				// 局部更新本地数据
+				this.updateLocalTask(taskId, { deadline })
+
 				uni.showToast({
 					title: deadline ? '截止日期已更新' : '截止日期已清除',
 					icon: 'success'
 				})
-
-				// 刷新列表
-				this.loadMyTasks()
 			} catch (error) {
 				console.error('更新截止日期失败:', error)
 				uni.showToast({
@@ -677,19 +896,238 @@ export default {
 			}
 		},
 
-		openPriorityEditor(task) {
-			this.$refs.quickEdit.openPriorityEditor(task)
+		/**
+		 * 局部更新本地任务数据
+		 * @param {string} taskId - 任务ID
+		 * @param {object} updates - 要更新的字段
+		 */
+		updateLocalTask(taskId, updates) {
+			for (const project of this.projectList) {
+				// 查找未分组任务
+				for (const task of project.ungroupedTasks || []) {
+					if (task._id === taskId) {
+						Object.assign(task, updates)
+						return true
+					}
+					// 查找子任务
+					for (const child of task.children || []) {
+						if (child._id === taskId) {
+							Object.assign(child, updates)
+							return true
+						}
+					}
+				}
+				// 查找分组任务
+				for (const group of project.groups || []) {
+					for (const task of group.tasks || []) {
+						if (task._id === taskId) {
+							Object.assign(task, updates)
+							return true
+						}
+						// 查找子任务
+						for (const child of task.children || []) {
+							if (child._id === taskId) {
+								Object.assign(child, updates)
+								return true
+							}
+						}
+					}
+				}
+			}
+			return false
 		},
 
-		openAssigneeEditor(task, projectId) {
-			// 确保 task 有 project_id
-			const taskWithProject = { ...task, project_id: projectId }
-			this.$refs.quickEdit.openAssigneeEditor(taskWithProject)
+		// ========== 优先级下拉选择 ==========
+
+		togglePriorityDropdown(task) {
+			// 关闭其他下拉框
+			this.closeAssigneeDropdown()
+
+			if (this.openPriorityTaskId === task._id) {
+				this.closePriorityDropdown()
+			} else {
+				this.openPriorityTaskId = task._id
+				this.currentPriority = task.priority || 0
+			}
+		},
+
+		closePriorityDropdown() {
+			this.openPriorityTaskId = null
+			this.currentPriority = 0
+		},
+
+		selectPriority(taskId, priority) {
+			// 先关闭下拉框
+			this.closePriorityDropdown()
+
+			// 查找任务并保存旧值
+			let oldPriority = null
+			for (const project of this.projectList) {
+				for (const task of project.ungroupedTasks || []) {
+					if (task._id === taskId) {
+						oldPriority = task.priority
+						break
+					}
+					for (const child of task.children || []) {
+						if (child._id === taskId) {
+							oldPriority = child.priority
+							break
+						}
+					}
+				}
+				if (oldPriority !== null) break
+				for (const group of project.groups || []) {
+					for (const task of group.tasks || []) {
+						if (task._id === taskId) {
+							oldPriority = task.priority
+							break
+						}
+						for (const child of task.children || []) {
+							if (child._id === taskId) {
+								oldPriority = child.priority
+								break
+							}
+						}
+					}
+					if (oldPriority !== null) break
+				}
+				if (oldPriority !== null) break
+			}
+
+			// 乐观更新 UI
+			this.updateLocalTask(taskId, { priority })
+
+			const priorityText = this.priorityOptions.find(p => p.value === priority)?.label || '未知'
+			uni.showToast({
+				title: `优先级: ${priorityText}`,
+				icon: 'success'
+			})
+
+			// 后台同步到服务器
+			const db = uniCloud.database()
+			db.collection('opendb-task').doc(taskId).update({
+				priority: priority
+			}).catch(error => {
+				console.error('更新优先级失败:', error)
+				// 回滚
+				if (oldPriority !== null) {
+					this.updateLocalTask(taskId, { priority: oldPriority })
+				}
+				uni.showToast({
+					title: '更新失败，已恢复',
+					icon: 'none'
+				})
+			})
+		},
+
+		closeAllDropdowns() {
+			this.closeAssigneeDropdown()
+			this.closePriorityDropdown()
+		},
+
+		// ========== 负责人下拉选择 ==========
+
+		async openAssigneeEditor(task, projectId) {
+			// 关闭其他下拉框
+			this.closePriorityDropdown()
+
+			if (this.openAssigneeTaskId === task._id) {
+				this.closeAssigneeDropdown()
+				return
+			}
+
+			this.openAssigneeTaskId = task._id
+			this.currentAssigneeId = task.assignee || ''
+			this.currentProjectIdForAssignee = projectId
+			this.assigneeSearchKeyword = ''
+
+			// 加载项目成员
+			if (this.memberList.length === 0 || this.currentProjectIdForAssignee !== projectId) {
+				await this.loadProjectMembers(projectId)
+			}
+		},
+
+		async loadProjectMembers(projectId) {
+			this.membersLoading = true
+			try {
+				const projectObj = uniCloud.importObject('project-co')
+				const res = await projectObj.getMembersList(projectId)
+				this.memberList = res.map(member => ({
+					value: member._id,
+					text: member.nickname,
+					avatar: member.avatar
+				}))
+			} catch (e) {
+				console.error('加载项目成员失败:', e)
+				this.memberList = []
+			} finally {
+				this.membersLoading = false
+			}
+		},
+
+		closeAssigneeDropdown() {
+			this.openAssigneeTaskId = null
+			this.currentAssigneeId = null
+			this.assigneeSearchKeyword = ''
+		},
+
+		async selectAssignee(taskId, memberId) {
+			const oldAssigneeId = this.currentAssigneeId
+			const oldMember = this.memberList.find(m => m.value === oldAssigneeId)
+			const newMember = this.memberList.find(m => m.value === memberId)
+			const oldName = oldMember ? oldMember.text : '无'
+			const newName = newMember ? newMember.text : '无'
+
+			try {
+				const db = uniCloud.database()
+				await db.collection('opendb-task').doc(taskId).update({
+					assignee: memberId || ''
+				})
+
+				this.closeAssigneeDropdown()
+
+				uni.showToast({
+					title: `负责人: ${oldName} → ${newName}`,
+					icon: 'none',
+					duration: 2000
+				})
+
+				// 负责人变更后，任务可能不再属于"我的任务"
+				if (memberId !== this.userId) {
+					// 重新加载列表
+					this.loadMyTasks()
+				} else {
+					// 局部更新
+					this.updateLocalTask(taskId, { assignee: memberId })
+				}
+			} catch (error) {
+				console.error('更新负责人失败:', error)
+				uni.showToast({
+					title: '更新失败',
+					icon: 'none'
+				})
+			}
 		},
 
 		onQuickEditUpdate(data) {
-			// 数据已更新，刷新列表
-			this.loadMyTasks()
+			// 根据更新类型进行局部更新
+			if (data.type === 'priority') {
+				this.updateLocalTask(data.taskId, { priority: data.value })
+			} else if (data.type === 'deadline') {
+				this.updateLocalTask(data.taskId, { deadline: data.value })
+			} else if (data.type === 'assignee') {
+				// 负责人变更后，任务可能不再属于"我的任务"，需要重新加载
+				// 但如果只是切换给自己，可以局部更新
+				if (data.value === this.userId) {
+					this.updateLocalTask(data.taskId, { assignee: data.value })
+				} else {
+					// 任务分配给了别人，从列表中移除并重新加载
+					this.loadMyTasks()
+				}
+			} else {
+				// 其他情况，刷新列表
+				this.loadMyTasks()
+			}
 		}
 	}
 }
@@ -784,7 +1222,7 @@ export default {
 .project-section {
 	background-color: #ffffff;
 	border-radius: 12px;
-	overflow: hidden;
+	overflow: visible;
 	box-shadow: 0 2px 8px rgba(66, 185, 131, 0.08);
 }
 
@@ -843,10 +1281,12 @@ export default {
 
 .task-groups {
 	padding: 0;
+	overflow: visible;
 }
 
 .task-group {
 	border-bottom: 1px solid #f1f3f5;
+	overflow: visible;
 }
 
 .task-group:last-child {
@@ -929,6 +1369,7 @@ export default {
 	align-items: center;
 	gap: 8px;
 	flex-wrap: wrap;
+	overflow: visible;
 
 	@media screen and (max-width: 767px) {
 		gap: 6px;
@@ -1009,6 +1450,7 @@ export default {
 /* 自定义任务列表 */
 .task-list-custom {
 	padding-left: 24px;
+	overflow: visible;
 }
 
 /* 父任务行样式 */
@@ -1063,6 +1505,7 @@ export default {
 	cursor: pointer;
 	transition: all 0.2s ease;
 	border-bottom: 1px solid #f1f3f5;
+	overflow: visible;
 }
 
 .task-row:hover {
@@ -1104,5 +1547,161 @@ export default {
 	font-size: 12px;
 	color: #fff;
 	font-weight: 500;
+}
+
+/* ========== 负责人下拉选择 ========== */
+.dropdown-backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 999;
+	background-color: transparent;
+}
+
+/* 优先级选择器 */
+.priority-wrapper {
+	position: relative;
+}
+
+.priority-dropdown {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin-top: 8px;
+	width: 140px;
+	background-color: #fff;
+	border-radius: 10px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	z-index: 1000;
+	overflow: hidden;
+	padding: 8px 0;
+}
+
+.priority-option {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 14px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.priority-option:hover {
+	background-color: #f5f5f5;
+}
+
+.priority-option--selected {
+	background-color: #e6fcf5;
+}
+
+.priority-option--selected:hover {
+	background-color: #d1f7e8;
+}
+
+.priority-option-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.priority-option-label {
+	flex: 1;
+	font-size: 14px;
+	color: #333;
+}
+
+.assignee-wrapper {
+	position: relative;
+}
+
+/* 负责人下拉选择框 */
+.assignee-dropdown {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin-top: 8px;
+	width: 240px;
+	background-color: #fff;
+	border-radius: 12px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	z-index: 1000;
+	overflow: hidden;
+}
+
+.assignee-dropdown-search {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 16px;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.assignee-search-input {
+	flex: 1;
+	border: none;
+	outline: none;
+	font-size: 14px;
+	color: #333;
+	background: transparent;
+}
+
+.assignee-search-input::placeholder {
+	color: #999;
+}
+
+.assignee-dropdown-list {
+	max-height: 240px;
+	padding: 8px 0;
+}
+
+.assignee-option {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 16px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.assignee-option:hover {
+	background-color: #d1f7e8;
+}
+
+.assignee-option--selected {
+	background-color: #e6fcf5;
+}
+
+.assignee-option--selected:hover {
+	background-color: #c3f5de;
+}
+
+.assignee-option-avatar {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.assignee-option-avatar.assignee-avatar-text {
+	color: #fff;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.assignee-option-avatar--empty {
+	background-color: #e6fcf5;
+}
+
+.assignee-option-name {
+	flex: 1;
+	font-size: 14px;
+	color: #333;
 }
 </style>

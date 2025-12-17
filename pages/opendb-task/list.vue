@@ -143,7 +143,7 @@
 					@delete-group="deleteGroup"
 					@delete-task="deleteTask"
 					@edit-task="editTask"
-					@change-priority="openPriorityPopup"
+					@change-priority="handlePriorityChange"
 					@add-task="addTask"
 				/>
 			</view>
@@ -979,12 +979,36 @@
 				return colors[index]
 			},
 
-			// 打开优先级选择弹窗（使用 TaskQuickEdit 组件）
-			openPriorityPopup({ taskId, priority }) {
-				const task = this.taskList.find(t => t._id === taskId)
-				if (task) {
-					this.$refs.quickEdit.openPriorityEditor(task)
-				}
+			// 处理优先级变更（乐观更新）
+			handlePriorityChange({ taskId, priority }) {
+				const taskIndex = this.taskList.findIndex(t => t._id === taskId)
+				if (taskIndex === -1) return
+
+				// 保存旧值用于回滚
+				const oldPriority = this.taskList[taskIndex].priority
+
+				// 乐观更新 UI
+				this.taskList[taskIndex].priority = priority
+
+				const priorityText = { 0: '较低', 1: '普通', 2: '较高', 3: '最高' }[priority] || '未知'
+				uni.showToast({
+					title: `优先级: ${priorityText}`,
+					icon: 'success'
+				})
+
+				// 后台同步到服务器
+				const db = uniCloud.database()
+				db.collection('opendb-task').doc(taskId).update({
+					priority: priority
+				}).catch(error => {
+					console.error('更新优先级失败:', error)
+					// 回滚
+					this.taskList[taskIndex].priority = oldPriority
+					uni.showToast({
+						title: '更新失败，已恢复',
+						icon: 'none'
+					})
+				})
 			},
 
 			// 快速编辑更新回调

@@ -1,7 +1,7 @@
 <template>
   <view class="task-list-container">
     <!-- 点击遮罩关闭下拉框 -->
-    <view v-if="openAssigneeTaskId" class="dropdown-backdrop" @click="closeAssigneeDropdown"></view>
+    <view v-if="openAssigneeTaskId || openPriorityTaskId" class="dropdown-backdrop" @click="closeAllDropdowns"></view>
     <!-- 未分组任务 -->
     <view class="task-group">
       <uni-list class="task-list" v-if="ungroupedTasks.length > 0">
@@ -76,9 +76,25 @@
                 <view class="deadline" :class="{ 'overdue': isOverdue(item.deadline) }" @click.stop="handleDeadlineClick(item._id, item.deadline, $event)">
                   {{ formatDeadline(item.deadline) }}
                 </view>
-                <text class="priority-tag" :class="`priority-${item.priority || 0}`" @click.stop="changePriority(item._id, item.priority)">
-                  {{ getPriorityText(item.priority) }}
-                </text>
+                <view class="priority-wrapper">
+                  <text class="priority-tag" :class="`priority-${item.priority || 0}`" @click.stop="togglePriorityDropdown(item._id, item.priority)">
+                    {{ getPriorityText(item.priority) }}
+                  </text>
+                  <!-- 优先级下拉选择 -->
+                  <view v-if="openPriorityTaskId === item._id" class="priority-dropdown" @click.stop>
+                    <view
+                      v-for="opt in priorityOptions"
+                      :key="opt.value"
+                      class="priority-option"
+                      :class="{ 'priority-option--selected': currentPriority === opt.value }"
+                      @click.stop="selectPriority(item._id, opt.value)"
+                    >
+                      <view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
+                      <text class="priority-option-label">{{ opt.label }}</text>
+                      <uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
+                    </view>
+                  </view>
+                </view>
                 <view class="assignee-wrapper">
                   <view class="assignee" @click.stop="toggleAssigneeDropdown(item._id, item.assignee)">
                     <image v-if="getAssigneeAvatar(item.assignee)" :src="getAssigneeAvatar(item.assignee)" class="assignee-avatar-small" mode="aspectFill"></image>
@@ -104,21 +120,21 @@
                       <!-- 无负责人选项 -->
                       <view
                         class="assignee-option"
-                        :class="{ 'assignee-option--selected': !getCurrentAssigneeId(item.assignee) }"
+                        :class="{ 'assignee-option--selected': !currentAssigneeId }"
                         @click.stop="selectAssignee(item._id, null)"
                       >
                         <view class="assignee-option-avatar">
                           <uni-icons type="person" size="24" color="#42b983"></uni-icons>
                         </view>
                         <text class="assignee-option-name">无负责人</text>
-                        <uni-icons v-if="!getCurrentAssigneeId(item.assignee)" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+                        <uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
                       </view>
                       <!-- 成员列表 -->
                       <view
                         v-for="member in filteredMembers"
                         :key="member.value"
                         class="assignee-option"
-                        :class="{ 'assignee-option--selected': getCurrentAssigneeId(item.assignee) === member.value }"
+                        :class="{ 'assignee-option--selected': currentAssigneeId === member.value }"
                         @click.stop="selectAssignee(item._id, member.value)"
                       >
                         <image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
@@ -126,7 +142,7 @@
                           {{ member.text.slice(0,1) }}
                         </view>
                         <text class="assignee-option-name">{{ member.text }}</text>
-                        <uni-icons v-if="getCurrentAssigneeId(item.assignee) === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+                        <uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
                       </view>
                     </scroll-view>
                   </view>
@@ -247,9 +263,25 @@
                 <view class="deadline" :class="{ 'overdue': isOverdue(item.deadline) }" @click.stop="handleDeadlineClick(item._id, item.deadline, $event)">
                   {{ formatDeadline(item.deadline) }}
                 </view>
-                <text class="priority-tag" :class="`priority-${item.priority || 0}`" @click.stop="changePriority(item._id, item.priority)">
-                  {{ getPriorityText(item.priority) }}
-                </text>
+                <view class="priority-wrapper">
+                  <text class="priority-tag" :class="`priority-${item.priority || 0}`" @click.stop="togglePriorityDropdown(item._id, item.priority)">
+                    {{ getPriorityText(item.priority) }}
+                  </text>
+                  <!-- 优先级下拉选择 -->
+                  <view v-if="openPriorityTaskId === item._id" class="priority-dropdown" @click.stop>
+                    <view
+                      v-for="opt in priorityOptions"
+                      :key="opt.value"
+                      class="priority-option"
+                      :class="{ 'priority-option--selected': currentPriority === opt.value }"
+                      @click.stop="selectPriority(item._id, opt.value)"
+                    >
+                      <view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
+                      <text class="priority-option-label">{{ opt.label }}</text>
+                      <uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
+                    </view>
+                  </view>
+                </view>
                 <view class="assignee-wrapper">
                   <view class="assignee" @click.stop="toggleAssigneeDropdown(item._id, item.assignee)">
                     <image v-if="getAssigneeAvatar(item.assignee)" :src="getAssigneeAvatar(item.assignee)" class="assignee-avatar-small" mode="aspectFill"></image>
@@ -275,21 +307,21 @@
                       <!-- 无负责人选项 -->
                       <view
                         class="assignee-option"
-                        :class="{ 'assignee-option--selected': !getCurrentAssigneeId(item.assignee) }"
+                        :class="{ 'assignee-option--selected': !currentAssigneeId }"
                         @click.stop="selectAssignee(item._id, null)"
                       >
                         <view class="assignee-option-avatar">
                           <uni-icons type="person" size="24" color="#42b983"></uni-icons>
                         </view>
                         <text class="assignee-option-name">无负责人</text>
-                        <uni-icons v-if="!getCurrentAssigneeId(item.assignee)" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+                        <uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
                       </view>
                       <!-- 成员列表 -->
                       <view
                         v-for="member in filteredMembers"
                         :key="member.value"
                         class="assignee-option"
-                        :class="{ 'assignee-option--selected': getCurrentAssigneeId(item.assignee) === member.value }"
+                        :class="{ 'assignee-option--selected': currentAssigneeId === member.value }"
                         @click.stop="selectAssignee(item._id, member.value)"
                       >
                         <image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
@@ -297,7 +329,7 @@
                           {{ member.text.slice(0,1) }}
                         </view>
                         <text class="assignee-option-name">{{ member.text }}</text>
-                        <uni-icons v-if="getCurrentAssigneeId(item.assignee) === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+                        <uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
                       </view>
                     </scroll-view>
                   </view>
@@ -350,9 +382,19 @@ export default {
   data() {
     return {
       openAssigneeTaskId: null,
+      currentAssigneeId: null,  // 当前选中任务的负责人ID
       assigneeSearchKeyword: '',
       collapsedGroups: {},
-      completingTaskId: null  // 正在完成的任务ID，用于动画
+      completingTaskId: null,  // 正在完成的任务ID，用于动画
+      // 优先级下拉
+      openPriorityTaskId: null,
+      currentPriority: 0,
+      priorityOptions: [
+        { value: 0, label: '较低', color: '#6c757d' },
+        { value: 1, label: '普通', color: '#42b983' },
+        { value: 2, label: '较高', color: '#f39c12' },
+        { value: 3, label: '最高', color: '#e74c3c' }
+      ]
     }
   },
   computed: {
@@ -437,15 +479,20 @@ export default {
       }, 400)
     },
     toggleAssigneeDropdown(taskId, currentAssignee) {
+      // 关闭其他下拉框
+      this.closePriorityDropdown()
+
       if (this.openAssigneeTaskId === taskId) {
         this.closeAssigneeDropdown()
       } else {
         this.openAssigneeTaskId = taskId
+        this.currentAssigneeId = this.getCurrentAssigneeId(currentAssignee)
         this.assigneeSearchKeyword = ''
       }
     },
     closeAssigneeDropdown() {
       this.openAssigneeTaskId = null
+      this.currentAssigneeId = null
       this.assigneeSearchKeyword = ''
     },
     onAssigneeSearch() {
@@ -456,12 +503,20 @@ export default {
       this.closeAssigneeDropdown()
     },
     getCurrentAssigneeId(assignee) {
-      if (!assignee || !assignee.length) return null
-      return assignee[0]._id
+      if (!assignee) return null
+      // 兼容字符串格式和数组格式
+      if (typeof assignee === 'string') {
+        return assignee
+      }
+      if (Array.isArray(assignee) && assignee.length > 0) {
+        return assignee[0]._id || assignee[0]
+      }
+      return null
     },
     getAssigneeAvatar(assignee) {
-      if (!assignee || !assignee.length) return null
-      const member = this.members.find(m => m.value === assignee[0]._id)
+      const assigneeId = this.getCurrentAssigneeId(assignee)
+      if (!assigneeId) return null
+      const member = this.members.find(m => m.value === assigneeId)
       return member?.avatar || null
     },
     getAvatarColor,
@@ -561,9 +616,15 @@ export default {
     },
     isOverdue,
     getAssigneeName(assignee) {
-      if (!assignee || !assignee.length) return '未分配'
-      const member = this.members.find(m => m.value === assignee[0]._id)
-      return member ? member.text : assignee[0].nickname || '未知'
+      const assigneeId = this.getCurrentAssigneeId(assignee)
+      if (!assigneeId) return '未分配'
+      const member = this.members.find(m => m.value === assigneeId)
+      if (member) return member.text
+      // 如果是数组格式，尝试获取 nickname
+      if (Array.isArray(assignee) && assignee[0]?.nickname) {
+        return assignee[0].nickname
+      }
+      return '未知'
     },
     getPriorityText,
     editGroup(group) {
@@ -600,8 +661,31 @@ export default {
         }
       })
     },
-    changePriority(taskId, currentPriority) {
-      this.$emit('change-priority', { taskId, priority: currentPriority })
+    // ========== 优先级下拉 ==========
+    togglePriorityDropdown(taskId, currentPriority) {
+      // 关闭其他下拉框
+      this.closeAssigneeDropdown()
+
+      if (this.openPriorityTaskId === taskId) {
+        this.closePriorityDropdown()
+      } else {
+        this.openPriorityTaskId = taskId
+        this.currentPriority = currentPriority || 0
+      }
+    },
+    closePriorityDropdown() {
+      this.openPriorityTaskId = null
+      this.currentPriority = 0
+    },
+    selectPriority(taskId, priority) {
+      // 先关闭下拉框，立即响应
+      this.closePriorityDropdown()
+      // 发送事件给父组件处理
+      this.$emit('change-priority', { taskId, priority })
+    },
+    closeAllDropdowns() {
+      this.closeAssigneeDropdown()
+      this.closePriorityDropdown()
     },
 
     // 添加任务（跳转到新增页面）
@@ -945,6 +1029,59 @@ export default {
 
 .deadline.overdue:hover {
   background-color: #fbe2e0;
+}
+
+/* 优先级选择器 */
+.priority-wrapper {
+  position: relative;
+}
+
+.priority-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 140px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+  padding: 8px 0;
+}
+
+.priority-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.priority-option:hover {
+  background-color: #f5f5f5;
+}
+
+.priority-option--selected {
+  background-color: #e6fcf5;
+}
+
+.priority-option--selected:hover {
+  background-color: #d1f7e8;
+}
+
+.priority-option-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.priority-option-label {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
 }
 
 /* 负责人选择器 */
