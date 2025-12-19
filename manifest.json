@@ -76,18 +76,7 @@
             },
             /* SDK配置 */
             "sdkConfigs" : {
-                "speech" : {
-                    "ifly" : {}
-                },
-                "ad" : {},
-                "geolocation" : {},
-                "maps" : {
-                    "amap" : {
-                        "name" : "",
-                        "appkey_ios" : "",
-                        "appkey_android" : ""
-                    }
-                }
+                "ad" : {}
             },
             "orientation" : [ "portrait-primary" ]
         },
