@@ -138,7 +138,7 @@
 													<view v-if="member.avatar" class="assignee-option-avatar">
 														<image :src="member.avatar" mode="aspectFill"></image>
 													</view>
-													<view v-else class="assignee-option-avatar assignee-option-avatar--text">
+													<view v-else class="assignee-option-avatar assignee-option-avatar--text" :style="{ backgroundColor: getAvatarColor(member.text) }">
 														<text>{{member.text.slice(0,1)}}</text>
 													</view>
 													<text class="assignee-option-name">{{member.text}}</text>
@@ -409,7 +409,7 @@
 													<view v-if="member.avatar" class="assignee-option-avatar">
 														<image :src="member.avatar" mode="aspectFill"></image>
 													</view>
-													<view v-else class="assignee-option-avatar assignee-option-avatar--text">
+													<view v-else class="assignee-option-avatar assignee-option-avatar--text" :style="{ backgroundColor: getAvatarColor(member.text) }">
 														<text>{{member.text.slice(0,1)}}</text>
 													</view>
 													<text class="assignee-option-name">{{member.text}}</text>
@@ -658,6 +658,7 @@
 	import { formatDate, formatDateTime } from '@/utils/date.js'
 	import { responsiveMixin } from '@/utils/responsive.js'
 	import { getCurrentUserId } from '@/utils/auth.js'
+	import { getAvatarColor } from '@/utils/task.js'
 
 	const projectObj = uniCloud.importObject('project-co')
 	const taskObj = uniCloud.importObject('task-co')
@@ -799,6 +800,7 @@
 			}
 		},
 		methods: {
+			getAvatarColor,
 			// 返回上一页
 			goBack() {
 				const pages = getCurrentPages()
@@ -2329,7 +2331,6 @@
 }
 
 .assignee-option-avatar--text {
-	background: linear-gradient(135deg, #42b983 0%, #359568 100%);
 	color: #fff;
 	font-size: 14px;
 	font-weight: 600;
