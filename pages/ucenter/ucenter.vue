@@ -181,7 +181,6 @@
 			},
 			async checkVersion() {
 				let res = await callCheckVersion()
-				console.log(res);
 				if (res.result.code > 0) {
 					checkUpdate()
 				} else {
@@ -204,9 +203,7 @@
 				if (uni.getSystemInfoSync().platform == "ios") {
 					// 这里填写appstore应用id
 					let appstoreid = this.appConfig.marketId.ios; // 'id1417078253';
-					console.log({appstoreid});
 					plus.runtime.openURL("itms-apps://" + 'itunes.apple.com/cn/app/wechat/' + appstoreid + '?mt=8',err=>{
-						console.log('plus.runtime.openURL err:' + JSON.stringify(err));
 					});
 				}
 				if (uni.getSystemInfoSync().platform == "android") {
@@ -237,7 +234,6 @@
 					.limit(1)
 					.get()
 					.then((res) => {
-						console.log(res);
 						const data = res.result.data[0];
 						let msg = '';
 						msg = data ? ('当前积分：' + data.balance) : '暂无积分';
@@ -258,7 +254,6 @@
 						icon: 'none'
 					});
 				}
-				console.log({myInviteCode});
 				let {
 					appName,
 					logo,
@@ -319,7 +314,6 @@
 					],
 					cancelText: "取消分享",
 				}, e => {
-					console.log(e);
 				})
 				// #endif
 			}

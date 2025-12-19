@@ -121,7 +121,7 @@ class ErrorHandler {
   showErrorToast(message) {
     uni.showToast({
       title: message,
-      icon: 'error',
+      icon: 'none',
       duration: 3000
     })
   }

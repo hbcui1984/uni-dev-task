@@ -65,7 +65,6 @@
 									"action":"closeAccount"
 								},
 								complete: (e) => {
-									console.log(e);
 									if(e.result.code === 0){
 										uni.showToast({
 											title: '注销成功'

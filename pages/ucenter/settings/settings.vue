@@ -67,7 +67,6 @@
 					this.supportMode = res.supportMode
 				},
 				fail: (err) => {
-					console.log(err);
 				}
 			})
 			// #endif
@@ -94,22 +93,18 @@
 			 * 开始生物认证
 			 */
 			startSoterAuthentication(checkAuthMode) {
-				console.log(checkAuthMode);
 				let title = {"fingerPrint": "指纹识别", "facial": "面容识别"}[checkAuthMode]
 				// 检查是否开启认证
 				this.checkIsSoterEnrolledInDevice({checkAuthMode,title})
 					.then(() => {
-						console.log(checkAuthMode,title);
 						// 开始认证
 						uni.startSoterAuthentication({
 							requestAuthModes: [checkAuthMode],
 							challenge: '123456',
 							authContent: `请进行${title}`,
 							complete: (res) => {
-								console.log(res);
 							},
 							success: (res) => {
-								console.log(res);
 								if (res.errCode == 0) {
 									return uni.showToast({
 										title: `${title}验证成功`,
@@ -122,8 +117,6 @@
 								});
 							},
 							fail: (err) => {
-								console.log(err);
-								console.log(`认证失败:${err.errCode}`);
 								uni.showToast({
 									title: '认证失败',
 									icon: 'none'
@@ -137,7 +130,6 @@
 					uni.checkIsSoterEnrolledInDevice({
 						checkAuthMode,
 						success: (res) => {
-							console.log(res);
 							if (res.isEnrolled) {
 								return resolve(res);
 							}
@@ -148,7 +140,6 @@
 							reject(res);
 						},
 						fail: (err) => {
-							console.log(err);
 							uni.showToast({
 								title: `${title}不可用`,
 								icon: 'none'
@@ -169,7 +160,6 @@
 							uni.removeSavedFile({
 								filePath: res.fileList[0].filePath,
 								complete:res=>{
-									console.log(res);
 									uni.hideLoading()
 									uni.showToast({
 										title: '清理完成',
@@ -186,7 +176,6 @@
 						}
 					},
 					complete:e=>{
-						console.log(e);
 					}
 				});
 			}

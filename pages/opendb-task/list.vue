@@ -346,7 +346,6 @@
 			}
 		},
 		onLoad(event) {
-			console.log("opendb-task onLoad trigger");
 			this.project_id = event.id
 			this.project_name = event.name || ''
 
@@ -476,7 +475,6 @@
 						.get();
 
 					this.groupList = result.data;
-					console.log("分组数据:", this.groupList);
 				} catch (e) {
 					errorHandler.handleError(e, { showToast: true })
 				}
@@ -484,7 +482,6 @@
 
 			// 筛选变化处理
 			handleFilterChange() {
-				console.log('handleFilterChange - filterAssignee:', this.filterAssignee, 'filterPriority:', this.filterPriority)
 				this.$nextTick(() => {
 					this.$refs.udb.loadData({ clear: true })
 				})
@@ -540,7 +537,6 @@
 				try {
 					const taskObj = uniCloud.importObject('task-co')
 					const res = await taskObj.changeState(taskId, 2)
-					console.log('完成任务返回:', res)
 
 					// 检查返回结果
 					if (res.errCode && res.errCode !== 0) {
@@ -574,32 +570,53 @@
 					content: `确定要删除任务"${taskName}"吗？此操作不可恢复。`,
 					confirmText: '删除',
 					confirmColor: '#e74c3c',
-					success: async (res) => {
+					success: (res) => {
 						if (res.confirm) {
-							try {
-								const taskObj = uniCloud.importObject('task-co')
-								await taskObj.deleteTask({
-									taskId: taskId,
-									taskName: taskName,
-									project_id: this.project_id
-								})
-
-								// 从本地列表移除
-								const taskIndex = this.taskList.findIndex(t => t._id === taskId)
-								if (taskIndex !== -1) {
-									this.taskList.splice(taskIndex, 1)
-								}
-
-								uni.showToast({
-									title: '删除成功',
-									icon: 'success'
-								})
-							} catch (error) {
-								errorHandler.handleError(error, { showToast: true })
-							}
+							this.doDeleteTask(taskId, taskName)
 						}
 					}
 				})
+			},
+
+			// 执行删除任务（分离 async 逻辑确保错误正确捕获）
+			async doDeleteTask(taskId, taskName) {
+				try {
+					const taskObj = uniCloud.importObject('task-co', { customUI: true })
+					const result = await taskObj.deleteTask({
+						taskId: taskId,
+						taskName: taskName,
+						project_id: this.project_id
+					})
+
+					// 检查返回结果（云对象可能返回错误而非抛出）
+					if (result.errCode) {
+						uni.showToast({
+							title: result.errMsg || '删除失败',
+							icon: 'none',
+							duration: 3000
+						})
+						return
+					}
+
+					// 从本地列表移除
+					const taskIndex = this.taskList.findIndex(t => t._id === taskId)
+					if (taskIndex !== -1) {
+						this.taskList.splice(taskIndex, 1)
+					}
+
+					uni.showToast({
+						title: '删除成功',
+						icon: 'success'
+					})
+				} catch (error) {
+					// uniCloud 抛出的错误可能在 error.message 或 error.errMsg 中
+					const errMsg = error.errMsg || error.message || '删除失败'
+					uni.showToast({
+						title: errMsg,
+						icon: 'none',
+						duration: 3000
+					})
+				}
 			},
 
 			// 编辑任务
@@ -657,7 +674,6 @@
 
 			// 打开移动端日期选择器
 			openDeadlinePopup(taskId, currentDeadline) {
-				console.log('openDeadlinePopup 被调用', { taskId, currentDeadline })
 				this.currentTaskId = taskId
 				const currentDate = currentDeadline ? new Date(currentDeadline).toISOString().split('T')[0] : ''
 				
@@ -717,7 +733,6 @@
 
 			// 移动端日期变化处理
 			onMobileDeadlineChange(e) {
-				console.log('日期选择器变化:', e)
 				this.currentTaskDeadline = e.detail.value
 				// 直接保存选择的日期
 				this.saveDeadline(e.detail.value)
@@ -730,13 +745,11 @@
 					const deadline = value ? new Date(value).getTime() : null
 					
 					const start = new Date().getTime();
-					console.log("saveDeadline begin",start);
 					
 					await db.collection('opendb-task').doc(this.currentTaskId).update({
 						deadline: deadline
 					})
 					
-					console.log("saveDeadline end",new Date().getTime() - start);
 
 					// 更新本地数据
 					const taskIndex = this.taskList.findIndex(task => task._id === this.currentTaskId)

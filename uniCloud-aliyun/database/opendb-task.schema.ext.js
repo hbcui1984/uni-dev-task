@@ -11,17 +11,12 @@ module.exports = {
 			userInfo,
 			addDataList
 		}) {
-			console.log("beforeCreate - addDataList:", addDataList)
-			console.log("beforeCreate - userInfo:", userInfo)
 
 			const projectId = addDataList[0].project_id
 			const userId = userInfo.uid
 
-			console.log("beforeCreate - projectId:", projectId)
-			console.log("beforeCreate - userId:", userId)
 
 			const permission = await checkUserInProject(projectId, userId)
-			console.log("beforeCreate - permission result:", permission)
 
 			if (!permission) {
 				throw new Error('您不在该项目下，无法创建任务')
@@ -33,10 +28,6 @@ module.exports = {
 			addDataList,
 			result
 		}) {
-			console.log("afterCreate result", result);
-			console.log("afterCreate result.id", result?.id);
-			console.log("afterCreate result._id", result?._id);
-			console.log("trigger afterCreate", addDataList);
 
 			// result 可能是 { id: 'xxx' } 或 { _id: 'xxx' }
 			const taskId = result?.id || result?._id
@@ -66,7 +57,6 @@ module.exports = {
 			}
 
 			await db.collection('opendb-task-logs').add(logData)
-			console.log("afterCreate completed, taskId:", taskId);
 		},
 		// 修改数据触发器
 		beforeUpdate: async function({
@@ -75,8 +65,6 @@ module.exports = {
 			where,
 			updateData
 		}) {
-			console.log("where", where);
-			console.log("updateData", updateData);
 
 			const taskId = where?._id
 			let taskRes
@@ -107,7 +95,6 @@ module.exports = {
 
 			// 修改任务状态（仅针对单个任务更新）
 			if (taskId && taskRes?.data?.[0] && 'status' in updateData) {
-				console.log("update task status");
 				const oldStatus = taskRes.data[0].status
 				if (oldStatus == updateData.status) {
 					throw new Error('任务状态异常，请刷新查看')
@@ -116,7 +103,6 @@ module.exports = {
 				if (updateData.status == 2) {
 					updateData.completion_uid = userInfo.uid
 					updateData.completion_date = new Date()
-					console.log("new updateData", updateData);
 				}
 			}
 
@@ -154,15 +140,12 @@ module.exports = {
 			// 批量更新时（如更新 group_id），不记录详细日志
 			const taskId = where?._id
 			if (!taskId) {
-				console.log("批量更新，跳过详细日志记录")
 				return
 			}
 
 			const oldData = taskCache.get(taskId) || {}
 			const taskTitle = oldData.title || '未知任务'
 
-			console.log("oldData", oldData);
-			console.log("updateData", updateData);
 
 			// 构建操作详情
 			let actionType = 'update'
@@ -296,19 +279,31 @@ module.exports = {
 		},
 		
 		// 删除数据触发器
-		// 修改数据触发器
 		beforeDelete: async function({
 			clientInfo,
 			userInfo,
 			where,
 			docId
 		}) {
-			
-			console.log("beforeDelete-where",where);
-			console.log("beforeDelete-docId",docId);
+			const uid = userInfo?.uid
+			if (!uid) {
+				throw new Error('请先登录')
+			}
 
-			// 获取要删除的任务信息，用于记录动态
+			// 获取要删除的任务信息
 			const tasks = await db.collection('opendb-task').where(where).get()
+			if (!tasks.data || tasks.data.length === 0) {
+				throw new Error('任务不存在')
+			}
+
+			// 检查每个要删除的任务的权限
+			for (const task of tasks.data) {
+				const canDelete = await checkDeletePermission(task, uid)
+				if (!canDelete) {
+					throw new Error('您没有权限删除该任务，只有项目管理员或任务负责人可以删除')
+				}
+			}
+
 			// 将任务信息保存到 context 中，供 afterDelete 使用
 			this.context = {
 				deletedTasks: tasks.data
@@ -322,15 +317,12 @@ module.exports = {
 			docId
 		}) {
 			
-			console.log("beforeDelete-where",where);
-			console.log("beforeDelete-docId",docId);
 			
 			
 			const {
 				deletedTasks
 			} = this.context
 			
-			console.log("afterDelete-deletedTasks", deletedTasks);
 		
 			// 为每个被删除的任务记录动态
 			for (const task of deletedTasks) {
@@ -364,13 +356,7 @@ module.exports = {
  * 检查用户是否在该项目下
  */
 async function checkUserInProject(pid, uid) {
-	console.log("checkUserInProject", {
-		pid,
-		uid
-	});
-
 	if (!pid || !uid) {
-		console.log("缺少必要参数")
 		return false
 	}
 
@@ -378,34 +364,57 @@ async function checkUserInProject(pid, uid) {
 		// 获取项目信息
 		let projectRes = await db.collection('opendb-projects').doc(pid).get()
 
-		console.log("projectRes", projectRes)
-
 		if (projectRes?.data?.length > 0) {
 			const project = projectRes.data[0]
-			const {
-				members,
-				managers
-			} = project
-
-			console.log("project members:", members)
-			console.log("project managers:", managers)
-			console.log("checking uid:", uid)
+			const { members, managers } = project
 
 			// 检查用户是否在成员或管理员列表中
-			// 注意：?.includes() 可能返回 undefined，需要显式转换为 boolean
 			const isMember = members?.includes(uid) === true
 			const isManager = managers?.includes(uid) === true
-
-			console.log("isMember:", isMember)
-			console.log("isManager:", isManager)
 
 			return isMember || isManager
 		}
 
-		console.log("项目不存在")
 		return false
 	} catch (err) {
 		console.error("checkUserInProject error:", err)
+		return false
+	}
+}
+
+/**
+ * 检查用户是否有权限删除任务
+ * 权限规则：项目管理员 或 任务负责人 可删除
+ */
+async function checkDeletePermission(task, uid) {
+	if (!task || !uid) {
+		return false
+	}
+
+	try {
+		const projectId = task.project_id
+		if (!projectId) {
+			return false
+		}
+
+		// 1. 检查是否是任务负责人
+		if (task.assignee === uid) {
+			return true
+		}
+
+		// 2. 检查是否是项目管理员
+		const projectRes = await db.collection('opendb-projects').doc(projectId).get()
+		if (projectRes?.data?.length > 0) {
+			const project = projectRes.data[0]
+			const isManager = project.managers?.includes(uid) === true
+			if (isManager) {
+				return true
+			}
+		}
+
+		return false
+	} catch (err) {
+		console.error("checkDeletePermission error:", err)
 		return false
 	}
 }

@@ -151,7 +151,6 @@
 				],
 				cancelText: "取消分享",
 			}, e => { //callback
-				console.log(e);
 			})
 		},
 		methods: {

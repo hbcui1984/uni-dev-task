@@ -256,7 +256,6 @@ export default {
 		this.$refs.form.setRules(this.rules)
 	},
 	async onLoad(event) {
-		console.log("event", event);
 		this.formData.project_id = event.project_id
 		this.formData.group_id = event.group_id
 
@@ -319,7 +318,6 @@ export default {
 					}
 				}
 
-				console.log('预加载完成:', {
 					groups: this.groupOptions.length,
 					members: this.memberOptions.length
 				})
@@ -369,7 +367,6 @@ export default {
 		 * 文件上传成功
 		 */
 		uploadSuccess(e) {
-			console.log('upload success', e)
 			e.tempFiles.forEach(file => {
 				const {extname, name, path, size, fileID} = file;
 				this.attachments.push({
@@ -388,21 +385,18 @@ export default {
 		 * 文件选择
 		 */
 		fileSelect(e) {
-			console.log('file select', e)
 		},
 
 		/**
 		 * 文件删除
 		 */
 		fileDel(e) {
-			console.log("file delete", e);
 		},
 
 		/**
 		 * 触发表单提交
 		 */
 		submit() {
-			console.log("开始提交");
 			uni.showLoading({
 				mask: true
 			})
@@ -414,7 +408,6 @@ export default {
 		},
 
 		submitForm(value) {
-			console.log("submit", value);
 
 			// 添加附件和截止日期到提交数据
 			if (this.attachments.length > 0) {
@@ -434,7 +427,6 @@ export default {
 				try {
 					this.getOpenerEventChannel().emit('refreshData')
 				} catch (e) {
-					console.log('无法获取 opener event channel')
 				}
 				// 返回上一页
 				setTimeout(() => {
@@ -465,7 +457,6 @@ export default {
 		 * 优先级发生变化
 		 */
 		bindPriorityChange: function(e) {
-			console.log(e.detail.value);
 			this.formData.priority = parseInt(e.detail.value)
 		},
 

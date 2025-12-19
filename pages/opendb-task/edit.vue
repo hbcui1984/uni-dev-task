@@ -93,7 +93,6 @@
 					try {
 						this.getOpenerEventChannel().emit('refreshData')
 					} catch (e) {
-						console.log('无法获取 opener event channel')
 					}
 					// 返回上一页
 					setTimeout(() => {

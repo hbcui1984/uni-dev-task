@@ -243,7 +243,6 @@
 			}
 		},
 		onLoad(e) {
-			console.log('project edit page load');
 			const id = e.id
 			this.formDataId = id
 
@@ -522,7 +521,6 @@
 								uniCloud.deleteFile({
 									fileList: [this.formData.cover.url]
 								}).then(() => {
-									console.log('云存储文件已删除')
 								}).catch(err => {
 									console.error('删除云存储文件失败:', err)
 								})

@@ -427,7 +427,6 @@ export default {
     isPC() {
       // 判断是否为PC端
       const systemInfo = uni.getSystemInfoSync()
-      console.log("system platform:", systemInfo.platform);
 
       // H5环境下，通过屏幕宽度判断
       // #ifdef H5
@@ -525,7 +524,6 @@ export default {
     },
     getAvatarColor,
     handleDeadlineClick(taskId, currentDeadline, event) {
-      console.log('点击设置截止日期', { taskId, currentDeadline, isPC: this.isPC, event })
 
       // PC端：使用原生日期选择器
       if (this.isPC) {
@@ -570,7 +568,6 @@ export default {
         input.value = currentDeadline ? new Date(currentDeadline).toISOString().split('T')[0] : ''
 
         input.onchange = (e) => {
-          console.log('PC端日期选择', e.target.value)
           this.$emit('save-deadline', taskId, e.target.value)
           if (input.parentNode) {
             document.body.removeChild(input)

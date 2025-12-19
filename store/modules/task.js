@@ -212,12 +212,16 @@ export default {
       }
     },
     
-    // 删除任务
+    // 删除任务（通过云对象，包含权限检查）
     async deleteTask({ commit }, { projectId, taskId }) {
       try {
-        const db = uniCloud.database()
-        await db.collection('opendb-task').doc(taskId).remove()
-        
+        const taskObj = uniCloud.importObject('task-co')
+        const result = await taskObj.deleteTask({ taskId, project_id: projectId })
+
+        if (result.errCode) {
+          throw new Error(result.errMsg || '删除失败')
+        }
+
         commit('REMOVE_TASK', { projectId, taskId })
         return true
       } catch (error) {

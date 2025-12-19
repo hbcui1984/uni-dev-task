@@ -75,7 +75,6 @@
 
 			submitForm(value) {
 				// 使用 clientDB 提交数据
-				console.log("submit:",value);
 				db.action('add-project').collection(dbCollectionName).add(value).then((res) => {
 					uni.showToast({
 						icon: 'none',

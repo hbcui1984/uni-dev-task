@@ -24,6 +24,49 @@
  */
 const uniIdCommon = require('uni-id-common')
 
+const db = uniCloud.database()
+
+/**
+ * 检查用户是否有权限删除任务
+ * 权限规则：项目管理员 或 任务负责人 可删除
+ *
+ * @param {Object} task - 任务对象
+ * @param {string} uid - 用户ID
+ * @returns {boolean} 是否有删除权限
+ */
+async function checkDeletePermission(task, uid) {
+	if (!task || !uid) {
+		return false
+	}
+
+	try {
+		const projectId = task.project_id
+		if (!projectId) {
+			return false
+		}
+
+		// 1. 检查是否是任务负责人
+		if (task.assignee === uid) {
+			return true
+		}
+
+		// 2. 检查是否是项目管理员
+		const projectRes = await db.collection('opendb-projects').doc(projectId).get()
+		if (projectRes?.data?.length > 0) {
+			const project = projectRes.data[0]
+			const isManager = project.managers?.includes(uid) === true
+			if (isManager) {
+				return true
+			}
+		}
+
+		return false
+	} catch (err) {
+		console.error('checkDeletePermission error:', err)
+		return false
+	}
+}
+
 module.exports = {
 	/**
 	 * 前置钩子 - 验证用户登录状态
@@ -681,16 +724,16 @@ module.exports = {
 	 * 功能说明：
 	 * - 删除指定任务
 	 * - 此操作不可恢复
+	 * - 权限：项目管理员 或 任务负责人 可删除
 	 *
 	 * @param {Object} params - 参数对象
 	 * @param {string} params.taskId - 任务ID（必填）
 	 * @param {string} [params.taskName] - 任务名称（用于日志记录）
 	 * @param {string} [params.project_id] - 项目ID（用于日志记录）
 	 * @returns {Object} { errCode: 0, errMsg: '删除成功' }
+	 * @throws {Object} PERMISSION_DENIED - 没有删除权限
 	 */
 	async deleteTask(params = {}) {
-		console.log('deleteTask params:', params)
-
 		if (!params.taskId) {
 			return {
 				errCode: 'PARAM_ERROR',
@@ -699,17 +742,25 @@ module.exports = {
 		}
 
 		try {
-			// 先获取任务信息用于记录日志
+			// 先获取任务信息用于权限检查和日志记录
 			const taskRes = await this.db.collection('opendb-task').doc(params.taskId).get()
-			console.log('deleteTask taskRes:', JSON.stringify(taskRes))
 
 			const task = taskRes.data && taskRes.data[0]
-			console.log('deleteTask task:', JSON.stringify(task))
 
 			if (!task) {
 				return {
 					errCode: 'TASK_NOT_FOUND',
 					errMsg: '任务不存在'
+				}
+			}
+
+			// 权限检查：项目管理员 或 任务负责人 可删除
+			const uid = this.userInfo.uid
+			const canDelete = await checkDeletePermission(task, uid)
+			if (!canDelete) {
+				return {
+					errCode: 'PERMISSION_DENIED',
+					errMsg: '您没有权限删除该任务，只有项目管理员或任务负责人可以删除'
 				}
 			}
 
@@ -727,8 +778,6 @@ module.exports = {
 				? `删除了子任务「${taskTitle}」`
 				: `删除了任务「${taskTitle}」`
 
-			console.log('deleteTask adding log:', { actionDetail, taskProjectId, parentTaskId })
-
 			const logData = {
 				action_type: 'delete',
 				task_id: params.taskId,
@@ -745,8 +794,6 @@ module.exports = {
 			}
 
 			await this.db.collection('opendb-task-logs').add(logData)
-
-			console.log('deleteTask log added successfully')
 
 			return {
 				errCode: 0,

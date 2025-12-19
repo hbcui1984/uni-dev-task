@@ -74,7 +74,6 @@
 					uni.setClipboardData({
 						data: this.code,
 						complete: (e) => {
-							console.log(e);
 							uni.hideToast()
 							/* 以下临时解决setClipboardData h5端样式和键盘弹出端错误解决方案，后续会直接内置*/
 							document.getElementById("#clipboard").style.top = '-999px';

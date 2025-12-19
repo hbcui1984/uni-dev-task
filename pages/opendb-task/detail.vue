@@ -1243,16 +1243,13 @@
 				}).then((e) => {
 					this.files = []
 				}).catch((e) => {
-					console.log('set attachments fail', e);
 				})
 			},
 
 			fileDel(e) {
-				console.log("file delete", e);
 			},
 
 			fileSelect(e) {
-				console.log("file select", e);
 			},
 
 			handleUpdate() {
@@ -1284,7 +1281,6 @@
 			},
 
 			bindAssigneeChange: function(e) {
-				console.log(e);
 			},
 
 			formatDate,
@@ -1301,17 +1297,38 @@
 					confirmColor: '#e74c3c',
 					success: (res) => {
 						if (res.confirm) {
-							uniCloud.database().collection('opendb-task').doc(this.taskId).remove().then(e => {
-								uni.showToast({ title: '任务已删除', icon: 'success' })
-								setTimeout(() => {
-									uni.navigateTo({
-										url: '/pages/opendb-task/list?id=' + this.projectId
-									})
-								}, 500)
-							})
+							this.doDeleteTask()
 						}
 					}
 				})
+			},
+
+			// 执行删除主任务（通过云对象，包含权限检查）
+			async doDeleteTask() {
+				try {
+					const taskObj = uniCloud.importObject('task-co', { customUI: true })
+					const result = await taskObj.deleteTask({
+						taskId: this.taskId,
+						project_id: this.projectId
+					})
+					if (result.errCode && result.errCode !== 0) {
+						uni.showToast({
+							title: result.errMsg || '删除失败',
+							icon: 'none',
+							duration: 3000
+						})
+						return
+					}
+					uni.showToast({ title: '任务已删除', icon: 'success' })
+					setTimeout(() => {
+						uni.navigateTo({
+							url: '/pages/opendb-task/list?id=' + this.projectId
+						})
+					}, 500)
+				} catch (err) {
+					const errMsg = err.errMsg || err.message || '删除失败'
+					uni.showToast({ title: errMsg, icon: 'none', duration: 3000 })
+				}
 			},
 
 			async checkboxChange(e) {
@@ -1463,24 +1480,35 @@
 					title: '删除确认',
 					content: '确认删除此子任务吗？',
 					confirmColor: '#e74c3c',
-					success: async (res) => {
+					success: (res) => {
 						if (res.confirm) {
-							try {
-								const taskObj = uniCloud.importObject('task-co')
-								const result = await taskObj.deleteTask({ taskId: id })
-								if (result.errCode && result.errCode !== 0) {
-									throw new Error(result.errMsg || '删除失败')
-								}
-								uni.showToast({ title: '子任务已删除', icon: 'success' })
-								await this.loadSubTask()
-								this.loadTaskLogs()
-							} catch (err) {
-								console.error('删除子任务失败:', err)
-								uni.showToast({ title: '删除失败', icon: 'none' })
-							}
+							this.doDelSubTask(id)
 						}
 					}
 				})
+			},
+
+			// 执行删除子任务（分离 async 逻辑确保错误正确捕获）
+			async doDelSubTask(id) {
+				try {
+					const taskObj = uniCloud.importObject('task-co', { customUI: true })
+					const result = await taskObj.deleteTask({ taskId: id })
+					if (result.errCode && result.errCode !== 0) {
+						uni.showToast({
+							title: result.errMsg || '删除失败',
+							icon: 'none',
+							duration: 3000
+						})
+						return
+					}
+					uni.showToast({ title: '子任务已删除', icon: 'success' })
+					await this.loadSubTask()
+					this.loadTaskLogs()
+				} catch (err) {
+					// uniCloud 抛出的错误在 errMsg 中
+					const errMsg = err.errMsg || err.message || '删除失败'
+					uni.showToast({ title: errMsg, icon: 'none', duration: 3000 })
+				}
 			},
 
 			// 开始内联编辑子任务
