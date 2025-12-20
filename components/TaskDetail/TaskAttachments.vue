@@ -174,12 +174,16 @@ export default {
 	margin-top: 12px;
 }
 
-/* 文件上传按钮样式优化 */
-:deep(.uni-file-picker__container) {
+</style>
+
+<!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
+<style lang="scss">
+/* TaskAttachments - 文件上传按钮样式优化 */
+.task-attachments .uni-file-picker__container {
 	border-radius: 8px;
 }
 
-:deep(button[type="primary"]) {
+.task-attachments button[type="primary"] {
 	background-color: #42b983;
 	border-color: #42b983;
 	border-radius: 6px;
@@ -187,7 +191,7 @@ export default {
 	transition: all 0.25s ease;
 }
 
-:deep(button[type="primary"]:hover) {
+.task-attachments button[type="primary"]:hover {
 	background-color: #359568;
 	box-shadow: 0 4px 14px rgba(66, 185, 131, 0.2);
 }

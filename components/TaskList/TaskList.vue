@@ -736,9 +736,7 @@ export default {
   align-items: center;
 }
 
-.task-item-wrapper :deep(.uni-list-item) {
-  flex: 1;
-}
+/* 样式已移至无 scoped 块 */
 
 /* 移动端操作按钮 */
 .mobile-action-btn {
@@ -1209,52 +1207,7 @@ export default {
   color: #333;
 }
 
-/* 列表项优化 */
-.task-list :deep(.uni-list-item) {
-  transition: all 0.25s ease;
-  overflow: visible !important;
-}
-
-.task-list :deep(.uni-list-item__container) {
-  overflow: visible !important;
-}
-
-.task-list :deep(.uni-list-item__content) {
-  overflow: visible !important;
-}
-
-.task-list :deep(.uni-list-item__extra) {
-  overflow: visible !important;
-}
-
-.task-list :deep(.uni-list) {
-  overflow: visible !important;
-}
-
-.task-list :deep(.uni-list--border) {
-  overflow: visible !important;
-}
-
-.task-list :deep(.uni-list-item:hover) {
-  background-color: #f0fdf7;
-}
-
-/* Checkbox 样式优化 */
-.task-list :deep(checkbox .uni-checkbox-input) {
-  border-color: #42b983 !important;
-  border-width: 2px;
-  transition: all 0.2s ease;
-}
-
-.task-list :deep(checkbox .uni-checkbox-input:hover) {
-  border-color: #359568 !important;
-  background-color: #e6fcf5 !important;
-}
-
-.task-list :deep(checkbox .uni-checkbox-input.uni-checkbox-input-checked) {
-  background-color: #42b983 !important;
-  border-color: #42b983 !important;
-}
+/* 列表项优化 - 样式已移至无 scoped 块 */
 
 /* 添加新任务入口 */
 .quick-add-section {
@@ -1322,15 +1275,7 @@ export default {
   }
 }
 
-/* 完成动画时 checkbox 变绿 */
-.task-completing :deep(checkbox .uni-checkbox-input) {
-  background-color: #42b983 !important;
-  border-color: #42b983 !important;
-}
-
-.task-completing :deep(checkbox .uni-checkbox-input::after) {
-  border-color: #fff !important;
-}
+/* 完成动画时 checkbox 变绿 - 样式已移至无 scoped 块 */
 
 /* ===== 移动端任务项样式 ===== */
 .task-item-mobile {
@@ -1432,5 +1377,70 @@ export default {
   top: auto;
   transform: none;
   flex-shrink: 0;
+}
+</style>
+
+<!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
+<style lang="scss">
+/* TaskList - 任务项包装器 */
+.task-item-wrapper .uni-list-item {
+  flex: 1;
+}
+
+/* TaskList - 列表项优化 */
+.task-list .uni-list-item {
+  transition: all 0.25s ease;
+  overflow: visible !important;
+}
+
+.task-list .uni-list-item__container {
+  overflow: visible !important;
+}
+
+.task-list .uni-list-item__content {
+  overflow: visible !important;
+}
+
+.task-list .uni-list-item__extra {
+  overflow: visible !important;
+}
+
+.task-list .uni-list {
+  overflow: visible !important;
+}
+
+.task-list .uni-list--border {
+  overflow: visible !important;
+}
+
+.task-list .uni-list-item:hover {
+  background-color: #f0fdf7;
+}
+
+/* TaskList - Checkbox 样式优化 */
+.task-list checkbox .uni-checkbox-input {
+  border-color: #42b983 !important;
+  border-width: 2px;
+  transition: all 0.2s ease;
+}
+
+.task-list checkbox .uni-checkbox-input:hover {
+  border-color: #359568 !important;
+  background-color: #e6fcf5 !important;
+}
+
+.task-list checkbox .uni-checkbox-input.uni-checkbox-input-checked {
+  background-color: #42b983 !important;
+  border-color: #42b983 !important;
+}
+
+/* TaskList - 完成动画时 checkbox 变绿 */
+.task-completing checkbox .uni-checkbox-input {
+  background-color: #42b983 !important;
+  border-color: #42b983 !important;
+}
+
+.task-completing checkbox .uni-checkbox-input::after {
+  border-color: #fff !important;
 }
 </style> 

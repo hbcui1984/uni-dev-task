@@ -473,17 +473,6 @@
 			min-width: 120px;
 		}
 
-		/* 确保下拉菜单在日期分隔线之上 */
-		:deep(.uni-select__selector) {
-			z-index: 100 !important;
-		}
-
-		/* 优化下拉框样式 */
-		:deep(.uni-stat__select) {
-			min-width: 100px !important;
-			max-width: 200px !important;
-		}
-
 		.logs-list {
 			background-color: #ffffff;
 			border-radius: 12px;
@@ -586,65 +575,79 @@
 			}
 		}
 
-		/* uni-list-item 优化 */
-		:deep(.uni-list-item) {
-			transition: background-color 0.2s ease;
-			border-bottom: 1px solid #e9ecef;
-			cursor: pointer;
-			background-color: #ffffff;
-		}
-
-		:deep(.uni-list-item:last-child) {
-			border-bottom: none;
-		}
-
-		:deep(.uni-list-item:hover) {
-			background-color: #e6fcf5 !important;
-		}
-
-		:deep(.uni-list-item:active) {
-			background-color: #d1f7e8 !important;
-		}
-
-		/* 确保 uni-list 不会影响子元素的背景色 */
-		:deep(.uni-list) {
-			background-color: transparent;
-		}
-
-		:deep(.uni-list--border:after) {
-			display: none;
-		}
-
-		/* uni-data-select 优化 */
-		:deep(.uni-data-select) {
-			border: 1px solid #e9ecef;
-			border-radius: 8px;
-			transition: all 0.25s ease;
-		}
-
-		:deep(.uni-data-select:hover) {
-			border-color: #42b983;
-			background-color: #f0fdf7;
-		}
-
-		:deep(.uni-data-select__input-text) {
-			color: #2c3e50;
-			font-size: 14px;
-		}
-
 		/* uni-load-more 优化 */
 		.load-more-wrapper {
 			cursor: pointer;
 			padding: 16px 0;
 		}
+	}
+</style>
 
-		:deep(.uni-load-more) {
-			padding: 8px 24px;
-		}
+<style lang="scss">
+	/* 确保下拉菜单在日期分隔线之上 */
+	.task-logs .uni-select__selector {
+		z-index: 100 !important;
+	}
 
-		:deep(.uni-load-more__text) {
-			color: #42b983;
-			font-size: 14px;
-		}
+	/* 优化下拉框样式 */
+	.task-logs .uni-stat__select {
+		min-width: 100px !important;
+		max-width: 200px !important;
+	}
+
+	/* uni-list-item 优化 */
+	.task-logs .uni-list-item {
+		transition: background-color 0.2s ease;
+		border-bottom: 1px solid #e9ecef;
+		cursor: pointer;
+		background-color: #ffffff;
+	}
+
+	.task-logs .uni-list-item:last-child {
+		border-bottom: none;
+	}
+
+	.task-logs .uni-list-item:hover {
+		background-color: #e6fcf5 !important;
+	}
+
+	.task-logs .uni-list-item:active {
+		background-color: #d1f7e8 !important;
+	}
+
+	/* 确保 uni-list 不会影响子元素的背景色 */
+	.task-logs .uni-list {
+		background-color: transparent;
+	}
+
+	.task-logs .uni-list--border:after {
+		display: none;
+	}
+
+	/* uni-data-select 优化 */
+	.task-logs .uni-data-select {
+		border: 1px solid #e9ecef;
+		border-radius: 8px;
+		transition: all 0.25s ease;
+	}
+
+	.task-logs .uni-data-select:hover {
+		border-color: #42b983;
+		background-color: #f0fdf7;
+	}
+
+	.task-logs .uni-data-select__input-text {
+		color: #2c3e50;
+		font-size: 14px;
+	}
+
+	/* uni-load-more 优化 */
+	.task-logs .uni-load-more {
+		padding: 8px 24px;
+	}
+
+	.task-logs .uni-load-more__text {
+		color: #42b983;
+		font-size: 14px;
 	}
 </style>

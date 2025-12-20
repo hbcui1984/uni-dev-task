@@ -10,7 +10,7 @@
  * 路由：/pages/opendb-task/add?pid={projectId}
 -->
 <template>
-	<view class="page">
+	<view class="task-add-page">
 		<view class="container">
 			<!-- 任务信息卡片（合并基本信息和任务设置） -->
 			<view class="card">
@@ -471,12 +471,8 @@ export default {
 </script>
 
 <style scoped>
-page {
+.task-add-page {
 	background: linear-gradient(to bottom, #fafdfb, #f7f8fa);
-	min-height: 100vh;
-}
-
-.page {
 	min-height: 100vh;
 	padding: 16px 0 40px;
 }
@@ -549,46 +545,6 @@ page {
 }
 
 /* ===== 表单样式 ===== */
-:deep(.uni-forms-item) {
-	margin-bottom: 20px;
-}
-
-:deep(.uni-forms-item__label) {
-	color: #2c3e50;
-	font-weight: 500;
-	font-size: 14px;
-	min-width: 90px !important;
-}
-
-:deep(.uni-easyinput__content) {
-	border: 1px solid #e9ecef;
-	border-radius: 8px;
-	transition: all 0.25s ease;
-	background-color: #ffffff;
-}
-
-:deep(.uni-easyinput__content:hover) {
-	border-color: #42b983;
-	background-color: #f0fdf7;
-}
-
-:deep(.is-focused .uni-easyinput__content),
-:deep(.uni-easyinput__content.is-focused),
-:deep(.uni-easyinput.is-focused .uni-easyinput__content) {
-	border-color: #42b983 !important;
-	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
-}
-
-/* 输入框获得焦点时的边框颜色 */
-:deep(.uni-easyinput__content:focus-within) {
-	border-color: #42b983 !important;
-	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
-}
-
-:deep(.uni-easyinput__content-input) {
-	font-size: 14px;
-	color: #2c3e50;
-}
 
 .textarea-input {
 	width: 100%;
@@ -669,45 +625,7 @@ page {
 	background-color: #f0fdf7;
 }
 
-:deep(.setting-picker-inline) {
-	width: 100%;
-}
-
-:deep(.setting-picker-inline .uni-data-picker) {
-	border: 1px solid #e9ecef;
-	border-radius: 8px;
-	background-color: #ffffff;
-}
-
-:deep(.setting-picker-inline .uni-data-picker:hover) {
-	border-color: #42b983;
-	background-color: #f0fdf7;
-}
-
-/* uni-forms-item 在 grid 中的样式调整 */
-.settings-grid :deep(.uni-forms-item) {
-	margin-bottom: 0;
-}
-
-.settings-grid :deep(.uni-forms-item__label) {
-	min-width: auto !important;
-	padding-bottom: 8px;
-}
-
-@media screen and (min-width: 768px) {
-	.settings-grid :deep(.uni-forms-item) {
-		flex-direction: column;
-		align-items: stretch;
-	}
-
-	.settings-grid :deep(.uni-forms-item__label) {
-		justify-content: flex-start;
-	}
-
-	.settings-grid :deep(.uni-forms-item__content) {
-		margin-left: 0 !important;
-	}
-}
+/* uni-forms-item 在 grid 中的样式调整 - 已移至 unscoped 块 */
 
 .priority-0 {
 	color: #6c757d;
@@ -727,37 +645,7 @@ page {
 }
 
 
-/* ===== Picker 选择器样式覆盖 ===== */
-:deep(.uni-picker-container .uni-picker-highlight) {
-	border-color: #42b983 !important;
-}
-
-:deep(.uni-picker-container .uni-picker-item-selected) {
-	color: #42b983 !important;
-}
-
-:deep(.uni-system-choose-area a) {
-	color: #42b983 !important;
-}
-
-:deep(.uni-picker-action-confirm) {
-	color: #42b983 !important;
-}
-
-/* H5 picker 弹窗样式 */
-:deep(.uni-picker__container .uni-picker__highlight) {
-	border-color: rgba(66, 185, 131, 0.3) !important;
-}
-
-:deep(.uni-picker-view-indicator) {
-	border-color: rgba(66, 185, 131, 0.3) !important;
-}
-
-/* picker 选中项样式 */
-:deep(.picker-view-column) .picker-item-selected,
-:deep(.uni-picker-view-column) .uni-picker-view-item-selected {
-	color: #42b983 !important;
-}
+/* ===== Picker 选择器样式覆盖 - 已移至 unscoped 块 ===== */
 
 /* ===== 附件样式 ===== */
 .attachment-list {
@@ -935,9 +823,7 @@ page {
 	border: none;
 }
 
-:deep(.file-picker) {
-	margin-top: 0;
-}
+/* file-picker 样式已移至 unscoped 块 */
 
 /* ===== 按钮组 ===== */
 .button-group {
@@ -991,46 +877,7 @@ page {
 	border: none;
 }
 
-/* ===== uni-data-picker 样式 ===== */
-:deep(.uni-data-picker) {
-	border: 1px solid #e9ecef;
-	border-radius: 8px;
-	transition: all 0.25s ease;
-	background-color: #ffffff;
-}
-
-:deep(.uni-data-picker:hover) {
-	border-color: #42b983;
-	background-color: #f0fdf7;
-}
-
-:deep(.uni-data-picker.is-focus) {
-	border-color: #42b983 !important;
-	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
-	background-color: #fafdfb;
-}
-
-:deep(.uni-data-picker__input-text) {
-	color: #2c3e50;
-	font-size: 14px;
-}
-
-/* uni-icons 颜色 */
-:deep(.uni-icons) {
-	color: #42b983 !important;
-}
-
-/* uni-data-picker 弹出层样式，确保不被其他元素遮挡 */
-:deep(.uni-data-picker__selector-item),
-:deep(.uni-data-picker__selector-item-content),
-:deep(.uni-data-picker__selector-scroll) {
-	z-index: 9999 !important;
-}
-
-:deep(.uni-data-picker__selector) {
-	z-index: 9999 !important;
-	position: absolute;
-}
+/* ===== uni-data-picker 样式 - 已移至 unscoped 块 ===== */
 
 /* PC 端优化 */
 @media screen and (min-width: 768px) {
@@ -1044,11 +891,6 @@ page {
 
 	.card-body {
 		padding: 24px;
-	}
-
-	:deep(.uni-forms-item__label) {
-		font-size: 15px;
-		min-width: 100px !important;
 	}
 
 	.textarea-input {
@@ -1076,5 +918,175 @@ page {
 	.card-body {
 		padding: 28px;
 	}
+}
+</style>
+
+<style lang="scss">
+/* ===== 全局样式（无 scoped）- 用于覆盖组件库样式 ===== */
+
+/* ===== 表单样式 ===== */
+.task-add-page .uni-forms-item {
+	margin-bottom: 20px;
+}
+
+.task-add-page .uni-forms-item__label {
+	color: #2c3e50;
+	font-weight: 500;
+	font-size: 14px;
+	min-width: 90px !important;
+}
+
+.task-add-page .uni-easyinput__content {
+	border: 1px solid #e9ecef;
+	border-radius: 8px;
+	transition: all 0.25s ease;
+	background-color: #ffffff;
+}
+
+.task-add-page .uni-easyinput__content:hover {
+	border-color: #42b983;
+	background-color: #f0fdf7;
+}
+
+.task-add-page .is-focused .uni-easyinput__content,
+.task-add-page .uni-easyinput__content.is-focused,
+.task-add-page .uni-easyinput.is-focused .uni-easyinput__content {
+	border-color: #42b983 !important;
+	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
+}
+
+/* 输入框获得焦点时的边框颜色 */
+.task-add-page .uni-easyinput__content:focus-within {
+	border-color: #42b983 !important;
+	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
+}
+
+.task-add-page .uni-easyinput__content-input {
+	font-size: 14px;
+	color: #2c3e50;
+}
+
+/* ===== 设置项内联 Picker 样式 ===== */
+.task-add-page .setting-picker-inline {
+	width: 100%;
+}
+
+.task-add-page .setting-picker-inline .uni-data-picker {
+	border: 1px solid #e9ecef;
+	border-radius: 8px;
+	background-color: #ffffff;
+}
+
+.task-add-page .setting-picker-inline .uni-data-picker:hover {
+	border-color: #42b983;
+	background-color: #f0fdf7;
+}
+
+/* uni-forms-item 在 grid 中的样式调整 */
+.task-add-page .settings-grid .uni-forms-item {
+	margin-bottom: 0;
+}
+
+.task-add-page .settings-grid .uni-forms-item__label {
+	min-width: auto !important;
+	padding-bottom: 8px;
+}
+
+@media screen and (min-width: 768px) {
+	.task-add-page .settings-grid .uni-forms-item {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.task-add-page .settings-grid .uni-forms-item__label {
+		justify-content: flex-start;
+	}
+
+	.task-add-page .settings-grid .uni-forms-item__content {
+		margin-left: 0 !important;
+	}
+
+	.task-add-page .uni-forms-item__label {
+		font-size: 15px;
+		min-width: 100px !important;
+	}
+}
+
+/* ===== Picker 选择器样式覆盖 ===== */
+.task-add-page .uni-picker-container .uni-picker-highlight {
+	border-color: #42b983 !important;
+}
+
+.task-add-page .uni-picker-container .uni-picker-item-selected {
+	color: #42b983 !important;
+}
+
+.task-add-page .uni-system-choose-area a {
+	color: #42b983 !important;
+}
+
+.task-add-page .uni-picker-action-confirm {
+	color: #42b983 !important;
+}
+
+/* H5 picker 弹窗样式 */
+.task-add-page .uni-picker__container .uni-picker__highlight {
+	border-color: rgba(66, 185, 131, 0.3) !important;
+}
+
+.task-add-page .uni-picker-view-indicator {
+	border-color: rgba(66, 185, 131, 0.3) !important;
+}
+
+/* picker 选中项样式 */
+.task-add-page .picker-view-column .picker-item-selected,
+.task-add-page .uni-picker-view-column .uni-picker-view-item-selected {
+	color: #42b983 !important;
+}
+
+/* ===== 文件上传器样式 ===== */
+.task-add-page .file-picker {
+	margin-top: 0;
+}
+
+/* ===== uni-data-picker 样式 ===== */
+.task-add-page .uni-data-picker {
+	border: 1px solid #e9ecef;
+	border-radius: 8px;
+	transition: all 0.25s ease;
+	background-color: #ffffff;
+}
+
+.task-add-page .uni-data-picker:hover {
+	border-color: #42b983;
+	background-color: #f0fdf7;
+}
+
+.task-add-page .uni-data-picker.is-focus {
+	border-color: #42b983 !important;
+	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
+	background-color: #fafdfb;
+}
+
+.task-add-page .uni-data-picker__input-text {
+	color: #2c3e50;
+	font-size: 14px;
+}
+
+/* uni-icons 颜色 */
+.task-add-page .uni-icons {
+	color: #42b983 !important;
+}
+
+/* uni-data-picker 弹出层样式，确保不被其他元素遮挡 */
+.task-add-page .uni-data-picker__selector-item,
+.task-add-page .uni-data-picker__selector-item-content,
+.task-add-page .uni-data-picker__selector-scroll {
+	z-index: 9999 !important;
+}
+
+.task-add-page .uni-data-picker__selector {
+	z-index: 9999 !important;
+	position: absolute;
 }
 </style>

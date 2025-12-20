@@ -1266,84 +1266,90 @@
 		}
 	}
 
-	/* 主要按钮样式 - 绿色主题 */
-	:deep(button[type="primary"]) {
-		background-color: #42b983 !important;
-		border-color: #42b983 !important;
-		color: #ffffff;
-	}
+	/* :deep() 样式已移至文件末尾的无 scoped 块 */
+</style>
 
-	:deep(button[type="primary"]:hover) {
-		background-color: #359568 !important;
-		box-shadow: 0 4px 14px rgba(66, 185, 131, 0.3);
-		transform: translateY(-2px);
-	}
+<style lang="scss">
+/* 全局样式（无 scoped）- 使用 .page-wrapper 前缀确保作用域 */
 
-	:deep(button[type="primary"]:active) {
-		background-color: #2a7a53 !important;
-		transform: translateY(0);
-	}
+/* 主要按钮样式 - 绿色主题 */
+.page-wrapper button[type="primary"] {
+	background-color: #42b983 !important;
+	border-color: #42b983 !important;
+	color: #ffffff;
+}
 
-	/* uni-easyinput 样式优化 */
-	:deep(.uni-easyinput__content) {
-		border: 1px solid #e9ecef;
-		border-radius: 6px;
-		transition: all 0.25s ease;
-	}
+.page-wrapper button[type="primary"]:hover {
+	background-color: #359568 !important;
+	box-shadow: 0 4px 14px rgba(66, 185, 131, 0.3);
+	transform: translateY(-2px);
+}
 
-	:deep(.uni-easyinput__content:hover) {
-		border-color: #42b983;
-		background-color: #f0fdf7;
-	}
+.page-wrapper button[type="primary"]:active {
+	background-color: #2a7a53 !important;
+	transform: translateY(0);
+}
 
-	:deep(.is-focused .uni-easyinput__content) {
-		border-color: #42b983 !important;
-		box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
-	}
+/* uni-easyinput 样式优化 */
+.page-wrapper .uni-easyinput__content {
+	border: 1px solid #e9ecef;
+	border-radius: 6px;
+	transition: all 0.25s ease;
+}
 
-	/* 清除图标颜色 - 绿色主题 */
-	:deep(.uni-easyinput__content-clear-icon) {
-		color: #42b983 !important;
-	}
+.page-wrapper .uni-easyinput__content:hover {
+	border-color: #42b983;
+	background-color: #f0fdf7;
+}
 
-	:deep(.uni-icons) {
-		color: #42b983 !important;
-	}
+.page-wrapper .is-focused .uni-easyinput__content {
+	border-color: #42b983 !important;
+	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
+}
 
-	/* 清除按钮hover效果 */
-	:deep(.uni-easyinput__content-clear-icon:hover) {
-		color: #359568 !important;
-	}
+/* 清除图标颜色 - 绿色主题 */
+.page-wrapper .uni-easyinput__content-clear-icon {
+	color: #42b983 !important;
+}
 
-	:deep(.uni-forms-item__label) {
-		color: #2c3e50;
-		font-weight: 500;
-		font-size: 14px;
-	}
+.page-wrapper .uni-icons {
+	color: #42b983 !important;
+}
 
-	:deep(.uni-forms-item) {
-		margin-bottom: 20px;
+/* 清除按钮hover效果 */
+.page-wrapper .uni-easyinput__content-clear-icon:hover {
+	color: #359568 !important;
+}
 
-		@media screen and (min-width: 768px) {
-			margin-bottom: 24px;
-		}
-	}
+.page-wrapper .uni-forms-item__label {
+	color: #2c3e50;
+	font-weight: 500;
+	font-size: 14px;
+}
 
-	:deep(.uni-forms-item__content) {
-		flex: 1;
-	}
+.page-wrapper .uni-forms-item {
+	margin-bottom: 20px;
 
 	@media screen and (min-width: 768px) {
-		:deep(.uni-forms-item__label) {
-			font-size: 15px !important;
-			min-width: 100px !important;
-		}
+		margin-bottom: 24px;
 	}
+}
 
-	@media screen and (min-width: 1200px) {
-		:deep(.uni-forms-item__label) {
-			font-size: 16px !important;
-			min-width: 110px !important;
-		}
+.page-wrapper .uni-forms-item__content {
+	flex: 1;
+}
+
+@media screen and (min-width: 768px) {
+	.page-wrapper .uni-forms-item__label {
+		font-size: 15px !important;
+		min-width: 100px !important;
 	}
+}
+
+@media screen and (min-width: 1200px) {
+	.page-wrapper .uni-forms-item__label {
+		font-size: 16px !important;
+		min-width: 110px !important;
+	}
+}
 </style>

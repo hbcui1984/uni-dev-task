@@ -611,17 +611,21 @@
 	padding: 16px 0;
 }
 
-/* 下拉选择器样式优化 */
-:deep(.uni-stat__select) {
+/* 下拉选择器样式优化 - 已移至文件末尾的非 scoped 样式块 */
+</style>
+
+<style lang="scss">
+/* 下拉选择器样式优化（全局样式，针对 list-done 页面） */
+.container .uni-stat__select {
 	min-width: 100px;
 }
 
-:deep(.uni-select) {
+.container .uni-select {
 	border-color: #e9ecef;
 	border-radius: 8px;
 }
 
-:deep(.uni-select:hover) {
+.container .uni-select:hover {
 	border-color: #42b983;
 }
 </style>

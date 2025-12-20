@@ -172,45 +172,47 @@
 	.btn-delete {
 		margin-left: 0;
 	}
+</style>
 
+<style lang="scss">
 	/* 绿色主题按钮 */
-	:deep(button[type="primary"]) {
+	.container button[type="primary"] {
 		background-color: #42b983 !important;
 		border-color: #42b983 !important;
 		color: #ffffff;
 	}
 
-	:deep(button[type="primary"]:hover) {
+	.container button[type="primary"]:hover {
 		background-color: #359568 !important;
 		box-shadow: 0 4px 14px rgba(66, 185, 131, 0.3);
 		transform: translateY(-2px);
 	}
 
-	:deep(button[type="primary"]:active) {
+	.container button[type="primary"]:active {
 		background-color: #2a7a53 !important;
 		transform: translateY(0);
 	}
 
 	/* 默认按钮优化 */
-	:deep(button[type="default"]) {
+	.container button[type="default"] {
 		background-color: #ffffff !important;
 		color: #42b983 !important;
 		border: 1px solid #42b983 !important;
 	}
 
-	:deep(button[type="default"]:hover) {
+	.container button[type="default"]:hover {
 		background-color: #f0fdf7 !important;
 		border-color: #359568 !important;
 		color: #359568 !important;
 	}
 
 	/* 警告按钮优化 */
-	:deep(button[type="warn"]) {
+	.container button[type="warn"] {
 		background-color: #e74c3c !important;
 		border-color: #e74c3c !important;
 	}
 
-	:deep(button[type="warn"]:hover) {
+	.container button[type="warn"]:hover {
 		background-color: #c0392b !important;
 		box-shadow: 0 4px 14px rgba(231, 76, 60, 0.3);
 		transform: translateY(-2px);

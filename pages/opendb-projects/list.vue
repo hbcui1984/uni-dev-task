@@ -289,90 +289,7 @@
 		color: #ffffff !important;
 	}
 
-	/* uni-list 样式 */
-	:deep(.uni-list) {
-		background-color: transparent;
-		border: none;
-	}
-
-	:deep(.uni-list-item) {
-		background-color: #ffffff;
-		border-radius: 8px;
-		margin-bottom: 12px;
-		border: 1px solid #e9ecef;
-		transition: all 0.25s ease;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-	}
-
-	:deep(.uni-list-item:hover) {
-		border-color: #42b983;
-		box-shadow: 0 4px 12px rgba(66, 185, 131, 0.15);
-		transform: translateY(-2px);
-	}
-
-	:deep(.uni-list-item__container) {
-		padding: 16px 20px;
-	}
-
-	:deep(.uni-list-item__content-title) {
-		color: #2c3e50;
-		font-weight: 500;
-		font-size: 15px;
-	}
-
-	/* PC 端列表项优化 */
-	@media screen and (min-width: 768px) {
-		:deep(.uni-list-item) {
-			margin-bottom: 14px;
-			border-radius: 10px;
-		}
-
-		:deep(.uni-list-item__container) {
-			padding: 20px 24px;
-		}
-
-		:deep(.uni-list-item__content-title) {
-			font-size: 16px;
-		}
-	}
-
-	@media screen and (min-width: 1200px) {
-		:deep(.uni-list-item) {
-			margin-bottom: 16px;
-			border-radius: 12px;
-		}
-
-		:deep(.uni-list-item__container) {
-			padding: 24px 28px;
-		}
-
-		:deep(.uni-list-item__content-title) {
-			font-size: 18px;
-		}
-	}
-
-	:deep(.uni-list-item:hover .uni-list-item__content-title) {
-		color: #42b983;
-	}
-
-	:deep(.uni-list-item__extra-text) {
-		color: #6c757d;
-		font-size: 13px;
-	}
-
-	:deep(.uni-list-item .uni-icons) {
-		color: #adb5bd;
-		transition: all 0.25s ease;
-	}
-
-	:deep(.uni-list-item:hover .uni-icons) {
-		color: #42b983;
-	}
-
-	/* 加载状态 */
-	:deep(.uni-load-more) {
-		color: #42b983;
-	}
+	/* uni-list / uni-load-more 样式已移至无 scoped 块 */
 
 	/* 错误提示 */
 	view[v-if="error"] {
@@ -384,4 +301,92 @@
 		color: #e74c3c;
 		font-size: 14px;
 	}
+</style>
+
+<!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
+<style lang="scss">
+/* projects/list.vue - uni-list 样式 */
+.container .uni-list {
+	background-color: transparent;
+	border: none;
+}
+
+.container .uni-list-item {
+	background-color: #ffffff;
+	border-radius: 8px;
+	margin-bottom: 12px;
+	border: 1px solid #e9ecef;
+	transition: all 0.25s ease;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.container .uni-list-item:hover {
+	border-color: #42b983;
+	box-shadow: 0 4px 12px rgba(66, 185, 131, 0.15);
+	transform: translateY(-2px);
+}
+
+.container .uni-list-item__container {
+	padding: 16px 20px;
+}
+
+.container .uni-list-item__content-title {
+	color: #2c3e50;
+	font-weight: 500;
+	font-size: 15px;
+}
+
+/* PC 端列表项优化 */
+@media screen and (min-width: 768px) {
+	.container .uni-list-item {
+		margin-bottom: 14px;
+		border-radius: 10px;
+	}
+
+	.container .uni-list-item__container {
+		padding: 20px 24px;
+	}
+
+	.container .uni-list-item__content-title {
+		font-size: 16px;
+	}
+}
+
+@media screen and (min-width: 1200px) {
+	.container .uni-list-item {
+		margin-bottom: 16px;
+		border-radius: 12px;
+	}
+
+	.container .uni-list-item__container {
+		padding: 24px 28px;
+	}
+
+	.container .uni-list-item__content-title {
+		font-size: 18px;
+	}
+}
+
+.container .uni-list-item:hover .uni-list-item__content-title {
+	color: #42b983;
+}
+
+.container .uni-list-item__extra-text {
+	color: #6c757d;
+	font-size: 13px;
+}
+
+.container .uni-list-item .uni-icons {
+	color: #adb5bd;
+	transition: all 0.25s ease;
+}
+
+.container .uni-list-item:hover .uni-icons {
+	color: #42b983;
+}
+
+/* 加载状态 */
+.container .uni-load-more {
+	color: #42b983;
+}
 </style>

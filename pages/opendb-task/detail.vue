@@ -2207,15 +2207,7 @@
 	padding: 16px 20px;
 }
 
-/* 修复 uni-datetime-picker 弹出层层级问题 */
-:deep(.uni-datetime-picker) {
-	position: relative;
-	z-index: 100;
-}
-
-:deep(.uni-date-x) {
-	z-index: 1000;
-}
+/* uni-datetime-picker 样式已移至无 scoped 块 */
 
 .task-title-row {
 	margin-bottom: 20px;
@@ -3572,5 +3564,18 @@
 	.comment-actions {
 		opacity: 1;
 	}
+}
+</style>
+
+<!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
+<style lang="scss">
+/* detail.vue - 修复 uni-datetime-picker 弹出层层级问题 */
+.page-container .uni-datetime-picker {
+	position: relative;
+	z-index: 100;
+}
+
+.page-container .uni-date-x {
+	z-index: 1000;
 }
 </style>

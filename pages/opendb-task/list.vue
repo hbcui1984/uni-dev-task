@@ -163,9 +163,15 @@
 		</view>
 
 		<!-- 移动端悬浮添加按钮 FAB -->
-		<view class="mobile-fab" v-if="!isWideScreen" @click="showMobileAddMenu">
-			<uni-icons type="plusempty" size="24" color="#fff"></uni-icons>
-		</view>
+		<uni-fab
+			v-if="!isWideScreen"
+			class="mobile-fab"
+			horizontal="right"
+			vertical="bottom"
+			:pop-menu="false"
+			:pattern="fabPattern"
+			@fabClick="showMobileAddMenu"
+		/>
 
 		<!-- 设置负责人弹出层 -->
 		<uni-popup ref="popup-assignee-set" type="center" background-color="#fff">
@@ -263,6 +269,11 @@
 		mixins: [responsiveMixin],
 		data() {
 			return {
+				// uni-fab 样式配置
+				fabPattern: {
+					buttonColor: '#42b983',
+					iconColor: '#fff'
+				},
 				project_name: '',
 				project_id: '',
 				taskList: [],
@@ -1489,21 +1500,7 @@
 	background-color: #359568 !important;
 }
 
-/* 弹出层下拉样式 */
-.filter-popup :deep(.uni-stat__select) {
-	border-radius: 8px !important;
-}
-
-/* 修复下拉列表被截断的问题 */
-.filter-popup :deep(.uni-select__selector) {
-	max-height: 200px;
-	overflow-y: auto;
-}
-
-/* 确保 uni-popup 容器不截断内容 */
-:deep(.uni-popup__wrapper) {
-	overflow: visible !important;
-}
+/* 弹出层下拉样式 - 已移至无 scoped 块 */
 
 
 .error-message {
@@ -1610,41 +1607,7 @@
 	box-shadow: 0 4px 14px rgba(66, 185, 131, 0.2) !important;
 }
 
-/* uni-forms 样式优化 */
-:deep(.uni-forms-item__label) {
-	color: #2c3e50;
-	font-weight: 500;
-}
-
-:deep(.uni-easyinput__content-input) {
-	border-color: #e9ecef !important;
-	border-radius: 6px !important;
-}
-
-:deep(.uni-easyinput__content-input:focus) {
-	border-color: #42b983 !important;
-	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
-}
-
-/* uni-data-select 样式优化 */
-:deep(.uni-stat__select) {
-	border-color: #e9ecef !important;
-	border-radius: 8px !important;
-}
-
-:deep(.uni-stat__select:hover) {
-	border-color: #42b983 !important;
-}
-
-:deep(.uni-stat__select-text) {
-	color: #42b983 !important;
-	font-weight: 500 !important;
-}
-
-/* uni-popup 样式优化 */
-:deep(.uni-popup__wrapper) {
-	border-radius: 12px !important;
-}
+/* uni-forms / uni-data-select / uni-popup 样式优化 - 已移至无 scoped 块 */
 
 /* ===== 移动端精简头部 ===== */
 .mobile-task-header {
@@ -1698,25 +1661,75 @@
 	background-color: #e6fcf5;
 }
 
-/* ===== 移动端悬浮添加按钮 FAB ===== */
-.mobile-fab {
-	position: fixed;
-	right: 20px;
-	bottom: calc(80px + var(--safe-area-bottom, 0px));
-	width: 56px;
-	height: 56px;
-	border-radius: 28px;
-	background: linear-gradient(135deg, #42b983 0%, #359568 100%);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	box-shadow: 0 4px 16px rgba(66, 185, 131, 0.4);
-	z-index: 100;
-	transition: all 0.25s ease;
+</style>
+
+<!--
+	独立的无 scoped 样式块，用于覆盖 uni-fab 组件样式
+	原因：:deep() 选择器在小程序和 App 平台不支持
+-->
+<style lang="scss">
+/* ===== 移动端悬浮添加按钮 FAB - 覆盖 uni-fab 默认样式 ===== */
+.mobile-fab .uni-fab__circle {
+	right: 20px !important;
+	left: auto !important;
+	bottom: calc(80px + var(--safe-area-bottom, 0px)) !important;
+	width: 56px !important;
+	height: 56px !important;
+	border-radius: 28px !important;
+	background: linear-gradient(135deg, #42b983 0%, #359568 100%) !important;
+	box-shadow: 0 4px 16px rgba(66, 185, 131, 0.4) !important;
+	z-index: 100 !important;
+	transition: all 0.25s ease !important;
 }
 
-.mobile-fab:active {
-	transform: scale(0.92);
-	box-shadow: 0 2px 8px rgba(66, 185, 131, 0.3);
+.mobile-fab .uni-fab__circle:active {
+	transform: scale(0.92) !important;
+	box-shadow: 0 2px 8px rgba(66, 185, 131, 0.3) !important;
+}
+
+/* ===== list.vue - 弹出层下拉样式 ===== */
+.filter-popup .uni-stat__select {
+	border-radius: 8px !important;
+}
+
+.filter-popup .uni-select__selector {
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.container .uni-popup__wrapper {
+	overflow: visible !important;
+	border-radius: 12px !important;
+}
+
+/* ===== list.vue - uni-forms 样式优化 ===== */
+.container .uni-forms-item__label {
+	color: #2c3e50;
+	font-weight: 500;
+}
+
+.container .uni-easyinput__content-input {
+	border-color: #e9ecef !important;
+	border-radius: 6px !important;
+}
+
+.container .uni-easyinput__content-input:focus {
+	border-color: #42b983 !important;
+	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
+}
+
+/* ===== list.vue - uni-data-select 样式优化 ===== */
+.container .uni-stat__select {
+	border-color: #e9ecef !important;
+	border-radius: 8px !important;
+}
+
+.container .uni-stat__select:hover {
+	border-color: #42b983 !important;
+}
+
+.container .uni-stat__select-text {
+	color: #42b983 !important;
+	font-weight: 500 !important;
 }
 </style>

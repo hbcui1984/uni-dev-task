@@ -216,18 +216,22 @@ export default {
 	font-size: 14px;
 }
 
-/* Checkbox 样式 */
-:deep(checkbox .uni-checkbox-input) {
+</style>
+
+<!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
+<style lang="scss">
+/* SubTaskList - Checkbox 样式 */
+.sub-task-list checkbox .uni-checkbox-input {
 	border-color: #42b983;
 }
 
-:deep(checkbox .uni-checkbox-input.uni-checkbox-input-checked) {
+.sub-task-list checkbox .uni-checkbox-input.uni-checkbox-input-checked {
 	background-color: #42b983;
 	border-color: #42b983;
 }
 
-/* 按钮样式 */
-:deep(button[type="primary"]) {
+/* SubTaskList - 按钮样式 */
+.sub-task-list button[type="primary"] {
 	background-color: #42b983;
 	border-color: #42b983;
 	border-radius: 6px;
@@ -235,12 +239,12 @@ export default {
 	transition: all 0.25s ease;
 }
 
-:deep(button[type="primary"]:hover) {
+.sub-task-list button[type="primary"]:hover {
 	background-color: #359568;
 	box-shadow: 0 4px 14px rgba(66, 185, 131, 0.2);
 }
 
-:deep(button[type="primary"]:disabled) {
+.sub-task-list button[type="primary"]:disabled {
 	background-color: #adb5bd;
 	border-color: #adb5bd;
 	opacity: 0.6;

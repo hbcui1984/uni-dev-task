@@ -100,14 +100,18 @@ export default {
 	transform: translateY(-1px);
 }
 
-/* Checkbox 样式 */
-:deep(checkbox .uni-checkbox-input) {
+</style>
+
+<!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
+<style lang="scss">
+/* TaskHeader - Checkbox 样式 */
+.task-header checkbox .uni-checkbox-input {
 	border-color: #42b983;
 	width: 20px;
 	height: 20px;
 }
 
-:deep(checkbox .uni-checkbox-input.uni-checkbox-input-checked) {
+.task-header checkbox .uni-checkbox-input.uni-checkbox-input-checked {
 	background-color: #42b983;
 	border-color: #42b983;
 }

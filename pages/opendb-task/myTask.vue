@@ -1287,9 +1287,6 @@ export default {
 	gap: 8px;
 }
 
-.project-info :deep(.uni-icons) {
-	color: #ffffff !important;
-}
 
 .project-name {
 	font-size: 16px;
@@ -1308,16 +1305,9 @@ export default {
 	transition: all 0.25s ease;
 }
 
-.project-action :deep(.uni-icons) {
-	color: rgba(255, 255, 255, 0.7) !important;
-}
 
 .project-action:hover {
 	background-color: rgba(255, 255, 255, 0.15);
-}
-
-.project-action:hover :deep(.uni-icons) {
-	color: #ffffff !important;
 }
 
 .task-groups {
@@ -1469,24 +1459,6 @@ export default {
 	background-color: #e6fcf5;
 }
 
-/* 列表项样式优化 */
-:deep(.uni-list-item) {
-	transition: all 0.25s ease;
-}
-
-:deep(.uni-list-item:hover) {
-	background-color: #f0fdf7;
-}
-
-/* Checkbox 样式优化 */
-:deep(checkbox .uni-checkbox-input) {
-	border-color: #42b983;
-}
-
-:deep(checkbox .uni-checkbox-input.uni-checkbox-input-checked) {
-	background-color: #42b983;
-	border-color: #42b983;
-}
 
 /* 自定义任务列表 */
 .task-list-custom {
@@ -1744,5 +1716,41 @@ export default {
 	flex: 1;
 	font-size: 14px;
 	color: #333;
+}
+</style>
+
+<!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
+<style lang="scss">
+/* myTask - 项目信息区域图标 */
+.my-task-page .project-info .uni-icons {
+	color: #ffffff !important;
+}
+
+/* myTask - 项目操作按钮图标 */
+.my-task-page .project-action .uni-icons {
+	color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.my-task-page .project-action:hover .uni-icons {
+	color: #ffffff !important;
+}
+
+/* myTask - 列表项样式优化 */
+.my-task-page .uni-list-item {
+	transition: all 0.25s ease;
+}
+
+.my-task-page .uni-list-item:hover {
+	background-color: #f0fdf7;
+}
+
+/* myTask - Checkbox 样式优化 */
+.my-task-page checkbox .uni-checkbox-input {
+	border-color: #42b983;
+}
+
+.my-task-page checkbox .uni-checkbox-input.uni-checkbox-input-checked {
+	background-color: #42b983;
+	border-color: #42b983;
 }
 </style>

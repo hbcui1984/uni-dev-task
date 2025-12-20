@@ -248,51 +248,56 @@
 		}
 	}
 
-	/* 主要按钮样式 - 绿色主题 */
-	:deep(button[type="primary"]) {
-		background-color: #42b983 !important;
-		border-color: #42b983 !important;
-		color: #ffffff;
-	}
+	/* :deep() 样式已移至无 scoped 块 */
+</style>
 
-	:deep(button[type="primary"]:hover) {
-		background-color: #359568 !important;
-		box-shadow: 0 4px 14px rgba(66, 185, 131, 0.3);
-		transform: translateY(-2px);
-	}
+<!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
+<style lang="scss">
+/* edit.vue - 主要按钮样式 - 绿色主题 */
+.uni-container button[type="primary"] {
+	background-color: #42b983 !important;
+	border-color: #42b983 !important;
+	color: #ffffff;
+}
 
-	:deep(button[type="primary"]:active) {
-		background-color: #2a7a53 !important;
-		transform: translateY(0);
-	}
+.uni-container button[type="primary"]:hover {
+	background-color: #359568 !important;
+	box-shadow: 0 4px 14px rgba(66, 185, 131, 0.3);
+	transform: translateY(-2px);
+}
 
-	/* uni-easyinput 样式优化 */
-	:deep(.uni-easyinput__content) {
-		border: 1px solid #e9ecef;
-		border-radius: 6px;
-		transition: all 0.25s ease;
-	}
+.uni-container button[type="primary"]:active {
+	background-color: #2a7a53 !important;
+	transform: translateY(0);
+}
 
-	:deep(.uni-easyinput__content:hover) {
-		border-color: #42b983;
-		background-color: #f0fdf7;
-	}
+/* edit.vue - uni-easyinput 样式优化 */
+.uni-container .uni-easyinput__content {
+	border: 1px solid #e9ecef;
+	border-radius: 6px;
+	transition: all 0.25s ease;
+}
 
-	:deep(.is-focused .uni-easyinput__content) {
-		border-color: #42b983 !important;
-		box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
-	}
+.uni-container .uni-easyinput__content:hover {
+	border-color: #42b983;
+	background-color: #f0fdf7;
+}
 
-	/* 清除图标颜色 - 绿色主题 */
-	:deep(.uni-easyinput__content-clear-icon) {
-		color: #42b983 !important;
-	}
+.uni-container .is-focused .uni-easyinput__content {
+	border-color: #42b983 !important;
+	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
+}
 
-	:deep(.uni-icons) {
-		color: #42b983 !important;
-	}
+/* edit.vue - 清除图标颜色 - 绿色主题 */
+.uni-container .uni-easyinput__content-clear-icon {
+	color: #42b983 !important;
+}
 
-	:deep(.uni-easyinput__content-clear-icon:hover) {
-		color: #359568 !important;
-	}
+.uni-container .uni-icons {
+	color: #42b983 !important;
+}
+
+.uni-container .uni-easyinput__content-clear-icon:hover {
+	color: #359568 !important;
+}
 </style>

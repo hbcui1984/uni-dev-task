@@ -145,26 +145,30 @@ export default {
 	font-weight: 600;
 }
 
-/* uni-datetime-picker 样式优化 */
-:deep(.uni-date-x) {
+</style>
+
+<!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
+<style lang="scss">
+/* TaskInfo - uni-datetime-picker 样式优化 */
+.task-info .uni-date-x {
 	color: #42b983;
 	font-weight: 500;
 }
 
-:deep(.uni-date-x:hover) {
+.task-info .uni-date-x:hover {
 	color: #359568;
 }
 
-/* uni-data-select 样式优化 */
-:deep(.uni-stat__select) {
+/* TaskInfo - uni-data-select 样式优化 */
+.task-info .uni-stat__select {
 	border-color: transparent;
 }
 
-:deep(.uni-stat__select:hover) {
+.task-info .uni-stat__select:hover {
 	border-color: #42b983;
 }
 
-:deep(.uni-stat__select-text) {
+.task-info .uni-stat__select-text {
 	color: #42b983;
 	font-weight: 500;
 }
