@@ -357,8 +357,8 @@
 										class="subtask-checkbox"
 										color="#42b983"
 									/>
-									<view class="subtask-content">
-										<text class="subtask-title" :class="{'task-completed': item.status > 0}">
+									<view class="subtask-content" @click="goToSubTask(item)">
+										<text class="subtask-title subtask-title-clickable" :class="{'task-completed': item.status > 0}">
 											{{item.title}}
 										</text>
 										<view v-if="item.status == 2 && item.completion_uid && item.completion_uid.length > 0" class="subtask-completion">
@@ -878,6 +878,19 @@
 				if (!this.parentTask) return
 				uni.redirectTo({
 					url: `/pages/opendb-task/detail?id=${this.parentTask._id}&pid=${this.projectId}`
+				})
+			},
+
+			// 跳转到子任务详情（支持多级子任务）
+			goToSubTask(item) {
+				if (!item || !item._id) return
+				// 检查是否是临时ID（正在创建中）
+				if (item._id.startsWith('temp_')) {
+					uni.showToast({ title: '任务正在保存中，请稍后', icon: 'none' })
+					return
+				}
+				uni.navigateTo({
+					url: `/pages/opendb-task/detail?id=${item._id}&pid=${this.projectId}`
 				})
 			},
 
@@ -2881,12 +2894,17 @@
 
 .subtask-content {
 	flex: 1;
+	cursor: pointer;
 }
 
 .subtask-title {
 	font-size: 14px;
 	color: #2c3e50;
 	line-height: 1.5;
+}
+
+.subtask-title-clickable:hover {
+	color: #42b983;
 }
 
 .subtask-completion {
