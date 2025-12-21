@@ -337,9 +337,9 @@ textarea:focus {
 	background-color: #fafdfb !important;
 }
 
-/* uni-easyinput 焦点样式 */
-.uni-easyinput__content:focus-within,
-.is-focused .uni-easyinput__content {
+/* uni-easyinput 焦点样式 - 仅对有边框的输入框生效 */
+.uni-easyinput__content.is-input-border:focus-within,
+.is-focused .uni-easyinput__content.is-input-border {
 	border-color: var(--color-primary) !important;
 	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
 	background-color: #fafdfb !important;
@@ -374,7 +374,6 @@ textarea:focus {
 /* 移除浏览器默认的蓝色轮廓 */
 *:focus-visible {
 	outline: none !important;
-	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
 }
 
 /* ===== Switch 组件全局样式覆盖 ===== */
