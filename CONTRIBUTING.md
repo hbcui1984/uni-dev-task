@@ -1,6 +1,6 @@
 # 贡献指南
 
-感谢你对 uni-dev-task 项目的关注！我们欢迎任何形式的贡献。
+感谢你对 uni-task 项目的关注！我们欢迎任何形式的贡献。
 
 ## 如何贡献
 
@@ -83,8 +83,8 @@ docs: 更新 README 安装说明
 
 1. 克隆项目
    ```bash
-   git clone https://github.com/your-username/uni-dev-task.git
-   cd uni-dev-task
+   git clone https://github.com/hbcui1984/uni-task.git
+   cd uni-task
    ```
 
 2. 安装依赖
@@ -112,6 +112,6 @@ docs: 更新 README 安装说明
 
 如有任何问题，欢迎通过以下方式联系：
 
-- 提交 [GitHub Issue](https://github.com/your-username/uni-dev-task/issues)
+- 提交 [GitHub Issue](https://github.com/hbcui1984/uni-task/issues)
 
 感谢你的贡献！

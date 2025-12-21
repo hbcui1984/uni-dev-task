@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-**uni-dev-task** 是一个基于 uni-app + uniCloud 的轻量级团队任务管理系统，适用于中小型团队的项目协作。
+**uni-task** 是一个基于 uni-app + uniCloud 的轻量级团队任务管理系统，适用于中小型团队的项目协作。
 
 - **版本**: 2.1.5
 - **框架**: uni-app (Vue 3)
@@ -14,7 +14,7 @@
 ## 目录结构
 
 ```
-uni-dev-task/
+uni-task/
 ├── components/              # 自定义组件
 │   ├── CustomNavBar/       # 自定义导航栏
 │   ├── TaskDetail/         # 任务详情组件集

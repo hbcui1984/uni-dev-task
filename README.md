@@ -1,4 +1,4 @@
-# uni-dev-task
+# uni-task
 
 基于 uni-app + uniCloud 的轻量级团队任务管理系统，适用于中小型团队的项目协作。一套代码，多端运行。
 
@@ -45,7 +45,7 @@
 ## 项目结构
 
 ```
-uni-dev-task/
+uni-task/
 ├── components/              # 自定义组件
 │   ├── TaskList/           # 任务列表组件（支持拖拽）
 │   └── TaskDetail/         # 任务详情组件集
@@ -78,10 +78,10 @@ uni-dev-task/
 
 ```bash
 # 克隆项目
-git clone https://github.com/hbcui1984/uni-dev-task.git
+git clone https://github.com/hbcui1984/uni-task.git
 
 # 进入项目目录
-cd uni-dev-task
+cd uni-task
 
 # 安装依赖
 npm install
