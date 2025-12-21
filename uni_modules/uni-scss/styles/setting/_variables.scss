@@ -88,8 +88,8 @@ $uni-headings: map-deep-merge(
 
 
 
-// 主色
-$uni-primary: #2979ff !default;
+// 主色（已修改为 Vue 绿，与项目主题一致）
+$uni-primary: #42b983 !default;
 $uni-primary-disable:lighten($uni-primary,20%) !default;
 $uni-primary-light: lighten($uni-primary,25%) !default;
 

@@ -4,8 +4,8 @@ $uni-space-root: 2;
 // 边框半径默认值
 $uni-radius-root:5px;
 
-// 主色
-$uni-primary: #2979ff;
+// 主色（已修改为 Vue 绿，与项目主题一致）
+$uni-primary: #42b983;
 $uni-primary-disable:mix(#fff,$uni-primary,50%);
 $uni-primary-light: mix(#fff,$uni-primary,80%);
 
