@@ -206,11 +206,6 @@
 				"navigationBarTitleText": "实名认证"
 			}
 		}, {
-			"path": "uni_modules/uni-media-library/pages/index/index",
-			"style": {
-				"navigationBarTitleText": "媒体库"
-			}
-		}, {
 			"path": "pages/task-logs/task-logs",
 			"style": {
 				"navigationStyle": "custom",
