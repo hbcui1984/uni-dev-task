@@ -6,6 +6,7 @@
  * - 支持新建项目和通过邀请码加入项目
  * - 自动过滤已归档的项目
  * - 点击项目进入任务列表页面
+ * - 底部提供已归档项目入口
  *
  * 路由：/pages/opendb-projects/list
 -->
@@ -35,6 +36,12 @@
 				</uni-list>
 			</view>
 		</unicloud-db>
+
+		<!-- 已归档项目入口 -->
+		<view class="archived-link" @click="gotoArchivedProjects">
+			<uni-icons type="folder" size="16" color="#adb5bd"></uni-icons>
+			<text class="archived-link-text">查看已归档项目</text>
+		</view>
 	</view>
 </template>
 
@@ -100,6 +107,12 @@
 				// 打开加入项目页面
 				uni.navigateTo({
 					url: './join'
+				})
+			},
+			gotoArchivedProjects() {
+				// 打开已归档项目页面
+				uni.navigateTo({
+					url: './list-archived'
 				})
 			}
 		}
@@ -300,6 +313,31 @@
 		border-radius: 8px;
 		color: #e74c3c;
 		font-size: 14px;
+	}
+
+	/* 已归档项目入口 */
+	.archived-link {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		margin-top: 24px;
+		padding: 12px;
+		cursor: pointer;
+		transition: all 0.25s ease;
+	}
+
+	.archived-link:hover {
+		opacity: 0.8;
+	}
+
+	.archived-link-text {
+		color: #adb5bd;
+		font-size: 13px;
+	}
+
+	.archived-link:hover .archived-link-text {
+		color: #6c757d;
 	}
 </style>
 

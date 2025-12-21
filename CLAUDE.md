@@ -27,6 +27,7 @@ uni-dev-task/
 ├── pages/                   # 页面
 │   ├── opendb-projects/    # 项目管理页面
 │   │   ├── list.vue        # 项目列表（首页）
+│   │   ├── list-archived.vue # 已归档项目列表
 │   │   ├── add.vue         # 新建项目
 │   │   ├── edit.vue        # 编辑项目
 │   │   ├── member.vue      # 成员管理

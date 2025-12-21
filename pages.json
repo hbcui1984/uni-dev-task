@@ -101,6 +101,12 @@
 			}
 		},
 		{
+			"path": "pages/opendb-projects/list-archived",
+			"style": {
+				"navigationBarTitleText": "已归档项目"
+			}
+		},
+		{
 			"path": "uni_modules/uni-upgrade-center-app/pages/upgrade-popup",
 			"style": {
 				"app-plus": {
