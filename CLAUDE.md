@@ -173,6 +173,41 @@ uni-dev-task/
 - 项目级权限：管理员 vs 普通成员
 - 数据库 permission 控制读写权限
 
+### 云函数中获取用户 uid
+
+**常见错误**：`this.getClientInfo().uid` 返回 `undefined`，因为 `getClientInfo()` 只返回设备信息。
+
+**正确做法**：
+```javascript
+const uniIdCommon = require('uni-id-common')
+
+module.exports = {
+    _before: async function() {
+        const clientInfo = this.getClientInfo()
+        this.uniIdCommon = uniIdCommon.createInstance({ clientInfo })
+
+        const token = this.getUniIdToken()
+        if (!token) {
+            throw { errCode: 'TOKEN_INVALID', errMsg: '缺少token' }
+        }
+
+        const payload = await this.uniIdCommon.checkToken(token)
+        if (payload.errCode) {
+            throw { errCode: payload.errCode, errMsg: payload.errMsg || '无效的token' }
+        }
+
+        this.userInfo = { uid: payload.uid }
+    }
+}
+```
+
+**API 区分**：
+| 方法 | 返回值 |
+|------|--------|
+| `this.getClientInfo()` | 设备信息（platform, os, deviceId） |
+| `this.getUniIdToken()` | 客户端 token 字符串 |
+| `uniIdCommon.checkToken(token)` | 用户信息（uid, errCode） |
+
 ### 依赖说明
 - `sortablejs` - 任务拖拽排序
 - `qrcodejs2` - 二维码生成
