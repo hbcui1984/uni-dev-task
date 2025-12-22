@@ -337,11 +337,18 @@ textarea:focus {
 	background-color: #fafdfb !important;
 }
 
-/* uni-easyinput 焦点样式 - 仅对有边框的输入框生效 */
+/* uni-easyinput 焦点样式 - 有边框的输入框 */
 .uni-easyinput__content.is-input-border:focus-within,
 .is-focused .uni-easyinput__content.is-input-border {
 	border-color: var(--color-primary) !important;
 	box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1) !important;
+	background-color: #fafdfb !important;
+}
+
+/* uni-easyinput 焦点样式 - 无边框的输入框（登录页等）使用底部边框 */
+.uni-easyinput__content:not(.is-input-border):focus-within,
+.is-focused .uni-easyinput__content:not(.is-input-border) {
+	border-bottom: 2px solid var(--color-primary) !important;
 	background-color: #fafdfb !important;
 }
 

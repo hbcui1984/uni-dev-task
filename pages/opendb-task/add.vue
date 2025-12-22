@@ -317,10 +317,6 @@ export default {
 						}))
 					}
 				}
-
-					groups: this.groupOptions.length,
-					members: this.memberOptions.length
-				})
 			} catch (error) {
 				console.error('预加载失败:', error)
 				uni.showToast({
