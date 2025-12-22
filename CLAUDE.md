@@ -209,6 +209,14 @@ module.exports = {
 | `this.getUniIdToken()` | 客户端 token 字符串 |
 | `uniIdCommon.checkToken(token)` | 用户信息（uid, errCode） |
 
+### Git 提交规范
+
+**重要**：
+1. **不要主动提交到 GitHub**
+2. 每次提交前必须**列出待提交的文件清单**
+3. **等待用户确认后**才能执行 `git add` 和 `git commit`
+4. 推送到远程仓库前也需要用户确认
+
 ### 依赖说明
 - `sortablejs` - 任务拖拽排序
 - `qrcodejs2` - 二维码生成
