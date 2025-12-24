@@ -1,9 +1,5 @@
 /*每个页面公共css */
 
-uni-page {
-	background-color: rgb(244, 247, 237);
-}
-
 .container {
 	max-width: 1200px;
 	margin: 15px auto;

@@ -29,7 +29,7 @@
           </view>
 
           <!-- 移动端：简化布局 -->
-          <view v-if="!isPC" class="mobile-task-item" @click="handleTaskClick(item._id)">
+          <view v-if="!isPC" class="mobile-task-item">
             <checkbox @click.stop="finishTask(item._id)" color="#42b983" class="mobile-checkbox" />
             <view class="mobile-task-content">
               <view class="mobile-task-title-row">
@@ -216,7 +216,7 @@
           </view>
 
           <!-- 移动端：简化布局 -->
-          <view v-if="!isPC" class="mobile-task-item" @click="handleTaskClick(item._id)">
+          <view v-if="!isPC" class="mobile-task-item">
             <checkbox @click.stop="finishTask(item._id)" color="#42b983" class="mobile-checkbox" />
             <view class="mobile-task-content">
               <view class="mobile-task-title-row">
