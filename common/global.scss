@@ -373,6 +373,7 @@ textarea:focus {
 	outline: none;
 }
 
+/* #ifdef H5 */
 /* 覆盖所有可能的蓝色焦点样式 */
 *:focus {
 	outline-color: var(--color-primary) !important;
@@ -382,6 +383,7 @@ textarea:focus {
 *:focus-visible {
 	outline: none !important;
 }
+/* #endif */
 
 /* ===== Switch 组件全局样式覆盖 ===== */
 /* 覆盖 uni-app switch 组件的默认蓝色 */

@@ -1182,9 +1182,11 @@ export default {
   color: #359568;
 }
 
+/* #ifdef H5 */
 .quick-add-trigger text {
   font-weight: 500;
 }
+/* #endif */
 
 /* 子任务徽章 */
 .subtask-badge {
@@ -1199,9 +1201,11 @@ export default {
   flex-shrink: 0;
 }
 
+/* #ifdef H5 */
 .subtask-badge text {
   font-weight: 500;
 }
+/* #endif */
 
 .subtask-badge .subtask-all-done {
   color: #42b983;
@@ -1361,6 +1365,7 @@ export default {
   background-color: #f0fdf7;
 }
 
+/* #ifdef H5 */
 /* TaskList - Checkbox 样式优化 */
 .task-list checkbox .uni-checkbox-input {
   border-color: #42b983 !important;
@@ -1387,4 +1392,5 @@ export default {
 .task-completing checkbox .uni-checkbox-input::after {
   border-color: #fff !important;
 }
+/* #endif */
 </style> 

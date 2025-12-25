@@ -79,6 +79,11 @@
 				>
 					<uni-icons type="settings" size="18" :color="hasActiveFilter ? '#42b983' : '#6c757d'"></uni-icons>
 				</view>
+				<!-- #ifdef MP -->
+				<view class="mobile-menu-btn" @click="openProjectMenu">
+					<uni-icons type="more-filled" size="18" color="#6c757d"></uni-icons>
+				</view>
+				<!-- #endif -->
 			</view>
 		</view>
 
@@ -1658,6 +1663,23 @@
 }
 
 .mobile-filter-btn--active {
+	background-color: #e6fcf5;
+}
+
+.mobile-menu-btn {
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 10px;
+	background-color: #f7f8fa;
+	transition: all 0.2s ease;
+	margin-left: 8px;
+}
+
+.mobile-menu-btn:active {
+	transform: scale(0.95);
 	background-color: #e6fcf5;
 }
 
