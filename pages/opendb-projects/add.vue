@@ -10,7 +10,7 @@
 -->
 <template>
 	<view class="uni-container">
-		<uni-forms ref="form" :value="formData" validate-trigger="submit" err-show-type="toast" label-width="90px">
+		<uni-forms ref="form" :value="formData" validate-trigger="submit" err-show-type="toast" :label-position="isWideScreen ? 'left' : 'top'" :label-width="isWideScreen ? '90px' : 0">
 			<uni-forms-item name="name" label="项目名称">
 				<uni-easyinput v-model="formData.name" />
 			</uni-forms-item>
@@ -28,6 +28,7 @@
 	import {
 		validator
 	} from '../../js_sdk/validator/opendb-projects.js';
+	import { responsiveMixin } from '@/utils/responsive.js'
 
 	const db = uniCloud.database();
 	const dbCollectionName = 'opendb-projects';
@@ -43,6 +44,7 @@
 	}
 
 	export default {
+		mixins: [responsiveMixin],
 		data() {
 			return {
 				formData: {

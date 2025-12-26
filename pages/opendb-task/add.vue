@@ -19,7 +19,7 @@
 					<text class="card-title">任务信息</text>
 				</view>
 				<view class="card-body">
-					<uni-forms ref="form" :value="formData" validate-trigger="submit" err-show-type="toast" :label-width="90">
+					<uni-forms ref="form" :value="formData" validate-trigger="submit" err-show-type="toast" :label-position="isWideScreen ? 'left' : 'top'" :label-width="isWideScreen ? 90 : 0">
 						<!-- 任务标题 -->
 						<uni-forms-item name="title" label="任务标题" required>
 							<uni-easyinput placeholder="输入任务标题" v-model="formData.title" trim="both" />
@@ -168,6 +168,7 @@
 import {
 	validator
 } from '../../js_sdk/validator/opendb-task.js';
+import { responsiveMixin } from '@/utils/responsive.js'
 
 const db = uniCloud.database();
 const dbCollectionName = 'opendb-task';
@@ -201,6 +202,7 @@ function getDate(type) {
 }
 
 export default {
+	mixins: [responsiveMixin],
 	data() {
 		return {
 			formData: {

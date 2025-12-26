@@ -33,7 +33,7 @@
 				<text class="header-subtitle">管理项目的基本信息和配置</text>
 			</view>
 
-		<uni-forms ref="form" :value="formData" validate-trigger="submit" err-show-type="toast" label-width="90px">
+		<uni-forms ref="form" :value="formData" validate-trigger="submit" err-show-type="toast" :label-position="isWideScreen ? 'left' : 'top'" :label-width="isWideScreen ? '90px' : 0">
 			<!-- 基本信息 -->
 			<view class="section">
 				<view class="section-title">
