@@ -880,23 +880,23 @@ export default {
 }
 
 .priority-0 {
+  background-color: #f3f4f6;
+  color: #6c757d;
+}
+
+.priority-1 {
   background-color: #e6fcf5;
   color: #42b983;
 }
 
-.priority-1 {
-  background-color: #f3f4f6;
-  color: #6b7280;
-}
-
 .priority-2 {
   background-color: #fef3c7;
-  color: #d97706;
+  color: #f39c12;
 }
 
 .priority-3 {
   background-color: #fee2e2;
-  color: #dc2626;
+  color: #e74c3c;
 }
 
 .tags {
