@@ -77,20 +77,6 @@
                   <text class="priority-tag" :class="`priority-${item.priority || 0}`" @click.stop="togglePriorityDropdown(item._id, item.priority)">
                     {{ getPriorityText(item.priority) }}
                   </text>
-                  <!-- 优先级下拉选择 -->
-                  <view v-if="openPriorityTaskId === item._id" class="priority-dropdown" @click.stop>
-                    <view
-                      v-for="opt in priorityOptions"
-                      :key="opt.value"
-                      class="priority-option"
-                      :class="{ 'priority-option--selected': currentPriority === opt.value }"
-                      @click.stop="selectPriority(item._id, opt.value)"
-                    >
-                      <view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
-                      <text class="priority-option-label">{{ opt.label }}</text>
-                      <uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
-                    </view>
-                  </view>
                 </view>
                 <view class="assignee-wrapper">
                   <view class="assignee" @click.stop="toggleAssigneeDropdown(item._id, item.assignee)">
@@ -100,53 +86,49 @@
                     </view>
                     <uni-icons v-else type="person" size="14" color="#42b983"></uni-icons>
                   </view>
-                  <!-- 负责人下拉选择 -->
-                  <view v-if="openAssigneeTaskId === item._id" class="assignee-dropdown" @click.stop>
-                    <view class="assignee-dropdown-search">
-                      <uni-icons type="search" size="16" color="#999"></uni-icons>
-                      <input
-                        type="text"
-                        v-model="assigneeSearchKeyword"
-                        placeholder="输入关键字查询"
-                        class="assignee-search-input"
-                        @input="onAssigneeSearch"
-                      />
-                      <uni-icons type="person" size="16" color="#999"></uni-icons>
-                    </view>
-                    <scroll-view scroll-y class="assignee-dropdown-list">
-                      <!-- 无负责人选项 -->
-                      <view
-                        class="assignee-option"
-                        :class="{ 'assignee-option--selected': !currentAssigneeId }"
-                        @click.stop="selectAssignee(item._id, null)"
-                      >
-                        <view class="assignee-option-avatar">
-                          <uni-icons type="person" size="24" color="#42b983"></uni-icons>
-                        </view>
-                        <text class="assignee-option-name">无负责人</text>
-                        <uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
-                      </view>
-                      <!-- 成员列表 -->
-                      <view
-                        v-for="member in filteredMembers"
-                        :key="member.value"
-                        class="assignee-option"
-                        :class="{ 'assignee-option--selected': currentAssigneeId === member.value }"
-                        @click.stop="selectAssignee(item._id, member.value)"
-                      >
-                        <image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
-                        <view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">
-                          {{ member.text.slice(0,1) }}
-                        </view>
-                        <text class="assignee-option-name">{{ member.text }}</text>
-                        <uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
-                      </view>
-                    </scroll-view>
-                  </view>
                 </view>
               </view>
             </template>
           </uni-list-item>
+
+          <!-- 下拉菜单挂在 task-item-wrapper，脱离 uni-list-item 的 overflow 约束 -->
+          <view v-if="isPC && openPriorityTaskId === item._id" class="priority-dropdown task-item-dropdown" @click.stop>
+            <view
+              v-for="opt in priorityOptions"
+              :key="opt.value"
+              class="priority-option"
+              :class="{ 'priority-option--selected': currentPriority === opt.value }"
+              @click.stop="selectPriority(item._id, opt.value)"
+            >
+              <view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
+              <text class="priority-option-label">{{ opt.label }}</text>
+              <uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
+            </view>
+          </view>
+          <view v-if="isPC && openAssigneeTaskId === item._id" class="assignee-dropdown task-item-dropdown" @click.stop>
+            <view class="assignee-dropdown-search">
+              <uni-icons type="search" size="16" color="#999"></uni-icons>
+              <input type="text" v-model="assigneeSearchKeyword" placeholder="输入关键字查询" class="assignee-search-input" @input="onAssigneeSearch" />
+              <uni-icons type="person" size="16" color="#999"></uni-icons>
+            </view>
+            <scroll-view scroll-y class="assignee-dropdown-list">
+              <view class="assignee-option" :class="{ 'assignee-option--selected': !currentAssigneeId }" @click.stop="selectAssignee(item._id, null)">
+                <view class="assignee-option-avatar"><uni-icons type="person" size="24" color="#42b983"></uni-icons></view>
+                <text class="assignee-option-name">无负责人</text>
+                <uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+              </view>
+              <view
+                v-for="member in filteredMembers" :key="member.value"
+                class="assignee-option" :class="{ 'assignee-option--selected': currentAssigneeId === member.value }"
+                @click.stop="selectAssignee(item._id, member.value)"
+              >
+                <image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
+                <view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">{{ member.text.slice(0,1) }}</view>
+                <text class="assignee-option-name">{{ member.text }}</text>
+                <uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+              </view>
+            </scroll-view>
+          </view>
         </view>
       </uni-list>
 
@@ -261,20 +243,6 @@
                   <text class="priority-tag" :class="`priority-${item.priority || 0}`" @click.stop="togglePriorityDropdown(item._id, item.priority)">
                     {{ getPriorityText(item.priority) }}
                   </text>
-                  <!-- 优先级下拉选择 -->
-                  <view v-if="openPriorityTaskId === item._id" class="priority-dropdown" @click.stop>
-                    <view
-                      v-for="opt in priorityOptions"
-                      :key="opt.value"
-                      class="priority-option"
-                      :class="{ 'priority-option--selected': currentPriority === opt.value }"
-                      @click.stop="selectPriority(item._id, opt.value)"
-                    >
-                      <view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
-                      <text class="priority-option-label">{{ opt.label }}</text>
-                      <uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
-                    </view>
-                  </view>
                 </view>
                 <view class="assignee-wrapper">
                   <view class="assignee" @click.stop="toggleAssigneeDropdown(item._id, item.assignee)">
@@ -284,53 +252,49 @@
                     </view>
                     <uni-icons v-else type="person" size="14" color="#42b983"></uni-icons>
                   </view>
-                  <!-- 负责人下拉选择 -->
-                  <view v-if="openAssigneeTaskId === item._id" class="assignee-dropdown" @click.stop>
-                    <view class="assignee-dropdown-search">
-                      <uni-icons type="search" size="16" color="#999"></uni-icons>
-                      <input
-                        type="text"
-                        v-model="assigneeSearchKeyword"
-                        placeholder="输入关键字查询"
-                        class="assignee-search-input"
-                        @input="onAssigneeSearch"
-                      />
-                      <uni-icons type="person" size="16" color="#999"></uni-icons>
-                    </view>
-                    <scroll-view scroll-y class="assignee-dropdown-list">
-                      <!-- 无负责人选项 -->
-                      <view
-                        class="assignee-option"
-                        :class="{ 'assignee-option--selected': !currentAssigneeId }"
-                        @click.stop="selectAssignee(item._id, null)"
-                      >
-                        <view class="assignee-option-avatar">
-                          <uni-icons type="person" size="24" color="#42b983"></uni-icons>
-                        </view>
-                        <text class="assignee-option-name">无负责人</text>
-                        <uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
-                      </view>
-                      <!-- 成员列表 -->
-                      <view
-                        v-for="member in filteredMembers"
-                        :key="member.value"
-                        class="assignee-option"
-                        :class="{ 'assignee-option--selected': currentAssigneeId === member.value }"
-                        @click.stop="selectAssignee(item._id, member.value)"
-                      >
-                        <image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
-                        <view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">
-                          {{ member.text.slice(0,1) }}
-                        </view>
-                        <text class="assignee-option-name">{{ member.text }}</text>
-                        <uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
-                      </view>
-                    </scroll-view>
-                  </view>
                 </view>
               </view>
             </template>
           </uni-list-item>
+
+          <!-- 下拉菜单挂在 task-item-wrapper，脱离 uni-list-item 的 overflow 约束 -->
+          <view v-if="isPC && openPriorityTaskId === item._id" class="priority-dropdown task-item-dropdown" @click.stop>
+            <view
+              v-for="opt in priorityOptions"
+              :key="opt.value"
+              class="priority-option"
+              :class="{ 'priority-option--selected': currentPriority === opt.value }"
+              @click.stop="selectPriority(item._id, opt.value)"
+            >
+              <view class="priority-option-dot" :style="{ backgroundColor: opt.color }"></view>
+              <text class="priority-option-label">{{ opt.label }}</text>
+              <uni-icons v-if="currentPriority === opt.value" type="checkmarkempty" size="16" color="#42b983"></uni-icons>
+            </view>
+          </view>
+          <view v-if="isPC && openAssigneeTaskId === item._id" class="assignee-dropdown task-item-dropdown" @click.stop>
+            <view class="assignee-dropdown-search">
+              <uni-icons type="search" size="16" color="#999"></uni-icons>
+              <input type="text" v-model="assigneeSearchKeyword" placeholder="输入关键字查询" class="assignee-search-input" @input="onAssigneeSearch" />
+              <uni-icons type="person" size="16" color="#999"></uni-icons>
+            </view>
+            <scroll-view scroll-y class="assignee-dropdown-list">
+              <view class="assignee-option" :class="{ 'assignee-option--selected': !currentAssigneeId }" @click.stop="selectAssignee(item._id, null)">
+                <view class="assignee-option-avatar"><uni-icons type="person" size="24" color="#42b983"></uni-icons></view>
+                <text class="assignee-option-name">无负责人</text>
+                <uni-icons v-if="!currentAssigneeId" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+              </view>
+              <view
+                v-for="member in filteredMembers" :key="member.value"
+                class="assignee-option" :class="{ 'assignee-option--selected': currentAssigneeId === member.value }"
+                @click.stop="selectAssignee(item._id, member.value)"
+              >
+                <image v-if="member.avatar" :src="member.avatar" class="assignee-option-avatar" mode="aspectFill"></image>
+                <view v-else class="assignee-option-avatar assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(member.text) }">{{ member.text.slice(0,1) }}</view>
+                <text class="assignee-option-name">{{ member.text }}</text>
+                <uni-icons v-if="currentAssigneeId === member.value" type="checkmarkempty" size="18" color="#42b983"></uni-icons>
+              </view>
+            </scroll-view>
+          </view>
         </view>
       </uni-list>
       <!-- 空分组提示 -->
@@ -988,6 +952,14 @@ export default {
 /* 优先级选择器 */
 .priority-wrapper {
   position: relative;
+}
+
+/* 下拉菜单挂在 task-item-wrapper 上的定位 */
+.task-item-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
 }
 
 .priority-dropdown {
