@@ -71,9 +71,8 @@
 				this.$refs.udb && this.$refs.udb.loadData()
 			})
 		},
-		onShow() {
-			// 每次显示时刷新数据
-			this.$refs.udb && this.$refs.udb.loadData()
+		onUnload() {
+			uni.$off('refresh-projects')
 		},
 		methods: {
 			handleItemClick(id, name) {
