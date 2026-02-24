@@ -20,12 +20,6 @@
 
 /* #ifndef APP-NVUE */
 @media screen and (min-width: 690px) {
-  /* #ifdef H5 */
-  uni-page {
-	background-color: #f7f8fa !important;
-  }
-  /* #endif */
-
   .uni-content {
 	/* #ifndef H5 */
 	padding: 0;

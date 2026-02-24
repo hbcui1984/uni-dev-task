@@ -93,9 +93,7 @@ export const mutations = {
 		let pages = getCurrentPages();
 		// console.log(pages);
 		pages.forEach((page, index) => {
-			const route = pages[pages.length - index - 1].route
-			// 匹配登录和注册相关页面
-			if (route.includes('/login') || route.includes('/register')) {
+			if (pages[pages.length - index - 1].route.split('/')[3] == 'login') {
 				delta++
 			}
 		})
@@ -127,10 +125,8 @@ export const mutations = {
 			})
 		}
 
-		// 如果 delta 为 0，说明没有登录/注册页在栈中，也跳转到首页
-		const page = pagesJson.pages[0]
-		return uni.reLaunch({
-			url: `/${page.path}`
+		uni.navigateBack({
+			delta
 		})
 	},
 	loginSuccess(e = {}){

@@ -30,7 +30,7 @@ export default {
 	},
 	"nickname": {
 		"rules": [{
-				minLength: 2,
+				minLength: 3,
 				maxLength: 32,
 				errorMessage: '昵称长度在 {minLength} 到 {maxLength} 个字符',
 			},
@@ -43,10 +43,9 @@ export default {
 					if (/^\d+$/.test(value)) {
 						callback('昵称不能为纯数字')
 					};
-					// 移除中文限制，支持中文昵称
-					// if(/[\u4E00-\u9FA5\uF900-\uFA2D]{1,}/.test(value)){
-					// 	callback('昵称不能包含中文')
-					// }
+					if(/[\u4E00-\u9FA5\uF900-\uFA2D]{1,}/.test(value)){
+						callback('昵称不能包含中文')
+					}
 					return true
 				}
 			}

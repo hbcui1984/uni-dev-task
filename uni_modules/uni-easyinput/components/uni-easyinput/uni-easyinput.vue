@@ -15,13 +15,13 @@
 
 			<template v-if="type === 'password' && passwordIcon">
 				<!-- 开启密码时显示小眼睛 -->
-				<uni-icons v-if="isVal" class="content-clear-icon" :class="{ 'is-textarea-icon': type === 'textarea' }" :type="showPassword ? 'eye-slash-filled' : 'eye-filled'" :size="22" :color="focusShow ? themeColor : '#c0c4cc'" @click="onEyes"></uni-icons>
+				<uni-icons v-if="isVal" class="content-clear-icon" :class="{ 'is-textarea-icon': type === 'textarea' }" :type="showPassword ? 'eye-slash-filled' : 'eye-filled'" :size="22" :color="focusShow ? primaryColor : '#c0c4cc'" @click="onEyes"></uni-icons>
 			</template>
 			<template v-if="suffixIcon">
 				<uni-icons v-if="suffixIcon" class="content-clear-icon" :type="suffixIcon" color="#c0c4cc" @click="onClickIcon('suffix')" size="22"></uni-icons>
 			</template>
 			<template v-else>
-				<uni-icons v-if="clearable && isVal && !disabled && type !== 'textarea'" class="content-clear-icon" :class="{ 'is-textarea-icon': type === 'textarea' }" type="clear" :size="clearSize" :color="msg ? '#dd524d' : focusShow ? themeColor : '#c0c4cc'" @click="onClear"></uni-icons>
+				<uni-icons v-if="clearable && isVal && !disabled && type !== 'textarea'" class="content-clear-icon" :class="{ 'is-textarea-icon': type === 'textarea' }" type="clear" :size="clearSize" :color="msg ? '#dd524d' : focusShow ? primaryColor : '#c0c4cc'" @click="onClear"></uni-icons>
 			</template>
 			<slot name="right"></slot>
 		</view>
@@ -92,10 +92,6 @@
 		}
 		return style;
 	}
-	// 主题色配置
-	// 如需修改主题色，请同时修改此处和 /common/theme.js、/common/global.scss
-	const THEME_PRIMARY_COLOR = '#42b983'
-
 	export default {
 		name: 'uni-easyinput',
 		emits: [
@@ -204,7 +200,7 @@
 			},
 			primaryColor: {
 				type: String,
-				default: ''
+				default: '#2979ff'
 			},
 			styles: {
 				type: Object,
@@ -243,11 +239,6 @@
 			};
 		},
 		computed: {
-			// 获取主题色，优先使用传入的 primaryColor，否则使用默认主题色
-			// 如需修改默认主题色，请同时修改本文件顶部的 THEME_PRIMARY_COLOR 常量
-			themeColor() {
-				return this.primaryColor || THEME_PRIMARY_COLOR;
-			},
 			// 输入框内是否有值
 			isVal() {
 				const val = this.val;
@@ -289,7 +280,7 @@
 			},
 			inputContentStyle() {
 				const focusColor = this.focusShow ?
-					this.themeColor :
+					this.primaryColor :
 					this.styles.borderColor;
 				const borderColor =
 					this.inputBorder && this.msg ? '#dd524d' : focusColor;
@@ -361,7 +352,7 @@
 					this.modelValue === 0 ||
 					this.modelValue === ''
 				) {
-					this.val = this.modelValue; 
+					this.val = this.modelValue;
 				} else {
 					// fix by ht 如果初始值为null，则input报错，待框架修复
 					this.val = '';
@@ -401,10 +392,12 @@
 				}
 				if (this.errMsg) this.errMsg = '';
 				this.val = value;
-				// TODO 兼容 vue2
-				this.$emit('input', value);
 				// TODO　兼容　vue3
 				this.$emit('update:modelValue', value);
+
+				// fix by ht input 修改一定要放在 update:modelvalue 后面，避免在input中修改值，导致 v-model 不生效
+				// TODO 兼容 vue2
+				this.$emit('input', value);
 			},
 
 			/**
@@ -553,22 +546,6 @@
 		line-height: 1;
 		font-size: 14px;
 		height: 35px;
-		// min-height: 36px;
-
-		/*ifdef H5*/
-		& ::-ms-reveal {
-			display: none;
-		}
-
-		& ::-ms-clear {
-			display: none;
-		}
-
-		& ::-o-clear {
-			display: none;
-		}
-
-		/*endif*/
 	}
 
 	.uni-easyinput__placeholder-class {
