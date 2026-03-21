@@ -562,9 +562,11 @@ button:after {
 		margin: 0 86px;
 	}
 
+	/* #ifdef H5 */
 	::v-deep .uni-pagination-picker-show .uni-picker-container .uni-picker-custom .uni-picker-select + div {
 		left: 50% !important;
 	}
+	/* #endif */
 }
 
 /* #endif */

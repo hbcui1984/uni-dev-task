@@ -1025,10 +1025,6 @@ export default {
 	color: #42b983 !important;
 }
 
-.task-add-page .uni-system-choose-area a {
-	color: #42b983 !important;
-}
-
 .task-add-page .uni-picker-action-confirm {
 	color: #42b983 !important;
 }

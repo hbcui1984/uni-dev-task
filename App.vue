@@ -146,7 +146,6 @@
 
 	.uni-picker-action-confirm,
 	.uni-picker__action-confirm,
-	.uni-system-choose-area a:last-child,
 	.uni-picker-action.uni-picker-action-confirm {
 		color: #42b983 !important;
 	}
@@ -313,8 +312,7 @@
 	}
 
 	/* 链接文字颜色 */
-	.uni-link,
-	a.uni-link {
+	.uni-link {
 		color: #42b983 !important;
 	}
 
@@ -366,6 +364,7 @@
 		color: #42b983 !important;
 	}
 
+	/* #ifdef H5 */
 	/* picker-view 中当前选中项 */
 	uni-picker-view-column > div > div[style*="color"],
 	.uni-picker-view-column > div > div {
@@ -376,4 +375,5 @@
 	.uni-picker-view-wrapper .uni-picker-view-group .uni-picker-view-content > div {
 		transition: color 0.2s;
 	}
+	/* #endif */
 </style>
