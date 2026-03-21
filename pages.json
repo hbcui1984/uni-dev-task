@@ -3,13 +3,25 @@
 		{
 			"path": "pages/opendb-projects/list",
 			"style": {
+				// #ifdef MP
+				"navigationBarTitleText": "我的项目"
+				// #endif
+				// #ifndef MP
+				,
 				"navigationStyle": "custom"
+				// #endif
 			}
 		},
 		{
 			"path": "pages/ucenter/ucenter",
 			"style": {
+				// #ifdef MP
+				"navigationBarTitleText": "我的"
+				// #endif
+				// #ifndef MP
+				,
 				"navigationStyle": "custom"
+				// #endif
 			}
 		},
 		{
@@ -44,7 +56,12 @@
 		}, {
 			"path": "pages/opendb-task/myTask",
 			"style": {
+				// #ifdef MP
+				"navigationBarTitleText": "我的任务",
+				// #endif
+				// #ifndef MP
 				"navigationStyle": "custom",
+				// #endif
 				"enablePullDownRefresh": true
 			}
 		}, {
@@ -214,7 +231,12 @@
 		}, {
 			"path": "pages/task-logs/task-logs",
 			"style": {
+				// #ifdef MP
+				"navigationBarTitleText": "动态",
+				// #endif
+				// #ifndef MP
 				"navigationStyle": "custom",
+				// #endif
 				"enablePullDownRefresh": true,
 				"onReachBottomDistance": 100
 			}
