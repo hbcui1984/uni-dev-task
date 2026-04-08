@@ -68,58 +68,24 @@
 			return {
 				ucenterList: [
 					[
-						// #ifdef APP-PLUS
 						{
-							"title": "看广告签到",
-							"event": 'signInByAd',
-							"icon": "compose"
-						},
-						// #endif
-						{
-							"title": "签到",
-							"event": 'signIn',
-							"icon": "compose"
-						},
-						// #ifdef APP-PLUS
-						{
-							"title": "去评分",
-							"event": 'gotoMarket',
-							"icon": "star"
-						},
-						//#endif
-						{
-							"title": "阅读文章",
-							"to": '/pages/ucenter/read-news-log/read-news-log',
-							"icon": "flag"
+							"title": "个人资料",
+							"to": '/uni_modules/uni-id-pages/pages/userinfo/userinfo',
+							"icon": "person"
 						},
 						{
-							"title": "我的积分",
-							"to": '',
-							"event": 'getScore',
-							"icon": "paperplane"
-						},
-						{
-							"title": "任务动态",
-							"to": '/pages/task-logs/task-logs',
-							"icon": "notification"
+							"title": "账号设置",
+							"to": '/pages/ucenter/settings/settings',
+							"icon": "gear"
 						}
-						// #ifdef APP-PLUS
-						, {
-							"title": "邀请好友",
-							"event": 'share',
-							"icon": "redo"
-						}
-						// #endif
 					],
-					[{
-						"title": "意见反馈",
-						"to": '/uni_modules/uni-feedback/pages/opendb-feedback/opendb-feedback',
-						"icon": "help"
-					}, {
-						"title": "设置",
-						"to": '/pages/ucenter/settings/settings',
-						"icon": "gear"
-					}],
+					[
+						{
+							"title": "意见反馈",
+							"to": '/uni_modules/uni-feedback/pages/opendb-feedback/opendb-feedback',
+							"icon": "help"
+						}
+					],
 					// #ifdef APP-PLUS
 					[{
 						"title": "关于",
@@ -132,7 +98,7 @@
 		},
 		onLoad() {
 			//#ifdef APP-PLUS
-			this.ucenterList[this.ucenterList.length - 2].unshift({
+			this.ucenterList[1].unshift({
 				title: '检查更新',
 				rightText: this.appVersion.version + '-' + this.appVersion.versionCode,
 				event: 'checkVersion',

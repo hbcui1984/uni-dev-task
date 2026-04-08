@@ -16,7 +16,7 @@
 			"path": "pages/ucenter/ucenter",
 			"style": {
 				// #ifdef MP
-				"navigationBarTitleText": "我的"
+				"navigationBarTitleText": "设置"
 				// #endif
 				// #ifndef MP
 				,
@@ -255,22 +255,28 @@
 		"backgroundColor": "#ffffff",
 		"list": [
 			{
+				"pagePath": "pages/opendb-task/myTask",
+				"iconPath": "static/tabbar/me.png",
+				"selectedIconPath": "static/tabbar/me_active.png",
+				"text": "我的"
+			},
+			{
 				"pagePath": "pages/opendb-projects/list",
 				"iconPath": "static/tabbar/grid.png",
 				"selectedIconPath": "static/tabbar/grid_active.png",
 				"text": "项目"
 			},
 			{
-				"pagePath": "pages/opendb-task/myTask",
-				"iconPath": "static/tabbar/list.png",
-				"selectedIconPath": "static/tabbar/list_active.png",
-				"text": "待办"
+				"pagePath": "pages/task-logs/task-logs",
+				"iconPath": "static/tabbar/notify.png",
+				"selectedIconPath": "static/tabbar/notify_active.png",
+				"text": "动态"
 			},
 			{
 				"pagePath": "pages/ucenter/ucenter",
-				"iconPath": "static/tabbar/me.png",
-				"selectedIconPath": "static/tabbar/me_active.png",
-				"text": "我的"
+				"iconPath": "static/tabbar/settings.png",
+				"selectedIconPath": "static/tabbar/settings_active.png",
+				"text": "设置"
 			}
 		]
 	},

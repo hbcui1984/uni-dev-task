@@ -20,6 +20,50 @@
  */
 const uniIdCommon = require('uni-id-common')
 
+async function buildNameMapByIds(db, collectionName, ids, fieldName, fallback = '') {
+	const uniqueIds = Array.from(new Set((ids || []).filter(Boolean)))
+	if (!uniqueIds.length) {
+		return {}
+	}
+
+	const res = await db.collection(collectionName)
+		.where({
+			_id: db.command.in(uniqueIds)
+		})
+		.field({
+			_id: true,
+			[fieldName]: true
+		})
+		.get()
+
+	return (res.data || []).reduce((map, item) => {
+		map[item._id] = item[fieldName] || fallback
+		return map
+	}, {})
+}
+
+async function enrichLogs(db, logs, includeProjectName = true) {
+	const list = logs || []
+	if (!list.length) {
+		return []
+	}
+
+	const userMap = await buildNameMapByIds(db, 'uni-id-users', list.map(item => item.user_id), 'nickname', '未知用户')
+	let projectMap = {}
+
+	if (includeProjectName) {
+		projectMap = await buildNameMapByIds(db, 'opendb-projects', list.map(item => item.project_id), 'name', '未知项目')
+	}
+
+	return list.map(item => ({
+		...item,
+		user_nickname: userMap[item.user_id] || '未知用户',
+		...(includeProjectName ? {
+			project_name: projectMap[item.project_id] || '未知项目'
+		} : {})
+	}))
+}
+
 module.exports = {
 	/**
 	 * 前置钩子 - 验证用户登录状态
@@ -34,7 +78,6 @@ module.exports = {
 	_before: async function() {
 		this.db = uniCloud.database()
 
-		// 使用 uni-id-common 验证 token 获取用户信息
 		const clientInfo = this.getClientInfo()
 		this.uniIdCommon = uniIdCommon.createInstance({
 			clientInfo
@@ -72,22 +115,21 @@ module.exports = {
 	async getAllLogs(params = {}) {
 		const db = this.db
 		const dbCmd = db.command
-		const $ = dbCmd.aggregate
 
 		try {
-			// 获取当前用户有权限的项目
 			const projectRes = await db.collection('opendb-projects')
 				.where(dbCmd.or([
-					{ members: this.userInfo.uid },
-					{ managers: this.userInfo.uid }
+					{ members: dbCmd.all([this.userInfo.uid]) },
+					{ managers: dbCmd.all([this.userInfo.uid]) }
 				]))
-				.field({ _id: true })
+				.field({
+					_id: true
+				})
 				.get()
 
-			const projectIds = projectRes.data.map(p => p._id)
+			const projectIds = (projectRes.data || []).map(item => item._id)
 
-			// 如果用户没有任何项目权限
-			if (projectIds.length === 0) {
+			if (!projectIds.length) {
 				return {
 					code: 0,
 					data: {
@@ -98,14 +140,11 @@ module.exports = {
 				}
 			}
 
-			// 构建查询条件
 			const matchCondition = {
 				project_id: dbCmd.in(projectIds)
 			}
 
-			// 如果指定了项目ID筛选
 			if (params.project_id) {
-				// 确保用户对该项目有权限
 				if (!projectIds.includes(params.project_id)) {
 					return {
 						code: 403,
@@ -115,69 +154,33 @@ module.exports = {
 				matchCondition.project_id = params.project_id
 			}
 
-			// 如果指定了用户ID筛选
 			if (params.user_id) {
 				matchCondition.user_id = params.user_id
 			}
 
-			// 分页参数
-			const page = parseInt(params.page) || 1
-			const pageSize = parseInt(params.page_size) || 20
+			const page = parseInt(params.page, 10) || 1
+			const pageSize = parseInt(params.page_size, 10) || 20
 			const skip = (page - 1) * pageSize
 
-			// 使用聚合查询获取日志并关联用户和项目信息
 			const collection = db.collection('opendb-task-logs')
-			let query = collection.aggregate()
-				.match(matchCondition)
+			const queryResult = await collection.where(matchCondition)
+				.field({
+					_id: true,
+					action_type: true,
+					task_id: true,
+					project_id: true,
+					task_name: true,
+					action_detail: true,
+					create_time: true,
+					user_id: true,
+					extra_data: true
+				})
+				.orderBy('create_time', 'desc')
+				.skip(skip)
+				.limit(pageSize)
+				.get()
 
-			// 关联用户信息
-			query = query.lookup({
-				from: 'uni-id-users',
-				localField: 'user_id',
-				foreignField: '_id',
-				as: 'user_info'
-			})
-
-			// 关联项目信息
-			query = query.lookup({
-				from: 'opendb-projects',
-				localField: 'project_id',
-				foreignField: '_id',
-				as: 'project_info'
-			})
-
-			// 处理关联结果，提取第一个元素
-			query = query.addFields({
-				user_nickname: $.ifNull([$.arrayElemAt(['$user_info.nickname', 0]), '未知用户']),
-				project_name: $.ifNull([$.arrayElemAt(['$project_info.name', 0]), '未知项目'])
-			})
-
-			// 投影：选择要返回的字段
-			query = query.project({
-				_id: 1,
-				action_type: 1,
-				task_id: 1,
-				project_id: 1,
-				task_name: 1,
-				action_detail: 1,
-				create_time: 1,
-				user_id: 1,
-				user_nickname: 1,
-				project_name: 1
-			})
-
-			// 按时间倒序排序
-			query = query.sort({
-				create_time: -1
-			})
-
-			// 分页
-			query = query.skip(skip).limit(pageSize)
-
-			// 执行查询
-			const { data: list } = await query.end()
-
-			// 获取总数
+			const list = await enrichLogs(db, queryResult.data || [], true)
 			const countResult = await collection.where(matchCondition).count()
 
 			return {
@@ -208,7 +211,6 @@ module.exports = {
 	 * @param {Object} [params.extra_data] 额外数据
 	 */
 	async addLog(params = {}) {
-		// 参数校验
 		if (!params.action_type) {
 			return {
 				code: -1,
@@ -282,54 +284,33 @@ module.exports = {
 		}
 
 		const db = this.db
-		const $ = db.command.aggregate
 
 		try {
-			const page = parseInt(params.page) || 1
-			const pageSize = parseInt(params.page_size) || 20
+			const page = parseInt(params.page, 10) || 1
+			const pageSize = parseInt(params.page_size, 10) || 20
 			const skip = (page - 1) * pageSize
 
 			const collection = db.collection('opendb-task-logs')
-
-			let query = collection.aggregate()
-				.match({
-					task_id: params.task_id
+			const result = await collection.where({
+				task_id: params.task_id
+			})
+				.field({
+					_id: true,
+					action_type: true,
+					action_detail: true,
+					create_time: true,
+					user_id: true,
+					extra_data: true,
+					task_id: true,
+					project_id: true,
+					task_name: true
 				})
+				.orderBy('create_time', 'desc')
+				.skip(skip)
+				.limit(pageSize)
+				.get()
 
-			// 关联用户信息
-			query = query.lookup({
-				from: 'uni-id-users',
-				localField: 'user_id',
-				foreignField: '_id',
-				as: 'user_info'
-			})
-
-			// 处理关联结果
-			query = query.addFields({
-				user_nickname: $.ifNull([$.arrayElemAt(['$user_info.nickname', 0]), '未知用户'])
-			})
-
-			// 投影
-			query = query.project({
-				_id: 1,
-				action_type: 1,
-				action_detail: 1,
-				create_time: 1,
-				user_id: 1,
-				user_nickname: 1
-			})
-
-			// 排序
-			query = query.sort({
-				create_time: -1
-			})
-
-			// 分页
-			query = query.skip(skip).limit(pageSize)
-
-			const { data: list } = await query.end()
-
-			// 获取总数
+			const list = await enrichLogs(db, result.data || [], false)
 			const countResult = await collection.where({
 				task_id: params.task_id
 			}).count()

@@ -37,9 +37,13 @@
 				<input
 					class="code-input"
 					v-model="inviteCode"
-					placeholder="输入6位邀请码"
+					:placeholder="showInvitePlaceholder ? '输入6位邀请码' : ''"
+					placeholder-class="code-input-placeholder"
 					maxlength="6"
 					:focus="true"
+					@input="handleInviteCodeInput"
+					@focus="handleInviteCodeFocus"
+					@blur="handleInviteCodeBlur"
 					@confirm="checkInviteCode"
 				/>
 				<button class="check-btn" @click="checkInviteCode" :disabled="checking || inviteCode.length !== 6">
@@ -67,6 +71,7 @@
 		data() {
 			return {
 				inviteCode: '',
+				showInvitePlaceholder: true,
 				projectInfo: null,
 				alreadyMember: false,
 				checking: false,
@@ -81,6 +86,20 @@
 			}
 		},
 		methods: {
+			handleInviteCodeInput(e) {
+				const value = (e.detail.value || '').replace(/\s+/g, '').toUpperCase()
+				this.inviteCode = value
+				this.showInvitePlaceholder = !value
+			},
+
+			handleInviteCodeFocus() {
+				this.showInvitePlaceholder = false
+			},
+
+			handleInviteCodeBlur() {
+				this.showInvitePlaceholder = !this.inviteCode
+			},
+
 			// 验证邀请码
 			async checkInviteCode() {
 				if (!this.inviteCode || this.inviteCode.length !== 6) {
@@ -308,10 +327,11 @@
 	width: 100%;
 	padding: var(--spacing-md);
 	font-size: var(--font-size-xxxl);
+	line-height: 1.2;
 	font-weight: var(--font-weight-bold);
 	color: var(--color-primary);
 	text-align: center;
-	letter-spacing: 8px;
+	letter-spacing: 4px;
 	border: 2px solid var(--color-border);
 	border-radius: var(--radius-base);
 	background-color: var(--color-bg-active);
@@ -320,6 +340,13 @@
 	transition: var(--transition-base);
 	box-sizing: border-box;
 	display: block;
+}
+
+.code-input-placeholder {
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-medium);
+	letter-spacing: 0;
+	color: var(--color-text-secondary);
 }
 
 .code-input:focus {
@@ -377,4 +404,21 @@
 	color: var(--color-text-secondary);
 	line-height: 2;
 }
+
+/* #ifdef MP-WEIXIN */
+.code-input {
+	height: 48px;
+	padding: 0 16px;
+	font-size: 18px;
+	line-height: 48px;
+	letter-spacing: 1px;
+	font-family: inherit;
+	font-weight: 600;
+}
+
+.code-input-placeholder {
+	font-size: 16px;
+	line-height: 48px;
+}
+/* #endif */
 </style>
