@@ -324,26 +324,28 @@
 }
 
 .code-input {
-	width: 100%;
-	padding: var(--spacing-md);
-	font-size: var(--font-size-xxxl);
-	line-height: 1.2;
+	width: auto;
+	height: 56px;
+	padding: 0 var(--spacing-md);
+	font-size: var(--font-size-xxl);
+	line-height: 56px;
 	font-weight: var(--font-weight-bold);
 	color: var(--color-primary);
 	text-align: center;
-	letter-spacing: 4px;
+	letter-spacing: 2px;
 	border: 2px solid var(--color-border);
 	border-radius: var(--radius-base);
 	background-color: var(--color-bg-active);
 	text-transform: uppercase;
 	font-family: 'Courier New', monospace;
 	transition: var(--transition-base);
-	box-sizing: border-box;
 	display: block;
+	margin: 0 2px;
 }
 
 .code-input-placeholder {
 	font-size: var(--font-size-lg);
+	line-height: 56px;
 	font-weight: var(--font-weight-medium);
 	letter-spacing: 0;
 	color: var(--color-text-secondary);
