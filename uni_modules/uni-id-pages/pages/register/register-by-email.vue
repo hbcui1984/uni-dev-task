@@ -185,7 +185,7 @@
 	
 	@media screen and (max-width: 690px) {
 		.uni-content{
-			margin-top: 15px;
+			margin-top: 0;
 		}
 	}
 	@media screen and (min-width: 690px) {

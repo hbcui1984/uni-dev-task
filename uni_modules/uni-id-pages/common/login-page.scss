@@ -14,6 +14,16 @@
   padding: 0 60rpx;
 }
 
+/* #ifdef H5 */
+@media screen and (max-width: 689px) {
+  .uni-content {
+    min-height: 100vh;
+    padding: calc(env(safe-area-inset-top) + 32px) 36rpx 48rpx;
+    background: linear-gradient(180deg, #f4f7f4 0%, #eef3ef 100%);
+  }
+}
+/* #endif */
+
 .login-logo {
 	display: none;
 }
@@ -76,6 +86,15 @@
   flex-direction: column;
 }
 
+/* #ifdef H5 */
+@media screen and (max-width: 689px) {
+  .title {
+    padding: 0 0 24px;
+    color: #1f2d26;
+  }
+}
+/* #endif */
+
 .tip {
   /* #ifndef APP-NVUE */
   display: flex;
@@ -101,6 +120,44 @@
   /* #endif */
   flex: 1;
 }
+
+/* #ifdef H5 */
+@media screen and (max-width: 689px) {
+  .input-box {
+    height: 48px;
+    background-color: #ffffff !important;
+    border: 1px solid #d9e4db;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(42, 76, 52, 0.05);
+  }
+
+  .uni-content ::v-deep .uni-easyinput__content {
+    background-color: #ffffff !important;
+    border-color: #d9e4db !important;
+    border-radius: 12px !important;
+    box-shadow: 0 6px 18px rgba(42, 76, 52, 0.05);
+  }
+
+  .uni-content ::v-deep .uni-easyinput__content.is-focused {
+    border-color: #42b983 !important;
+    box-shadow: 0 0 0 4px rgba(66, 185, 131, 0.12);
+  }
+
+  .uni-content ::v-deep .uni-easyinput__content-input,
+  .uni-content ::v-deep .uni-easyinput__placeholder-class {
+    font-size: 15px;
+  }
+
+  .uni-content ::v-deep .uni-forms-item__inner {
+    padding-bottom: 14px;
+  }
+
+  .uni-btn {
+    margin-top: 18px;
+    border-radius: 12px;
+  }
+}
+/* #endif */
 
 .link {
   color: #04498c;

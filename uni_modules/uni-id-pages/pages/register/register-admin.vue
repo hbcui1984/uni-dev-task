@@ -142,9 +142,9 @@
 
 	@media screen and (max-width: 690px) {
 		.uni-content{
-			margin-top: 15px;
+			margin-top: 0;
 			height: 100%;
-			background-color: #fff;
+			background-color: transparent;
 		}
 	}
 	@media screen and (min-width: 690px) {
