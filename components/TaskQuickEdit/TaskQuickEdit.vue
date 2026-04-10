@@ -41,16 +41,28 @@
 			</view>
 		</uni-popup>
 
-		<!-- 隐藏的日期选择器 -->
-		<picker
-			ref="datePicker"
-			mode="date"
-			:value="selectedDate"
-			@change="onDeadlineChange"
-			style="position: absolute; left: -9999px; opacity: 0;"
-		>
-			<view>隐藏的日期选择器</view>
-		</picker>
+		<!-- 移动端截止日期弹窗 -->
+		<uni-popup ref="popup-deadline" type="center" background-color="#fff">
+			<view class="deadline-popup">
+				<view class="deadline-popup__header">
+					<text class="deadline-popup__title">设置截止日期</text>
+				</view>
+				<view class="deadline-popup__content">
+					<picker mode="date" :value="selectedDate" @change="onDeadlinePickerChange">
+						<view class="deadline-popup__picker">
+							<text :class="selectedDate ? 'deadline-popup__value' : 'deadline-popup__placeholder'">
+								{{ selectedDate || '请选择截止日期' }}
+							</text>
+							<uni-icons type="calendar" size="18" color="#42b983"></uni-icons>
+						</view>
+					</picker>
+				</view>
+				<view class="deadline-popup__footer">
+					<button class="deadline-popup__btn deadline-popup__btn--muted" @click="clearDeadline">清除日期</button>
+					<button class="deadline-popup__btn deadline-popup__btn--primary" @click="confirmDeadline">确定</button>
+				</view>
+			</view>
+		</uni-popup>
 
 		<!-- 负责人选择弹出层 -->
 		<uni-popup ref="popup-assignee" type="center" background-color="#fff">
@@ -196,13 +208,7 @@ export default {
 			if (this.isPC()) {
 				this.openPCDatePicker(currentDeadline, position)
 			} else {
-				// 移动端触发隐藏的 picker
-				this.$nextTick(() => {
-					const pickerElement = this.$refs.datePicker
-					if (pickerElement) {
-						pickerElement.$el && pickerElement.$el.click()
-					}
-				})
+				this.$refs['popup-deadline'].open()
 			}
 		},
 
@@ -269,9 +275,27 @@ export default {
 			// #endif
 		},
 
-		async onDeadlineChange(e) {
-			const value = e.detail.value
-			await this.saveDeadline(value)
+		onDeadlinePickerChange(e) {
+			this.selectedDate = e.detail.value
+		},
+
+		async confirmDeadline() {
+			const success = await this.saveDeadline(this.selectedDate)
+			if (success) {
+				this.closeDeadlinePopup()
+			}
+		},
+
+		async clearDeadline() {
+			this.selectedDate = ''
+			const success = await this.saveDeadline('')
+			if (success) {
+				this.closeDeadlinePopup()
+			}
+		},
+
+		closeDeadlinePopup() {
+			this.$refs['popup-deadline'].close()
 		},
 
 		async saveDeadline(value) {
@@ -294,12 +318,16 @@ export default {
 					taskId: this.currentTaskId,
 					value: deadline
 				})
+
+				return true
 			} catch (error) {
 				console.error('更新截止日期失败:', error)
 				uni.showToast({
 					title: '更新失败',
 					icon: 'none'
 				})
+
+				return false
 			}
 		},
 
@@ -495,6 +523,78 @@ export default {
 	background-color: #f7f8fa;
 	border: none;
 	border-radius: 8px;
+}
+
+/* 截止日期弹窗样式 */
+.deadline-popup {
+	width: 300px;
+	background-color: #fff;
+	border-radius: 12px;
+	overflow: hidden;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.deadline-popup__header {
+	padding: 16px;
+	border-bottom: 1px solid #f1f3f5;
+	text-align: center;
+}
+
+.deadline-popup__title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #2c3e50;
+}
+
+.deadline-popup__content {
+	padding: 20px 16px;
+}
+
+.deadline-popup__picker {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 14px;
+	border: 1px solid #dfe3e8;
+	border-radius: 10px;
+	background-color: #f8fbf9;
+}
+
+.deadline-popup__value {
+	font-size: 14px;
+	color: #2c3e50;
+	font-weight: 500;
+}
+
+.deadline-popup__placeholder {
+	font-size: 14px;
+	color: #9ca3af;
+}
+
+.deadline-popup__footer {
+	display: flex;
+	gap: 12px;
+	padding: 12px 16px 16px;
+	border-top: 1px solid #f1f3f5;
+}
+
+.deadline-popup__btn {
+	flex: 1;
+	height: 40px;
+	line-height: 40px;
+	font-size: 14px;
+	border: none;
+	border-radius: 8px;
+}
+
+.deadline-popup__btn--muted {
+	color: #6c757d;
+	background-color: #f3f4f6;
+}
+
+.deadline-popup__btn--primary {
+	color: #fff;
+	background-color: #42b983;
 }
 
 /* 负责人弹窗样式 */
