@@ -89,7 +89,12 @@
 		}, {
 			"path": "pages/opendb-task/detail",
 			"style": {
-				"navigationStyle": "custom"
+				// #ifdef MP-WEIXIN
+				"navigationBarTitleText": "任务详情"
+				// #endif
+				// #ifndef MP-WEIXIN
+				,"navigationStyle": "custom"
+				// #endif
 			}
 		},
 

@@ -17,7 +17,8 @@
 	<view class="page-container">
 		<!-- 下拉列表遮罩 -->
 		<view v-if="showMainAssigneeDropdown || openSubTaskAssigneeId || showPriorityDropdown || showGroupDropdown" class="dropdown-backdrop" @click="closeAllDropdowns"></view>
-		<!-- 自定义导航栏（仅移动端显示） -->
+		<!-- 自定义导航栏（H5 / App 移动端，微信小程序使用系统原生导航栏） -->
+		<!-- #ifndef MP-WEIXIN -->
 		<CustomNavBar v-if="!isWideScreen" title="任务详情" subtitle="">
 			<template #right>
 				<view class="nav-actions">
@@ -30,9 +31,10 @@
 				</view>
 			</template>
 		</CustomNavBar>
+		<!-- #endif -->
 
 		<!-- PC端页面标题栏 -->
-		<view v-else class="pc-page-header">
+		<view v-if="isWideScreen" class="pc-page-header">
 			<view class="pc-header-left">
 				<view class="pc-back-btn" @click="goBack">
 					<uni-icons type="left" size="18" color="#42b983"></uni-icons>
@@ -481,7 +483,8 @@
 						</view>
 					</view>
 
-					<!-- 发表评论 -->
+					<!-- 发表评论（非微信小程序平台） -->
+					<!-- #ifndef MP-WEIXIN -->
 					<view class="comment-form">
 						<textarea
 							placeholder="写下你的评论，输入@提及成员..."
@@ -518,6 +521,7 @@
 							发表评论
 						</button>
 					</view>
+					<!-- #endif -->
 				</view>
 			</view>
 
@@ -646,6 +650,54 @@
 				</view>
 			</view>
 		</uni-popup>
+
+		<!-- #ifdef MP-WEIXIN -->
+		<!-- 微信小程序底部固定栏：评论输入 + 任务操作 -->
+		<view class="mp-bottom-bar">
+			<!-- @成员选择列表（向上弹出） -->
+			<view v-if="showMentionList" class="mp-mention-list">
+				<view class="mp-mention-header">
+					<text class="mp-mention-title">选择成员</text>
+					<uni-icons type="closeempty" size="18" color="#6c757d" @click="closeMentionList"></uni-icons>
+				</view>
+				<view v-if="filteredMembers.length === 0" class="mp-mention-empty">
+					<text>未找到匹配的成员</text>
+				</view>
+				<scroll-view v-else scroll-y class="mp-mention-scroll">
+					<view
+						v-for="member in filteredMembers"
+						:key="member.value"
+						class="mp-mention-item"
+						@click="selectMention(member)"
+					>
+						<view class="mp-mention-avatar">
+							<text>{{ member.text.slice(0, 1) }}</text>
+						</view>
+						<text class="mp-mention-name">{{ member.text }}</text>
+					</view>
+				</scroll-view>
+			</view>
+			<view class="mp-bar-inner">
+				<textarea
+					class="mp-comment-textarea"
+					placeholder="写下评论，@提及成员..."
+					v-model="comment"
+					@input="handleCommentInput"
+					:adjust-position="true"
+					auto-height
+					:max-height="80"
+				/>
+				<view class="mp-bar-actions">
+					<view v-if="comment.trim()" class="mp-send-btn" @click="addComment">
+						<text>发送</text>
+					</view>
+					<view class="mp-more-btn" @click="openTaskMenu">
+						<uni-icons type="more-filled" size="22" color="#6c757d"></uni-icons>
+					</view>
+				</view>
+			</view>
+		</view>
+		<!-- #endif -->
 	</view>
 </template>
 
@@ -1263,6 +1315,19 @@
 			},
 
 			fileSelect(e) {
+			},
+
+			openTaskMenu() {
+				uni.showActionSheet({
+					itemList: ['编辑任务', '删除任务'],
+					success: (res) => {
+						if (res.tapIndex === 0) {
+							this.handleUpdate()
+						} else if (res.tapIndex === 1) {
+							this.handleDelete()
+						}
+					}
+				})
 			},
 
 			handleUpdate() {
@@ -3565,6 +3630,131 @@
 		opacity: 1;
 	}
 }
+
+/* #ifdef MP-WEIXIN */
+.content-wrapper {
+	padding-bottom: 72px;
+}
+
+.mp-bottom-bar {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: #ffffff;
+	border-top: 1px solid #e8e8e8;
+	padding: 8px 12px;
+	padding-bottom: calc(8px + env(safe-area-inset-bottom));
+	z-index: 100;
+}
+
+.mp-bar-inner {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background-color: #f7f8fa;
+	border-radius: 20px;
+	padding: 6px 8px 6px 12px;
+}
+
+.mp-comment-textarea {
+	flex: 1;
+	font-size: 14px;
+	color: #333;
+	line-height: 1.5;
+}
+
+.mp-bar-actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.mp-send-btn {
+	background-color: #42b983;
+	color: #ffffff;
+	font-size: 13px;
+	font-weight: 500;
+	padding: 4px 14px;
+	border-radius: 14px;
+}
+
+.mp-more-btn {
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+}
+
+.mp-more-btn:active {
+	background-color: #f0f0f0;
+}
+
+.mp-mention-list {
+	background-color: #ffffff;
+	border-top: 1px solid #f0f0f0;
+	margin-bottom: 8px;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.mp-mention-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 12px;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.mp-mention-title {
+	font-size: 13px;
+	color: #666;
+}
+
+.mp-mention-scroll {
+	max-height: 180px;
+}
+
+.mp-mention-empty {
+	padding: 12px;
+	text-align: center;
+	color: #999;
+	font-size: 13px;
+}
+
+.mp-mention-item {
+	display: flex;
+	align-items: center;
+	padding: 10px 12px;
+	gap: 8px;
+}
+
+.mp-mention-item:active {
+	background-color: #f7f8fa;
+}
+
+.mp-mention-avatar {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background-color: #42b983;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #ffffff;
+	font-size: 13px;
+	flex-shrink: 0;
+}
+
+.mp-mention-name {
+	font-size: 14px;
+	color: #333;
+}
+/* #endif */
 </style>
 
 <!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
