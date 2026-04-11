@@ -1,6 +1,6 @@
 <template>
 	<view class="custom-navbar" :style="{ paddingTop: statusBarHeight + 'px' }">
-		<view class="navbar-container">
+		<view class="navbar-container" :style="capsuleRightPadding ? { paddingRight: capsuleRightPadding + 'px' } : {}">
 			<!-- 左侧返回按钮 -->
 			<view class="navbar-left" @click="handleBack">
 				<view class="back-button">
@@ -60,13 +60,19 @@
 		},
 		data() {
 			return {
-				statusBarHeight: 0
+				statusBarHeight: 0,
+				capsuleRightPadding: 0
 			}
 		},
 		mounted() {
-			// 获取状态栏高度
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 0
+			// #ifdef MP-WEIXIN
+			try {
+				const menuButton = uni.getMenuButtonBoundingClientRect()
+				this.capsuleRightPadding = systemInfo.windowWidth - menuButton.left + 4
+			} catch(e) {}
+			// #endif
 		},
 		methods: {
 			handleBack() {
