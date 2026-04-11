@@ -77,11 +77,13 @@
 					:class="{ 'mobile-filter-btn--active': hasActiveFilter }"
 					@click="openFilterPopup"
 				>
-					<uni-icons type="settings" size="18" :color="hasActiveFilter ? '#42b983' : '#6c757d'"></uni-icons>
+					<uni-icons type="settings" size="15" :color="hasActiveFilter ? '#42b983' : '#6c757d'"></uni-icons>
+					<text class="mobile-btn-label" :style="{ color: hasActiveFilter ? '#42b983' : '#6c757d' }">筛选</text>
 				</view>
 				<!-- #ifdef MP -->
 				<view class="mobile-menu-btn" @click="openProjectMenu">
-					<uni-icons type="more-filled" size="18" color="#6c757d"></uni-icons>
+					<uni-icons type="more-filled" size="15" color="#6c757d"></uni-icons>
+					<text class="mobile-btn-label">更多</text>
 				</view>
 				<!-- #endif -->
 			</view>
@@ -1029,14 +1031,22 @@
 				})
 			},
 
-			// 打开项目设置页面（直接跳转，不再显示菜单）
+			// 打开项目菜单
 			openProjectMenu() {
-				uni.navigateTo({
-					url: `/pages/opendb-projects/edit?id=${this.project_id}`,
-					events: {
-						refreshData: () => {
-							// 刷新项目信息
-							this.loadProjectInfo()
+				uni.showActionSheet({
+					itemList: ['项目设置', '新建分组'],
+					success: (res) => {
+						if (res.tapIndex === 0) {
+							uni.navigateTo({
+								url: `/pages/opendb-projects/edit?id=${this.project_id}`,
+								events: {
+									refreshData: () => {
+										this.loadProjectInfo()
+									}
+								}
+							})
+						} else if (res.tapIndex === 1) {
+							this.addGroup()
 						}
 					}
 				})
@@ -1723,12 +1733,12 @@
 }
 
 .mobile-filter-btn {
-	width: 36px;
-	height: 36px;
 	display: flex;
 	align-items: center;
-	justify-content: center;
-	border-radius: 10px;
+	gap: 4px;
+	padding: 0 10px;
+	height: 32px;
+	border-radius: 16px;
 	background-color: #f7f8fa;
 	transition: all 0.2s ease;
 }
@@ -1742,20 +1752,25 @@
 }
 
 .mobile-menu-btn {
-	width: 36px;
-	height: 36px;
 	display: flex;
 	align-items: center;
-	justify-content: center;
-	border-radius: 10px;
+	gap: 4px;
+	padding: 0 10px;
+	height: 32px;
+	border-radius: 16px;
 	background-color: #f7f8fa;
 	transition: all 0.2s ease;
-	margin-left: 8px;
 }
 
 .mobile-menu-btn:active {
 	transform: scale(0.95);
 	background-color: #e6fcf5;
+}
+
+.mobile-btn-label {
+	font-size: 13px;
+	color: #6c757d;
+	line-height: 1;
 }
 
 </style>
