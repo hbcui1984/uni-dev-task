@@ -3,7 +3,8 @@
  *
  * 功能说明：
  * - 展示当前用户参与的所有项目（作为管理员或成员）
- * - 支持新建项目和通过邀请码加入项目
+ * - 支持新建项目
+ * - 小团队场景下默认由管理员直接添加成员，邀请码入口暂不开放
  * - 自动过滤已归档的项目
  * - 点击项目进入任务列表页面
  * - 底部提供已归档项目入口
@@ -18,7 +19,6 @@
 				<text class="title-subtitle">管理和跟踪您的所有项目</text>
 			</view>
 			<view class="header-actions">
-				<button type="default" @click="joinProject" class="uni-button secondary">加入项目</button>
 				<button type="default" @click="addProject" class="uni-button">新建项目</button>
 			</view>
 		</view>
@@ -42,7 +42,7 @@
 			<view v-else class="empty-state">
 				<uni-icons type="folder" size="48" color="#e9ecef"></uni-icons>
 				<text class="empty-text">暂无项目</text>
-				<text class="empty-hint">点击上方按钮新建项目或加入已有项目</text>
+				<text class="empty-hint">点击上方按钮创建您的第一个项目</text>
 			</view>
 		</unicloud-db>
 
@@ -101,9 +101,10 @@
 				})
 			},
 			joinProject() {
-				// 打开加入项目页面
-				uni.navigateTo({
-					url: './join'
+				// 预留：小团队场景下默认由管理员直接添加成员，暂不开放邀请码加入入口。
+				uni.showToast({
+					title: '暂未开放邀请码加入',
+					icon: 'none'
 				})
 			},
 			gotoArchivedProjects() {

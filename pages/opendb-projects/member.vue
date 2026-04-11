@@ -3,7 +3,7 @@
  *
  * 功能说明：
  * - 查看项目所有成员列表
- * - 生成邀请码邀请新成员加入
+ * - 小团队场景下由管理员直接添加成员，邀请码入口暂不开放
  * - 管理员可设置/取消其他成员的管理员权限
  * - 管理员可移除项目成员
  * - 支持成员搜索
@@ -14,50 +14,7 @@
 <template>
 	<view class="page-container">
 		<!-- 自定义导航栏 -->
-		<CustomNavBar :title="projectName" subtitle="项目成员管理">
-			<template #right>
-				<view class="nav-action-btn" @click="showInvitePopup">
-					<text class="action-icon">✉️</text>
-				</view>
-			</template>
-		</CustomNavBar>
-
-		<!-- 邀请码弹窗 -->
-		<uni-popup ref="invitePopup" type="center">
-			<view class="invite-popup">
-				<view class="popup-header">
-					<text class="popup-title">邀请成员加入项目</text>
-					<text class="popup-close" @click="closeInvitePopup">✕</text>
-				</view>
-
-				<view class="popup-content">
-					<view v-if="inviteCode" class="invite-code-section">
-						<view class="invite-label">邀请码</view>
-						<view class="invite-code-box">
-							<text class="invite-code-text">{{ inviteCode }}</text>
-							<button class="copy-btn" @click="copyInviteCode">复制</button>
-						</view>
-
-						<view class="invite-label" style="margin-top: 16px;">邀请链接</view>
-						<view class="invite-link-box">
-							<text class="invite-link-text">{{ inviteLink }}</text>
-						</view>
-						<button class="copy-link-btn" @click="copyInviteLink">复制邀请链接</button>
-
-						<view class="invite-tips">
-							<text class="tips-text">• 邀请码有效期：48小时</text>
-							<text class="tips-text">• 分享邀请码或链接给新成员</text>
-							<text class="tips-text">• 过期后可重新生成</text>
-						</view>
-					</view>
-
-					<view v-else class="no-invite-code">
-						<text class="no-code-text">暂无有效邀请码</text>
-						<button class="generate-btn" @click="generateInviteCode">生成邀请码</button>
-					</view>
-				</view>
-			</view>
-		</uni-popup>
+		<CustomNavBar :title="projectName" subtitle="项目成员管理" />
 
 		<!-- 搜索栏和统计 -->
 		<view class="search-section">
@@ -166,7 +123,7 @@
 			joinedCount() {
 				return this.users.filter(u => u.join_project).length
 			},
-			// 邀请链接
+			// 预留：后续若恢复邀请码入口，继续沿用当前 H5/小程序文案输出。
 			inviteLink() {
 				if (!this.inviteCode) return ''
 				// #ifdef H5
@@ -277,18 +234,21 @@
 				this.searchKeyword = ''
 			},
 
-			// 显示邀请弹窗
+			// 预留：小团队场景以管理员直接加成员为主，邀请码入口暂不开放。
 			showInvitePopup() {
 				this.loadInviteCode()
-				this.$refs.invitePopup.open()
+				uni.showToast({
+					title: '暂未开放邀请码邀请',
+					icon: 'none'
+				})
 			},
 
-			// 关闭邀请弹窗
+			// 预留：邀请码弹窗关闭逻辑，当前未开放入口。
 			closeInvitePopup() {
-				this.$refs.invitePopup.close()
+				return
 			},
 
-			// 加载邀请码
+			// 预留：后续若开放自助加入项目，可继续复用现有邀请码读取逻辑。
 			loadInviteCode() {
 				uniCloud.database().collection('opendb-projects')
 					.doc(this.project_id)
@@ -313,7 +273,7 @@
 					})
 			},
 
-			// 生成邀请码
+			// 预留：后续若开放自助加入项目，可继续复用现有邀请码生成逻辑。
 			generateInviteCode() {
 				// 生成6位随机邀请码
 				const code = Math.random().toString(36).substring(2, 8).toUpperCase()
@@ -343,7 +303,7 @@
 					})
 			},
 
-			// 复制邀请码
+			// 预留：邀请码复制逻辑，当前未开放入口。
 			copyInviteCode() {
 				uni.setClipboardData({
 					data: this.inviteCode,
@@ -356,7 +316,7 @@
 				})
 			},
 
-			// 复制邀请链接
+			// 预留：邀请链接复制逻辑，当前未开放入口。
 			copyInviteLink() {
 				uni.setClipboardData({
 					data: this.inviteLink,
@@ -625,206 +585,6 @@
 	}
 }
 
-/* ===== 导航栏操作按钮 ===== */
-.nav-action-btn {
-	width: 36px;
-	height: 36px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: var(--radius-full);
-	background-color: var(--color-bg-hover);
-	cursor: pointer;
-	transition: var(--transition-base);
-}
-
-.nav-action-btn:hover {
-	background-color: var(--color-bg-active);
-}
-
-.nav-action-btn:active {
-	transform: scale(0.95);
-}
-
-.action-icon {
-	font-size: 20px;
-}
-
-/* ===== 邀请码弹窗 ===== */
-.invite-popup {
-	width: 500px;
-	max-width: 90vw;
-	background-color: var(--color-white);
-	border-radius: var(--radius-lg);
-	overflow: hidden;
-}
-
-.popup-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: var(--spacing-lg) var(--spacing-xl);
-	border-bottom: 1px solid var(--color-border);
-}
-
-.popup-title {
-	font-size: var(--font-size-lg);
-	font-weight: var(--font-weight-semibold);
-	color: var(--color-text-primary);
-}
-
-.popup-close {
-	font-size: var(--font-size-xxl);
-	color: var(--color-text-secondary);
-	cursor: pointer;
-	padding: 4px;
-	line-height: 1;
-}
-
-.popup-close:hover {
-	color: var(--color-text-primary);
-}
-
-.popup-content {
-	padding: var(--spacing-xl);
-}
-
-.invite-code-section {
-	display: flex;
-	flex-direction: column;
-}
-
-.invite-label {
-	font-size: var(--font-size-sm);
-	font-weight: var(--font-weight-medium);
-	color: var(--color-text-secondary);
-	margin-bottom: var(--spacing-sm);
-}
-
-.invite-code-box {
-	display: flex;
-	align-items: center;
-	gap: var(--spacing-sm);
-	padding: var(--spacing-md);
-	background-color: var(--color-bg-active);
-	border: 2px solid var(--color-primary);
-	border-radius: var(--radius-base);
-}
-
-.invite-code-text {
-	flex: 1;
-	font-size: var(--font-size-xxxl);
-	font-weight: var(--font-weight-bold);
-	color: var(--color-primary);
-	font-family: 'Courier New', monospace;
-	letter-spacing: 4px;
-	text-align: center;
-}
-
-.copy-btn {
-	padding: var(--spacing-xs) var(--spacing-base);
-	background-color: var(--color-primary);
-	color: var(--color-white);
-	border: none;
-	border-radius: var(--radius-base);
-	font-size: var(--font-size-sm);
-	font-weight: var(--font-weight-medium);
-	cursor: pointer;
-	transition: var(--transition-base);
-}
-
-.copy-btn:hover {
-	background-color: var(--color-primary-dark);
-}
-
-.copy-btn:active {
-	transform: scale(0.95);
-}
-
-.invite-link-box {
-	padding: var(--spacing-md);
-	background-color: var(--color-gray-1);
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-base);
-	word-break: break-all;
-}
-
-.invite-link-text {
-	font-size: var(--font-size-sm);
-	color: var(--color-text-secondary);
-	line-height: 1.5;
-}
-
-.copy-link-btn {
-	width: 100%;
-	margin-top: var(--spacing-sm);
-	padding: var(--spacing-sm);
-	background-color: var(--color-white);
-	color: var(--color-primary);
-	border: 1px solid var(--color-primary);
-	border-radius: var(--radius-base);
-	font-size: var(--font-size-base);
-	font-weight: var(--font-weight-medium);
-	cursor: pointer;
-	transition: var(--transition-base);
-}
-
-.copy-link-btn:hover {
-	background-color: var(--color-bg-hover);
-}
-
-.copy-link-btn:active {
-	transform: scale(0.98);
-}
-
-.invite-tips {
-	margin-top: var(--spacing-lg);
-	padding: var(--spacing-md);
-	background-color: var(--color-gray-1);
-	border-radius: var(--radius-base);
-}
-
-.tips-text {
-	display: block;
-	font-size: var(--font-size-xs);
-	color: var(--color-text-secondary);
-	line-height: 2;
-}
-
-.no-invite-code {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: var(--spacing-xxxl) var(--spacing-base);
-}
-
-.no-code-text {
-	font-size: var(--font-size-base);
-	color: var(--color-text-secondary);
-	margin-bottom: var(--spacing-lg);
-}
-
-.generate-btn {
-	padding: var(--spacing-md) var(--spacing-xl);
-	background-color: var(--color-primary);
-	color: var(--color-white);
-	border: none;
-	border-radius: var(--radius-base);
-	font-size: var(--font-size-base);
-	font-weight: var(--font-weight-semibold);
-	cursor: pointer;
-	transition: var(--transition-base);
-	box-shadow: var(--shadow-primary);
-}
-
-.generate-btn:hover {
-	background-color: var(--color-primary-dark);
-	box-shadow: var(--shadow-primary-lg);
-}
-
-.generate-btn:active {
-	transform: translateY(1px);
-}
 </style>
 
 <!-- 非 scoped 样式，用于覆盖 switch 组件颜色 -->
