@@ -12,26 +12,52 @@
 -->
 <template>
 	<view class="task-logs">
-		<!-- 页面标题 -->
+		<!-- 微信小程序：系统导航栏已显示"动态"，只显示筛选胶囊 -->
+		<!-- #ifdef MP-WEIXIN -->
+		<view class="chip-filter-bar" v-if="hasProjects">
+			<view
+				class="filter-chip"
+				:class="{ 'filter-chip--active': selectedProjectId }"
+				@click="openProjectFilter"
+			>
+				<text class="filter-chip__text">{{ selectedProjectLabel }}</text>
+				<uni-icons type="bottom" size="10" :color="selectedProjectId ? '#42b983' : '#6c757d'"></uni-icons>
+			</view>
+			<view
+				class="filter-chip"
+				:class="{ 'filter-chip--active': selectedMemberId }"
+				@click="openMemberFilter"
+			>
+				<text class="filter-chip__text">{{ selectedMemberLabel }}</text>
+				<uni-icons type="bottom" size="10" :color="selectedMemberId ? '#42b983' : '#6c757d'"></uni-icons>
+			</view>
+		</view>
+		<!-- #endif -->
+
+		<!-- H5 / App：标题行 + 筛选胶囊合并 -->
+		<!-- #ifndef MP-WEIXIN -->
 		<view class="page-header">
 			<text class="page-title">动态</text>
-		</view>
-
-		<!-- 筛选器 -->
-		<view class="filter-bar" v-if="hasProjects">
-			<view class="filter-row">
-				<view class="filter-item">
-					<text class="filter-label">项目</text>
-					<uni-data-select v-model="selectedProjectId" :localdata="projectOptions"
-						placeholder="全部项目" @change="handleProjectChange" class="filter-select" />
+			<view class="header-chips" v-if="hasProjects">
+				<view
+					class="filter-chip"
+					:class="{ 'filter-chip--active': selectedProjectId }"
+					@click="openProjectFilter"
+				>
+					<text class="filter-chip__text">{{ selectedProjectLabel }}</text>
+					<uni-icons type="bottom" size="10" :color="selectedProjectId ? '#42b983' : '#6c757d'"></uni-icons>
 				</view>
-				<view class="filter-item">
-					<text class="filter-label">成员</text>
-					<uni-data-select v-model="selectedMemberId" :localdata="memberOptions"
-						placeholder="全部成员" @change="handleMemberChange" class="filter-select" />
+				<view
+					class="filter-chip"
+					:class="{ 'filter-chip--active': selectedMemberId }"
+					@click="openMemberFilter"
+				>
+					<text class="filter-chip__text">{{ selectedMemberLabel }}</text>
+					<uni-icons type="bottom" size="10" :color="selectedMemberId ? '#42b983' : '#6c757d'"></uni-icons>
 				</view>
 			</view>
 		</view>
+		<!-- #endif -->
 
 		<!-- 动态列表 -->
 		<uni-list class="logs-list">
@@ -92,6 +118,35 @@
 		<view class="load-more-wrapper" v-if="logs.length > 0" @click="loadMore">
 			<uni-load-more :status="loadMoreStatus" :content-text="contentText" />
 		</view>
+
+		<!-- 筛选底部面板（项目/成员共用） -->
+		<uni-popup ref="filter-picker" type="bottom" background-color="#fff">
+			<view class="picker-panel">
+				<view class="picker-header">
+					<text class="picker-title">{{ pickerType === 'project' ? '筛选项目' : '筛选成员' }}</text>
+					<view class="picker-close" @click="closeFilterPicker">
+						<uni-icons type="closeempty" size="20" color="#999"></uni-icons>
+					</view>
+				</view>
+				<scroll-view scroll-y class="picker-scroll">
+					<view
+						v-for="item in currentPickerOptions"
+						:key="item.value"
+						class="picker-item"
+						:class="{ 'picker-item--selected': currentPickerValue === item.value }"
+						@click="selectFilterOption(item)"
+					>
+						<text class="picker-item__text">{{ item.text }}</text>
+						<uni-icons
+							v-if="currentPickerValue === item.value"
+							type="checkmarkempty"
+							size="18"
+							color="#42b983"
+						></uni-icons>
+					</view>
+				</scroll-view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
@@ -127,10 +182,29 @@
 				hasProjects: true,
 
 				// 用户信息
-				userId: ''
+				userId: '',
+
+				// 筛选面板
+				pickerType: 'project' // 'project' | 'member'
 			}
 		},
 		computed: {
+			selectedProjectLabel() {
+				if (!this.selectedProjectId) return '全部项目'
+				const option = this.projectOptions.find(p => p.value === this.selectedProjectId)
+				return option ? option.text : '全部项目'
+			},
+			selectedMemberLabel() {
+				if (!this.selectedMemberId) return '全部成员'
+				const option = this.memberOptions.find(m => m.value === this.selectedMemberId)
+				return option ? option.text : '全部成员'
+			},
+			currentPickerOptions() {
+				return this.pickerType === 'project' ? this.projectOptions : this.memberOptions
+			},
+			currentPickerValue() {
+				return this.pickerType === 'project' ? this.selectedProjectId : this.selectedMemberId
+			},
 			groupedLogs() {
 				if (!this.logs || this.logs.length === 0) return {}
 
@@ -326,6 +400,34 @@
 				}
 			},
 
+			// 项目筛选胶囊点击
+			openProjectFilter() {
+				this.pickerType = 'project'
+				this.$refs['filter-picker'].open()
+			},
+
+			// 成员筛选胶囊点击
+			openMemberFilter() {
+				this.pickerType = 'member'
+				this.$refs['filter-picker'].open()
+			},
+
+			// 选中筛选项
+			selectFilterOption(item) {
+				if (this.pickerType === 'project') {
+					this.selectedProjectId = item.value
+				} else {
+					this.selectedMemberId = item.value
+				}
+				this.$refs['filter-picker'].close()
+				this.loadLogs(true)
+			},
+
+			// 关闭筛选面板
+			closeFilterPicker() {
+				this.$refs['filter-picker'].close()
+			},
+
 			// 项目选择变更
 			handleProjectChange(value) {
 				this.selectedProjectId = value
@@ -417,10 +519,6 @@
 			padding: 40px 64px;
 		}
 
-		.page-header {
-			margin-bottom: 24px;
-		}
-
 		.page-title {
 			font-size: 24px;
 			font-weight: 700;
@@ -431,46 +529,58 @@
 			}
 		}
 
-		.filter-bar {
-			margin-bottom: 20px;
-			padding: 16px;
-			background-color: #ffffff;
-			border-radius: 12px;
-			box-shadow: 0 2px 8px rgba(66, 185, 131, 0.08);
-			position: relative;
-			z-index: 20;
-
-			@media screen and (min-width: 768px) {
-				padding: 20px;
-				margin-bottom: 24px;
-			}
-		}
-
-		.filter-row {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 16px;
-		}
-
-		.filter-item {
+		.page-header {
 			display: flex;
 			align-items: center;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 10px;
+			margin-bottom: 16px;
+		}
+
+		.header-chips {
+			display: flex;
 			gap: 8px;
-			flex: 1;
-			min-width: 160px;
-			max-width: 280px;
+			flex-wrap: wrap;
 		}
 
-		.filter-label {
-			font-size: 14px;
+		.chip-filter-bar {
+			display: flex;
+			gap: 8px;
+			margin-bottom: 12px;
+		}
+
+		.filter-chip {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			padding: 6px 12px;
+			border-radius: 16px;
+			background-color: #f7f8fa;
+			border: 1px solid #e9ecef;
+			transition: all 0.2s ease;
+		}
+
+		.filter-chip:active {
+			opacity: 0.75;
+		}
+
+		.filter-chip--active {
+			background-color: #e6fcf5;
+			border-color: #42b983;
+		}
+
+		.filter-chip__text {
+			font-size: 13px;
 			color: #6c757d;
+			max-width: 90px;
+			overflow: hidden;
+			text-overflow: ellipsis;
 			white-space: nowrap;
-			font-weight: 500;
 		}
 
-		.filter-select {
-			flex: 1;
-			min-width: 120px;
+		.filter-chip--active .filter-chip__text {
+			color: #42b983;
 		}
 
 		.logs-list {
@@ -584,6 +694,69 @@
 </style>
 
 <style lang="scss">
+	/* ===== 筛选底部面板 ===== */
+	.picker-panel {
+		border-radius: 16px 16px 0 0;
+		overflow: hidden;
+		background-color: #fff;
+	}
+
+	.picker-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 16px 20px;
+		border-bottom: 1px solid #f0f0f0;
+	}
+
+	.picker-title {
+		font-size: 16px;
+		font-weight: 600;
+		color: #2c3e50;
+	}
+
+	.picker-close {
+		width: 32px;
+		height: 32px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+	}
+
+	.picker-close:active {
+		background-color: #f0f0f0;
+	}
+
+	.picker-scroll {
+		max-height: 50vh;
+	}
+
+	.picker-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 16px 20px;
+		border-bottom: 1px solid #f7f8fa;
+	}
+
+	.picker-item:active {
+		background-color: #f7f8fa;
+	}
+
+	.picker-item--selected {
+		background-color: #f0fdf7;
+	}
+
+	.picker-item__text {
+		font-size: 15px;
+		color: #2c3e50;
+	}
+
+	.picker-item--selected .picker-item__text {
+		color: #42b983;
+		font-weight: 500;
+	}
 	/* 确保下拉菜单在日期分隔线之上 */
 	.task-logs .uni-select__selector {
 		z-index: 100 !important;
@@ -622,23 +795,6 @@
 
 	.task-logs .uni-list--border:after {
 		display: none;
-	}
-
-	/* uni-data-select 优化 */
-	.task-logs .uni-data-select {
-		border: 1px solid #e9ecef;
-		border-radius: 8px;
-		transition: all 0.25s ease;
-	}
-
-	.task-logs .uni-data-select:hover {
-		border-color: #42b983;
-		background-color: #f0fdf7;
-	}
-
-	.task-logs .uni-data-select__input-text {
-		color: #2c3e50;
-		font-size: 14px;
 	}
 
 	/* uni-load-more 优化 */
