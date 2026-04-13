@@ -159,8 +159,8 @@
 									<text>截止日期</text>
 								</view>
 								<view class="meta-value">
-									<view class="deadline-picker" :class="{'deadline-overdue': deadline && new Date(deadline) < new Date()}">
-										<uni-datetime-picker type="date" v-model="deadline" @change="setDeadLine">
+									<view class="deadline-picker" :class="{'deadline-overdue': deadline && new Date(deadline) < new Date()}" @click="pickerOpen = true">
+										<uni-datetime-picker type="date" v-model="deadline" @change="setDeadLine" @maskClick="pickerOpen = false">
 											<text class="deadline-text">{{deadline ? deadline : '设置日期'}}</text>
 										</uni-datetime-picker>
 									</view>
@@ -653,7 +653,7 @@
 
 		<!-- #ifdef MP-WEIXIN -->
 		<!-- 微信小程序底部固定栏：评论输入 + 任务操作 -->
-		<view class="mp-bottom-bar">
+		<view class="mp-bottom-bar" v-show="!pickerOpen">
 			<!-- @成员选择列表（向上弹出） -->
 			<view v-if="showMentionList" class="mp-mention-list">
 				<view class="mp-mention-header">
@@ -761,6 +761,7 @@
 				currentTaskAssignee: '',
 				taskLogs: [],
 				groups: [],
+				pickerOpen: false,
 				groupId: '',
 				currentUserId: '',
 				// @提及功能相关
@@ -1763,6 +1764,7 @@
 			},
 
 			setDeadLine(val) {
+				this.pickerOpen = false
 				if (val !== this.oldDeadline) {
 					const newDeadline = new Date(val).getTime()
 					uniCloud.database().collection('opendb-task').doc(this.taskId).update({
