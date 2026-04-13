@@ -71,9 +71,11 @@
 										<text class="task-title">{{ task.title }}</text>
 									</view>
 									<view class="task-meta">
-										<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
-											{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
-										</view>
+										<picker mode="date" :value="task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : ''" @change="saveDeadline(task._id, $event.detail.value)" @click.stop>
+											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }">
+												{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
+											</view>
+										</picker>
 										<view class="priority-wrapper">
 											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="togglePriorityDropdown(task)">
 												{{ getPriorityText(task.priority) }}
@@ -127,9 +129,11 @@
 											<text class="task-title">{{ task.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
-												{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
-											</view>
+											<picker mode="date" :value="task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : ''" @change="saveDeadline(task._id, $event.detail.value)" @click.stop>
+												<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }">
+													{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
+												</view>
+											</picker>
 											<view class="priority-wrapper">
 												<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="togglePriorityDropdown(task)">
 													{{ getPriorityText(task.priority) }}
@@ -182,9 +186,11 @@
 											<text class="task-title">{{ child.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }" @click.stop="openDeadlineEditor(child, project._id, $event)">
-												{{ child.deadline ? formatDeadline(child.deadline) : '设置日期' }}
-											</view>
+											<picker mode="date" :value="child.deadline ? new Date(child.deadline).toISOString().split('T')[0] : ''" @change="saveDeadline(child._id, $event.detail.value)" @click.stop>
+												<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }">
+													{{ child.deadline ? formatDeadline(child.deadline) : '设置日期' }}
+												</view>
+											</picker>
 											<view class="priority-wrapper">
 												<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="togglePriorityDropdown(child)">
 													{{ getPriorityText(child.priority) }}
@@ -261,9 +267,11 @@
 										<text class="task-title">{{ task.title }}</text>
 									</view>
 									<view class="task-meta">
-										<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
-											{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
-										</view>
+										<picker mode="date" :value="task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : ''" @change="saveDeadline(task._id, $event.detail.value)" @click.stop>
+											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }">
+												{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
+											</view>
+										</picker>
 										<view class="priority-wrapper">
 											<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="togglePriorityDropdown(task)">
 												{{ getPriorityText(task.priority) }}
@@ -316,9 +324,11 @@
 											<text class="task-title">{{ task.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }" @click.stop="openDeadlineEditor(task, project._id, $event)">
-												{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
-											</view>
+											<picker mode="date" :value="task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : ''" @change="saveDeadline(task._id, $event.detail.value)" @click.stop>
+												<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(task.deadline) }">
+													{{ task.deadline ? formatDeadline(task.deadline) : '设置日期' }}
+												</view>
+											</picker>
 											<view class="priority-wrapper">
 												<text class="priority-tag priority-tag--clickable" :class="`priority-${task.priority || 0}`" @click.stop="togglePriorityDropdown(task)">
 													{{ getPriorityText(task.priority) }}
@@ -370,9 +380,11 @@
 											<text class="task-title">{{ child.title }}</text>
 										</view>
 										<view class="task-meta">
-											<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }" @click.stop="openDeadlineEditor(child, project._id, $event)">
-												{{ child.deadline ? formatDeadline(child.deadline) : '设置日期' }}
-											</view>
+											<picker mode="date" :value="child.deadline ? new Date(child.deadline).toISOString().split('T')[0] : ''" @change="saveDeadline(child._id, $event.detail.value)" @click.stop>
+												<view class="deadline deadline--clickable" :class="{ 'overdue': isOverdue(child.deadline) }">
+													{{ child.deadline ? formatDeadline(child.deadline) : '设置日期' }}
+												</view>
+											</picker>
 											<view class="priority-wrapper">
 												<text class="priority-tag priority-tag--clickable" :class="`priority-${child.priority || 0}`" @click.stop="togglePriorityDropdown(child)">
 													{{ getPriorityText(child.priority) }}
