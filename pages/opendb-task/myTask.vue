@@ -86,6 +86,7 @@
 												</view>
 											</view>
 										</view>
+										<!-- #ifndef MP-WEIXIN -->
 										<view class="assignee-wrapper">
 											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
 												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
@@ -115,6 +116,7 @@
 												</scroll-view>
 											</view>
 										</view>
+										<!-- #endif -->
 									</view>
 								</view>
 								<!-- 情况2: 父任务（自己负责），正常显示 -->
@@ -140,6 +142,7 @@
 													</view>
 												</view>
 											</view>
+											<!-- #ifndef MP-WEIXIN -->
 											<view class="assignee-wrapper">
 												<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
 													<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
@@ -169,6 +172,7 @@
 													</scroll-view>
 												</view>
 											</view>
+											<!-- #endif -->
 										</view>
 									</view>
 									<!-- 父任务下的子任务（缩进显示） -->
@@ -193,6 +197,7 @@
 													</view>
 												</view>
 											</view>
+											<!-- #ifndef MP-WEIXIN -->
 											<view class="assignee-wrapper">
 												<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(child, project._id)">
 													<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
@@ -222,6 +227,7 @@
 													</scroll-view>
 												</view>
 											</view>
+											<!-- #endif -->
 										</view>
 									</view>
 								</template>
@@ -232,6 +238,7 @@
 					<!-- 分组的任务 -->
 					<view v-for="group in project.groups" :key="group._id" class="task-group">
 						<view class="group-header">
+							<uni-icons type="folder" size="14" color="#42b983"></uni-icons>
 							<text class="group-name">{{ group.name }}</text>
 							<text class="group-count">({{ group.tasks.length }})</text>
 						</view>
@@ -269,6 +276,7 @@
 												</view>
 											</view>
 										</view>
+										<!-- #ifndef MP-WEIXIN -->
 										<view class="assignee-wrapper">
 											<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
 												<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
@@ -297,6 +305,7 @@
 												</scroll-view>
 											</view>
 										</view>
+										<!-- #endif -->
 									</view>
 								</view>
 								<!-- 情况2: 父任务（自己负责），正常显示 -->
@@ -322,6 +331,7 @@
 													</view>
 												</view>
 											</view>
+											<!-- #ifndef MP-WEIXIN -->
 											<view class="assignee-wrapper">
 												<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(task, project._id)">
 													<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
@@ -350,6 +360,7 @@
 													</scroll-view>
 												</view>
 											</view>
+											<!-- #endif -->
 										</view>
 									</view>
 									<!-- 父任务下的子任务（缩进显示） -->
@@ -374,6 +385,7 @@
 													</view>
 												</view>
 											</view>
+											<!-- #ifndef MP-WEIXIN -->
 											<view class="assignee-wrapper">
 												<view class="assignee assignee--clickable" @click.stop="openAssigneeEditor(child, project._id)">
 													<image v-if="userAvatar" :src="userAvatar" class="assignee-avatar" mode="aspectFill"></image>
@@ -402,6 +414,7 @@
 													</scroll-view>
 												</view>
 											</view>
+											<!-- #endif -->
 										</view>
 									</view>
 								</template>
@@ -447,7 +460,7 @@ export default {
 			currentPriority: 0,
 			priorityOptions: [
 				{ value: 0, label: '较低', color: '#6c757d' },
-				{ value: 1, label: '普通', color: '#42b983' },
+				{ value: 1, label: '普通', color: '#3b82f6' },
 				{ value: 2, label: '较高', color: '#f39c12' },
 				{ value: 3, label: '最高', color: '#e74c3c' }
 			]
@@ -1010,6 +1023,7 @@ export default {
 			this.closePriorityDropdown()
 		},
 
+
 		// ========== 负责人下拉选择 ==========
 
 		async openAssigneeEditor(task, projectId) {
@@ -1328,7 +1342,7 @@ export default {
 	display: flex;
 	align-items: center;
 	padding: 10px 20px 10px 32px;
-	background-color: #f0fdf7;
+	background-color: #f4f5f7;
 	border-left: 3px solid #42b983;
 	gap: 6px;
 }
@@ -1373,7 +1387,7 @@ export default {
 }
 
 .priority-1 {
-	color: #42b983;
+	color: #3b82f6;
 }
 
 .priority-2 {
