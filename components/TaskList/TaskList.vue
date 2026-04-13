@@ -15,9 +15,6 @@
           ]"
           @click="handleTaskClick(item._id)"
         >
-          <!-- 移动端：优先级颜色条 -->
-          <view v-if="!isPC" class="priority-bar" :class="`priority-bar--${item.priority || 0}`"></view>
-
           <!-- PC端悬浮操作按钮 -->
           <view class="task-hover-actions" v-if="isPC">
             <view class="hover-action-btn hover-action-btn--danger" @click.stop="deleteTask(item._id)">
@@ -42,10 +39,21 @@
                 </view>
               </view>
               <view class="mobile-task-meta">
-                <view v-if="item.deadline" class="mobile-deadline" :class="{ 'overdue': isOverdue(item.deadline) }">
-                  {{ formatDeadline(item.deadline) }}
+                <view v-if="(item.priority || 0) > 0" class="mobile-priority-badge" :class="`mobile-priority-badge--${item.priority}`">
+                  <view class="mobile-priority-dot"></view>
+                  <text>{{ getPriorityText(item.priority) }}</text>
                 </view>
-                <text v-else class="mobile-no-deadline">无截止日期</text>
+                <picker mode="date" :value="item.deadline ? new Date(item.deadline).toISOString().split('T')[0] : ''" @change="onMobileDeadlineChange($event, item._id)" @click.stop>
+                  <view class="mobile-deadline" :class="{ 'overdue': isOverdue(item.deadline), 'mobile-deadline--empty': !item.deadline }">
+                    {{ item.deadline ? formatDeadline(item.deadline) : '设置日期' }}
+                  </view>
+                </picker>
+                <view v-if="getAssigneeName(item.assignee) !== '未分配'" class="mobile-assignee">
+                  <image v-if="getAssigneeAvatar(item.assignee)" :src="getAssigneeAvatar(item.assignee)" class="mobile-assignee-avatar" mode="aspectFill"></image>
+                  <view v-else class="mobile-assignee-avatar mobile-assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(getAssigneeName(item.assignee)) }">
+                    <text>{{ getAssigneeName(item.assignee).slice(0,1) }}</text>
+                  </view>
+                </view>
               </view>
             </view>
           </view>
@@ -181,9 +189,6 @@
           ]"
           @click="handleTaskClick(item._id)"
         >
-          <!-- 移动端：优先级颜色条 -->
-          <view v-if="!isPC" class="priority-bar" :class="`priority-bar--${item.priority || 0}`"></view>
-
           <!-- PC端悬浮操作按钮 -->
           <view class="task-hover-actions" v-if="isPC">
             <view class="hover-action-btn hover-action-btn--danger" @click.stop="deleteTask(item._id)">
@@ -208,10 +213,21 @@
                 </view>
               </view>
               <view class="mobile-task-meta">
-                <view v-if="item.deadline" class="mobile-deadline" :class="{ 'overdue': isOverdue(item.deadline) }">
-                  {{ formatDeadline(item.deadline) }}
+                <view v-if="(item.priority || 0) > 0" class="mobile-priority-badge" :class="`mobile-priority-badge--${item.priority}`">
+                  <view class="mobile-priority-dot"></view>
+                  <text>{{ getPriorityText(item.priority) }}</text>
                 </view>
-                <text v-else class="mobile-no-deadline">无截止日期</text>
+                <picker mode="date" :value="item.deadline ? new Date(item.deadline).toISOString().split('T')[0] : ''" @change="onMobileDeadlineChange($event, item._id)" @click.stop>
+                  <view class="mobile-deadline" :class="{ 'overdue': isOverdue(item.deadline), 'mobile-deadline--empty': !item.deadline }">
+                    {{ item.deadline ? formatDeadline(item.deadline) : '设置日期' }}
+                  </view>
+                </picker>
+                <view v-if="getAssigneeName(item.assignee) !== '未分配'" class="mobile-assignee">
+                  <image v-if="getAssigneeAvatar(item.assignee)" :src="getAssigneeAvatar(item.assignee)" class="mobile-assignee-avatar" mode="aspectFill"></image>
+                  <view v-else class="mobile-assignee-avatar mobile-assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(getAssigneeName(item.assignee)) }">
+                    <text>{{ getAssigneeName(item.assignee).slice(0,1) }}</text>
+                  </view>
+                </view>
               </view>
             </view>
           </view>
@@ -349,7 +365,7 @@ export default {
       currentPriority: 0,
       priorityOptions: [
         { value: 0, label: '较低', color: '#6c757d' },
-        { value: 1, label: '普通', color: '#42b983' },
+        { value: 1, label: '普通', color: '#3b82f6' },
         { value: 2, label: '较高', color: '#f39c12' },
         { value: 3, label: '最高', color: '#e74c3c' }
       ]
@@ -630,6 +646,11 @@ export default {
       this.closePriorityDropdown()
     },
 
+    // 移动端日期选择器变更
+    onMobileDeadlineChange(e, taskId) {
+      this.$emit('save-deadline', taskId, e.detail.value)
+    },
+
     // 添加任务（跳转到新增页面）
     addTask(groupId) {
       this.$emit('add-task', groupId)
@@ -885,8 +906,8 @@ export default {
 }
 
 .priority-1 {
-  background-color: #e6fcf5;
-  color: #42b983;
+  background-color: #eff6ff;
+  color: #3b82f6;
 }
 
 .priority-2 {
@@ -1217,30 +1238,47 @@ export default {
   border-bottom: none;
 }
 
-/* 优先级颜色条 */
-.priority-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  border-radius: 0 2px 2px 0;
+/* 移动端优先级 badge */
+.mobile-priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 500;
 }
 
-.priority-bar--0 {
-  background-color: #42b983;
+.mobile-priority-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.priority-bar--1 {
-  background-color: #6b7280;
+.mobile-priority-badge--1 {
+  background-color: #eff6ff;
+  color: #3b82f6;
+}
+.mobile-priority-badge--1 .mobile-priority-dot {
+  background-color: #3b82f6;
 }
 
-.priority-bar--2 {
-  background-color: #f59e0b;
+.mobile-priority-badge--2 {
+  background-color: #fef3c7;
+  color: #f39c12;
+}
+.mobile-priority-badge--2 .mobile-priority-dot {
+  background-color: #f39c12;
 }
 
-.priority-bar--3 {
-  background-color: #ef4444;
+.mobile-priority-badge--3 {
+  background-color: #fee2e2;
+  color: #e74c3c;
+}
+.mobile-priority-badge--3 .mobile-priority-dot {
+  background-color: #e74c3c;
 }
 
 /* 移动端任务项内容 */
@@ -1297,6 +1335,35 @@ export default {
 .mobile-no-deadline {
   font-size: 12px;
   color: #9ca3af;
+  padding: 2px 8px;
+  background-color: #f7f8fa;
+  border-radius: 4px;
+}
+
+.mobile-deadline--empty {
+  color: #9ca3af;
+}
+
+.mobile-assignee {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.mobile-assignee-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mobile-assignee-avatar-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #fff;
+  font-weight: 500;
 }
 </style>
 
