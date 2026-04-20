@@ -24,6 +24,35 @@
 - 项目动态实时展示
 - 「我的任务」个人视图
 
+## 界面预览
+
+### PC端
+
+项目列表：
+
+<img width="2706" height="1106" alt="image" src="https://github.com/user-attachments/assets/f08c41c9-1aff-49db-8a3d-75a1f7d39415" />
+
+任务列表：
+
+<img width="2826" height="1606" alt="image" src="https://github.com/user-attachments/assets/8b546a05-f4f9-4449-8693-fdde7037b4d7" />
+
+支持子任务和评论：
+
+<img width="1812" height="1100" alt="image" src="https://github.com/user-attachments/assets/58cbfb35-6990-4b25-a595-632b19813f5b" />
+
+任务动态自动记录：
+
+<img width="1798" height="1022" alt="image" src="https://github.com/user-attachments/assets/a22ca641-f59f-423b-b927-af0231b1f182" />
+
+快捷查看“我的任务“：
+
+<img width="2848" height="984" alt="image" src="https://github.com/user-attachments/assets/a6ec0f6a-6250-421a-a56d-3f7a85a3b4ab" />
+
+
+### 微信小程序
+
+<img width="1732" height="1060" alt="uni-task-weixin" src="https://github.com/user-attachments/assets/fe588d75-aa18-4769-8974-6c6682007429" />
+
 ## 技术栈
 
 | 类别 | 技术 |
