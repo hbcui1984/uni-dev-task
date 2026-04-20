@@ -201,6 +201,7 @@
 				const tabBarPages = [
 					'/pages/opendb-projects/list',
 					'/pages/opendb-task/myTask',
+					'/pages/task-logs/task-logs',
 					'/pages/ucenter/ucenter'
 				]
 
