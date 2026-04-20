@@ -3,6 +3,17 @@
  */
 
 /**
+ * 优先级颜色配置（与 App.vue 中的 CSS 变量保持同步）
+ * JS 侧使用此常量，CSS 侧使用 var(--priority-N-color / --priority-N-bg)
+ */
+export const PRIORITY_COLORS = {
+	0: { color: '#6b7280', bg: '#f3f4f6' }, // 较低 - 灰
+	1: { color: '#3b82f6', bg: '#eff6ff' }, // 普通 - 蓝
+	2: { color: '#d97706', bg: '#fef3c7' }, // 较高 - 琥珀
+	3: { color: '#dc2626', bg: '#fee2e2' }  // 最高 - 红
+}
+
+/**
  * 优先级映射
  */
 export const PRIORITY_MAP = {

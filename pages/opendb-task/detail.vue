@@ -159,10 +159,15 @@
 									<text>截止日期</text>
 								</view>
 								<view class="meta-value">
-									<view class="deadline-picker" :class="{'deadline-overdue': deadline && new Date(deadline) < new Date()}" @click="pickerOpen = true">
-										<uni-datetime-picker type="date" v-model="deadline" @change="setDeadLine" @maskClick="pickerOpen = false">
-											<text class="deadline-text">{{deadline ? deadline : '设置日期'}}</text>
-										</uni-datetime-picker>
+									<view class="deadline-value-row">
+										<view class="deadline-picker" :class="{'deadline-overdue': deadline && new Date(deadline) < new Date()}" @click="pickerOpen = true">
+											<uni-datetime-picker type="date" v-model="deadline" @change="setDeadLine" @maskClick="pickerOpen = false">
+												<text class="deadline-text">{{deadline ? deadline : '设置日期'}}</text>
+											</uni-datetime-picker>
+										</view>
+										<view v-if="deadline" class="deadline-clear-btn" @click.stop="clearDeadline">
+											<uni-icons type="closeempty" size="14" color="#6c757d"></uni-icons>
+										</view>
 									</view>
 								</view>
 							</view>
@@ -343,7 +348,7 @@
 								<input
 									type="text"
 									v-model="editTaskContent"
-									placeholder="输入标题，回车保存，ESC取消"
+									:placeholder="subTaskEditPlaceholder"
 									class="add-subtask-input"
 									:focus="true"
 									@confirm="saveSubTaskEdit"
@@ -437,7 +442,7 @@
 								ref="subTaskInput"
 								type="text"
 								v-model="subTaskForm.title"
-								placeholder="输入标题，回车创建，ESC取消"
+								:placeholder="subTaskCreatePlaceholder"
 								class="add-subtask-input"
 								:focus="subTaskInputFocus"
 								@confirm="addSubTask"
@@ -826,6 +831,24 @@
 				return this.members.filter(m =>
 					m.text.toLowerCase().includes(keyword)
 				)
+			},
+			subTaskEditPlaceholder() {
+				// #ifdef MP-WEIXIN
+				return '输入标题，回车保存'
+				// #endif
+				// #ifdef H5
+				return this.isWideScreen ? '输入标题，回车保存，Esc取消' : '输入标题，回车保存，点击空白处取消'
+				// #endif
+				return '输入标题，回车保存'
+			},
+			subTaskCreatePlaceholder() {
+				// #ifdef MP-WEIXIN
+				return '输入标题，回车创建'
+				// #endif
+				// #ifdef H5
+				return this.isWideScreen ? '输入标题，回车创建，Esc取消' : '输入标题，回车创建，点击空白处取消'
+				// #endif
+				return '输入标题，回车创建'
 			}
 		},
 		onLoad(e) {
@@ -1778,6 +1801,17 @@
 				}
 			},
 
+			clearDeadline() {
+				this.deadline = ''
+				uniCloud.database().collection('opendb-task').doc(this.taskId).update({
+					'deadline': null
+				}).then(() => {
+					uni.showToast({ title: '截止日期已清除', icon: 'success' })
+					this.loadTaskLogs()
+					this.oldDeadline = ''
+				})
+			},
+
 			bindDateChange: function(e) {
 				this.currentTaskDeadLine = new Date(e.detail.value).getTime();
 				uniCloud.database().collection('opendb-task').doc(this.currentTaskId).update({
@@ -2010,7 +2044,9 @@
 	}
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/common/_priority.scss';
+
 /* ===== 页面容器 ===== */
 .page-container {
 	min-height: 100vh;
@@ -2585,6 +2621,28 @@
 	width: 100%;
 }
 
+.deadline-value-row {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.deadline-clear-btn {
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background-color: #f0f0f0;
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.deadline-clear-btn:active {
+	background-color: #e0e0e0;
+}
+
 .deadline-picker {
 	display: inline-flex;
 	padding: 6px 12px;
@@ -2623,23 +2681,23 @@
 }
 
 .priority-0 {
-	background-color: #e6fcf5;
-	color: #42b983;
+	background-color: $priority-0-bg;
+	color: $priority-0-color;
 }
 
 .priority-1 {
-	background-color: #f3f4f6;
-	color: #6b7280;
+	background-color: $priority-1-bg;
+	color: $priority-1-color;
 }
 
 .priority-2 {
-	background-color: #fef3c7;
-	color: #d97706;
+	background-color: $priority-2-bg;
+	color: $priority-2-color;
 }
 
 .priority-3 {
-	background-color: #fee2e2;
-	color: #dc2626;
+	background-color: $priority-3-bg;
+	color: $priority-3-color;
 }
 
 /* ===== 任务描述 ===== */

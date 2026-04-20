@@ -91,6 +91,18 @@
 	@import '@/common/global.scss';
 	@import '@/common/uni-task.css';
 
+	/* ===== 优先级颜色全局变量（各组件统一引用 var()） ===== */
+	page {
+		--priority-0-color: #6b7280;  /* 较低 - 灰 */
+		--priority-0-bg:    #f3f4f6;
+		--priority-1-color: #3b82f6;  /* 普通 - 蓝 */
+		--priority-1-bg:    #eff6ff;
+		--priority-2-color: #d97706;  /* 较高 - 琥珀 */
+		--priority-2-bg:    #fef3c7;
+		--priority-3-color: #dc2626;  /* 最高 - 红 */
+		--priority-3-bg:    #fee2e2;
+	}
+
 	/* 全局按钮绿色主题 */
 	button[type="primary"] {
 		background-color: #42b983 !important;

@@ -188,6 +188,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/common/_priority.scss';
+
 .swipeable-item {
 	position: relative;
 	overflow: hidden;
@@ -287,8 +289,8 @@ export default {
 	font-weight: 500;
 }
 
-.priority-0 { color: #6c757d; }
-.priority-1 { color: #42b983; }
-.priority-2 { color: #f39c12; }
-.priority-3 { color: #e74c3c; }
+.priority-0 { color: $priority-0-color; }
+.priority-1 { color: $priority-1-color; }
+.priority-2 { color: $priority-2-color; }
+.priority-3 { color: $priority-3-color; }
 </style>

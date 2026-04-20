@@ -154,7 +154,7 @@ module.exports = {
 			// 状态映射
 			const statusMap = { 0: '未开始', 1: '进行中', 2: '已完成' }
 			// 优先级映射
-			const priorityMap = { 0: '低', 1: '中', 2: '高' }
+			const priorityMap = { 0: '较低', 1: '普通', 2: '较高', 3: '最高' }
 
 			// 检查各字段变化，收集所有变更
 

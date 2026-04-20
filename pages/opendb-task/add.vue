@@ -87,10 +87,6 @@
 							</view>
 						</view>
 
-						<!-- 隐藏的项目ID -->
-						<uni-forms-item name="project_id" style="display: none;">
-							<uni-easyinput v-model="formData.project_id"></uni-easyinput>
-						</uni-forms-item>
 					</uni-forms>
 				</view>
 			</view>
@@ -408,6 +404,7 @@ export default {
 		submitForm(value) {
 
 			// 添加不在 uni-forms-item 中的字段到提交数据
+			value.project_id = this.formData.project_id
 			if (this.formData.assignee) {
 				value.assignee = this.formData.assignee
 			}
@@ -474,7 +471,9 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/common/_priority.scss';
+
 .task-add-page {
 	background: linear-gradient(to bottom, #fafdfb, #f7f8fa);
 	min-height: 100vh;
@@ -632,19 +631,19 @@ export default {
 /* uni-forms-item 在 grid 中的样式调整 - 已移至 unscoped 块 */
 
 .priority-0 {
-	color: #6c757d;
+	color: $priority-0-color;
 }
 
 .priority-1 {
-	color: #42b983;
+	color: $priority-1-color;
 }
 
 .priority-2 {
-	color: #f39c12;
+	color: $priority-2-color;
 }
 
 .priority-3 {
-	color: #e74c3c;
+	color: $priority-3-color;
 	font-weight: 600;
 }
 

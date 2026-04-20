@@ -434,6 +434,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/common/_priority.scss';
+
 /* 优先级弹窗样式 */
 .priority-popup {
 	width: 280px;
@@ -490,23 +492,23 @@ export default {
 }
 
 .priority-option__tag.priority-0 {
-	background-color: #f3f4f6;
-	color: #6b7280;
+	background-color: $priority-0-bg;
+	color: $priority-0-color;
 }
 
 .priority-option__tag.priority-1 {
-	background-color: #e6fcf5;
-	color: #42b983;
+	background-color: $priority-1-bg;
+	color: $priority-1-color;
 }
 
 .priority-option__tag.priority-2 {
-	background-color: #fef3c7;
-	color: #d97706;
+	background-color: $priority-2-bg;
+	color: $priority-2-color;
 }
 
 .priority-option__tag.priority-3 {
-	background-color: #fee2e2;
-	color: #dc2626;
+	background-color: $priority-3-bg;
+	color: $priority-3-color;
 }
 
 .priority-popup__footer {
