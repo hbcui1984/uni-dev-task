@@ -14,10 +14,12 @@
 <template>
 	<view class="container">
 		<view class="uni-header">
+			<!-- #ifndef MP-WEIXIN -->
 			<view class="header-title">
 				<text class="title-text">我的项目</text>
 				<text class="title-subtitle">管理和跟踪您的所有项目</text>
 			</view>
+			<!-- #endif -->
 			<view class="header-actions">
 				<button type="default" @click="addProject" class="uni-button">新建项目</button>
 			</view>

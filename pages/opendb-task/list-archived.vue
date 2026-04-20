@@ -13,7 +13,7 @@
 <template>
 	<view class="container">
 		<!-- 自定义导航栏（仅移动端显示） -->
-		<CustomNavBar v-if="!isWideScreen" :title="project_name" subtitle="已归档清单" :backUrl="backUrl" />
+		<CustomNavBar v-if="!isWideScreen" :title="project_name" subtitle="已归档清单"  />
 
 		<!-- PC端页面标题栏 -->
 		<view v-else class="pc-page-header">

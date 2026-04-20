@@ -13,7 +13,7 @@
 <template>
 	<view class="container">
 		<!-- 自定义导航栏 -->
-		<CustomNavBar :title="project_name" subtitle="已完成任务" :backUrl="backUrl">
+		<CustomNavBar :title="project_name" subtitle="已完成任务" >
 		</CustomNavBar>
 
 		<!-- 筛选栏 -->
