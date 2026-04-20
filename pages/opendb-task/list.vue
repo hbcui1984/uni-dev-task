@@ -13,7 +13,8 @@
 -->
 <template>
 	<view class="container">
-		<!-- 自定义导航栏（仅移动端显示） -->
+		<!-- 自定义导航栏（仅移动端非微信小程序显示） -->
+		<!-- #ifndef MP-WEIXIN -->
 		<CustomNavBar v-if="!isWideScreen" :title="project_name" subtitle="任务管理">
 			<template #right>
 				<view class="nav-action-btn" @click="openProjectMenu">
@@ -21,9 +22,10 @@
 				</view>
 			</template>
 		</CustomNavBar>
+		<!-- #endif -->
 
 		<!-- PC端页面标题栏 -->
-		<view v-else class="pc-page-header">
+		<view v-if="isWideScreen" class="pc-page-header">
 			<view class="pc-header-left">
 				<view class="pc-back-btn" @click="goBack">
 					<uni-icons type="left" size="18" color="#42b983"></uni-icons>
@@ -71,7 +73,7 @@
 				<text>任务列表</text>
 				<text class="task-total-count" v-if="taskList.length">({{ taskList.length }})</text>
 			</view>
-			<view class="mobile-header-actions">
+				<view class="mobile-header-actions">
 				<view
 					class="mobile-filter-btn"
 					:class="{ 'mobile-filter-btn--active': hasActiveFilter }"
@@ -80,7 +82,7 @@
 					<uni-icons type="settings" size="15" :color="hasActiveFilter ? '#42b983' : '#6c757d'"></uni-icons>
 					<text class="mobile-btn-label" :style="{ color: hasActiveFilter ? '#42b983' : '#6c757d' }">筛选</text>
 				</view>
-				<!-- #ifdef MP -->
+				<!-- #ifdef MP-WEIXIN -->
 				<view class="mobile-menu-btn" @click="openProjectMenu">
 					<uni-icons type="more-filled" size="15" color="#6c757d"></uni-icons>
 					<text class="mobile-btn-label">更多</text>
@@ -1700,6 +1702,14 @@
 /* uni-forms / uni-data-select / uni-popup 样式优化 - 已移至无 scoped 块 */
 
 /* ===== 移动端精简头部 ===== */
+/* #ifdef MP-WEIXIN */
+.mobile-task-header {
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	background-color: #f7f9fc;
+}
+/* #endif */
 .mobile-task-header {
 	display: flex;
 	align-items: center;
@@ -1751,6 +1761,7 @@
 	background-color: #e6fcf5;
 }
 
+/* #ifdef MP-WEIXIN */
 .mobile-menu-btn {
 	display: flex;
 	align-items: center;
@@ -1759,13 +1770,12 @@
 	height: 32px;
 	border-radius: 16px;
 	background-color: #f7f8fa;
-	transition: all 0.2s ease;
 }
 
 .mobile-menu-btn:active {
-	transform: scale(0.95);
 	background-color: #e6fcf5;
 }
+/* #endif */
 
 .mobile-btn-label {
 	font-size: 13px;

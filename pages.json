@@ -51,7 +51,11 @@
 		{
 			"path": "pages/opendb-task/list",
 			"style": {
-				"navigationStyle": "custom"
+				// #ifndef MP-WEIXIN
+				"navigationStyle": "custom",
+				// #endif
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
 		}, {
 			"path": "pages/opendb-task/myTask",

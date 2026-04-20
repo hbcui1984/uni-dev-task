@@ -9,10 +9,7 @@
           v-for="item in ungroupedTasks"
           :key="item._id"
           class="task-item-wrapper"
-          :class="[
-            { 'task-completing': completingTaskId === item._id },
-            { 'task-item-mobile': !isPC }
-          ]"
+          :class="{ 'task-completing': completingTaskId === item._id }"
           @click="handleTaskClick(item._id)"
         >
           <!-- PC端悬浮操作按钮 -->
@@ -25,38 +22,14 @@
             </view>
           </view>
 
-          <!-- 移动端：简化布局 -->
-          <view v-if="!isPC" class="mobile-task-item">
-            <checkbox @click.stop="finishTask(item._id)" color="#42b983" class="mobile-checkbox" />
-            <view class="mobile-task-content">
-              <view class="mobile-task-title-row">
-                <text class="task-title">{{ item.title }}</text>
-                <view v-if="item.subtaskCount && item.subtaskCount.total > 0" class="subtask-badge">
-                  <uni-icons type="list" size="12" color="#6c757d"></uni-icons>
-                  <text :class="{ 'subtask-all-done': item.subtaskCount.completed === item.subtaskCount.total }">
-                    {{ item.subtaskCount.completed }}/{{ item.subtaskCount.total }}
-                  </text>
-                </view>
-              </view>
-              <view class="mobile-task-meta">
-                <view v-if="(item.priority || 0) > 0" class="mobile-priority-badge" :class="`mobile-priority-badge--${item.priority}`">
-                  <view class="mobile-priority-dot"></view>
-                  <text>{{ getPriorityText(item.priority) }}</text>
-                </view>
-                <picker mode="date" :value="item.deadline ? new Date(item.deadline).toISOString().split('T')[0] : ''" @change="onMobileDeadlineChange($event, item._id)" @click.stop>
-                  <view class="mobile-deadline" :class="{ 'overdue': isOverdue(item.deadline), 'mobile-deadline--empty': !item.deadline }">
-                    {{ item.deadline ? formatDeadline(item.deadline) : '设置日期' }}
-                  </view>
-                </picker>
-                <view v-if="getAssigneeName(item.assignee) !== '未分配'" class="mobile-assignee">
-                  <image v-if="getAssigneeAvatar(item.assignee)" :src="getAssigneeAvatar(item.assignee)" class="mobile-assignee-avatar" mode="aspectFill"></image>
-                  <view v-else class="mobile-assignee-avatar mobile-assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(getAssigneeName(item.assignee)) }">
-                    <text>{{ getAssigneeName(item.assignee).slice(0,1) }}</text>
-                  </view>
-                </view>
-              </view>
-            </view>
-          </view>
+          <!-- 移动端：TaskItem 组件 -->
+          <TaskItem
+            v-if="!isPC"
+            :task="item"
+            :members="members"
+            @finish="finishTask"
+            @save-deadline="onMobileDeadlineChange"
+          />
 
           <!-- PC端：原有布局 -->
           <uni-list-item v-else :clickable="true">
@@ -140,8 +113,8 @@
         </view>
       </uni-list>
 
-      <!-- 未分组的添加新任务入口 -->
-      <view class="quick-add-section">
+      <!-- 未分组的添加新任务入口（仅 PC 端显示，移动端使用 FAB） -->
+      <view v-if="isPC" class="quick-add-section">
         <view class="quick-add-trigger" @click="addTask('')">
           <uni-icons type="plusempty" size="14" color="#42b983"></uni-icons>
           <text>添加新任务</text>
@@ -183,10 +156,7 @@
           v-for="item in group.tasks"
           :key="item._id"
           class="task-item-wrapper"
-          :class="[
-            { 'task-completing': completingTaskId === item._id },
-            { 'task-item-mobile': !isPC }
-          ]"
+          :class="{ 'task-completing': completingTaskId === item._id }"
           @click="handleTaskClick(item._id)"
         >
           <!-- PC端悬浮操作按钮 -->
@@ -199,38 +169,14 @@
             </view>
           </view>
 
-          <!-- 移动端：简化布局 -->
-          <view v-if="!isPC" class="mobile-task-item">
-            <checkbox @click.stop="finishTask(item._id)" color="#42b983" class="mobile-checkbox" />
-            <view class="mobile-task-content">
-              <view class="mobile-task-title-row">
-                <text class="task-title">{{ item.title }}</text>
-                <view v-if="item.subtaskCount && item.subtaskCount.total > 0" class="subtask-badge">
-                  <uni-icons type="list" size="12" color="#6c757d"></uni-icons>
-                  <text :class="{ 'subtask-all-done': item.subtaskCount.completed === item.subtaskCount.total }">
-                    {{ item.subtaskCount.completed }}/{{ item.subtaskCount.total }}
-                  </text>
-                </view>
-              </view>
-              <view class="mobile-task-meta">
-                <view v-if="(item.priority || 0) > 0" class="mobile-priority-badge" :class="`mobile-priority-badge--${item.priority}`">
-                  <view class="mobile-priority-dot"></view>
-                  <text>{{ getPriorityText(item.priority) }}</text>
-                </view>
-                <picker mode="date" :value="item.deadline ? new Date(item.deadline).toISOString().split('T')[0] : ''" @change="onMobileDeadlineChange($event, item._id)" @click.stop>
-                  <view class="mobile-deadline" :class="{ 'overdue': isOverdue(item.deadline), 'mobile-deadline--empty': !item.deadline }">
-                    {{ item.deadline ? formatDeadline(item.deadline) : '设置日期' }}
-                  </view>
-                </picker>
-                <view v-if="getAssigneeName(item.assignee) !== '未分配'" class="mobile-assignee">
-                  <image v-if="getAssigneeAvatar(item.assignee)" :src="getAssigneeAvatar(item.assignee)" class="mobile-assignee-avatar" mode="aspectFill"></image>
-                  <view v-else class="mobile-assignee-avatar mobile-assignee-avatar-text" :style="{ backgroundColor: getAvatarColor(getAssigneeName(item.assignee)) }">
-                    <text>{{ getAssigneeName(item.assignee).slice(0,1) }}</text>
-                  </view>
-                </view>
-              </view>
-            </view>
-          </view>
+          <!-- 移动端：TaskItem 组件 -->
+          <TaskItem
+            v-if="!isPC"
+            :task="item"
+            :members="members"
+            @finish="finishTask"
+            @save-deadline="onMobileDeadlineChange"
+          />
 
           <!-- PC端：原有布局 -->
           <uni-list-item v-else :clickable="true">
@@ -318,8 +264,8 @@
         <text>暂无任务</text>
       </view>
 
-      <!-- 分组的添加新任务入口 -->
-      <view class="quick-add-section">
+      <!-- 分组的添加新任务入口（仅 PC 端显示，移动端使用 FAB） -->
+      <view v-if="isPC" class="quick-add-section">
         <view class="quick-add-trigger" @click="addTask(group._id)">
           <uni-icons type="plusempty" size="14" color="#42b983"></uni-icons>
           <text>添加新任务</text>
@@ -332,9 +278,11 @@
 
 <script>
 import { formatDeadline, isOverdue, getPriorityText, getAvatarColor } from '@/utils/task.js'
+import TaskItem from '@/components/TaskItem/TaskItem.vue'
 
 export default {
   name: 'TaskList',
+  components: { TaskItem },
   props: {
     tasks: {
       type: Array,
@@ -364,10 +312,10 @@ export default {
       openPriorityTaskId: null,
       currentPriority: 0,
       priorityOptions: [
-        { value: 0, label: '较低', color: '#6c757d' },
+        { value: 0, label: '较低', color: '#6b7280' },
         { value: 1, label: '普通', color: '#3b82f6' },
-        { value: 2, label: '较高', color: '#f39c12' },
-        { value: 3, label: '最高', color: '#e74c3c' }
+        { value: 2, label: '较高', color: '#d97706' },
+        { value: 3, label: '最高', color: '#dc2626' }
       ]
     }
   },
@@ -496,6 +444,20 @@ export default {
       const member = this.members.find(m => m.value === assigneeId)
       return member?.avatar || null
     },
+    getAssigneeDisplayName(assignee) {
+      if (!assignee) return '未分配'
+
+      if (Array.isArray(assignee) && assignee.length > 0) {
+        const user = assignee[0] || {}
+        return user.realname || user.real_name || user.nickname || user.username || user.mobile || '未知用户'
+      }
+
+      const assigneeId = this.getCurrentAssigneeId(assignee)
+      if (!assigneeId) return '未分配'
+
+      const member = this.members.find(m => m.value === assigneeId)
+      return member?.realName || member?.nickname || member?.username || member?.text || '未知用户'
+    },
     getAvatarColor,
     handleDeadlineClick(taskId, currentDeadline, event) {
 
@@ -592,16 +554,7 @@ export default {
     isOverdue,
     // 获取负责人名称（JQL联表后为数组格式 [{_id, nickname}]）
     getAssigneeName(assignee) {
-      if (!assignee) return '未分配'
-      // 优先从联表数据获取
-      if (Array.isArray(assignee) && assignee.length > 0 && assignee[0].nickname) {
-        return assignee[0].nickname
-      }
-      // 从 members 列表获取
-      const assigneeId = this.getCurrentAssigneeId(assignee)
-      if (!assigneeId) return '未分配'
-      const member = this.members.find(m => m.value === assigneeId)
-      return member?.text || '未知'
+      return this.getAssigneeDisplayName(assignee)
     },
     getPriorityText,
     editGroup(group) {
@@ -647,8 +600,8 @@ export default {
     },
 
     // 移动端日期选择器变更
-    onMobileDeadlineChange(e, taskId) {
-      this.$emit('save-deadline', taskId, e.detail.value)
+    onMobileDeadlineChange(taskId, dateString) {
+      this.$emit('save-deadline', taskId, dateString)
     },
 
     // 添加任务（跳转到新增页面）
@@ -659,7 +612,9 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/common/_priority.scss';
+
 .task-list-container {
   padding: 0 12px 12px 12px;
   position: relative;
@@ -901,23 +856,23 @@ export default {
 }
 
 .priority-0 {
-  background-color: #f3f4f6;
-  color: #6c757d;
+  background-color: $priority-0-bg;
+  color: $priority-0-color;
 }
 
 .priority-1 {
-  background-color: #eff6ff;
-  color: #3b82f6;
+  background-color: $priority-1-bg;
+  color: $priority-1-color;
 }
 
 .priority-2 {
-  background-color: #fef3c7;
-  color: #f39c12;
+  background-color: $priority-2-bg;
+  color: $priority-2-color;
 }
 
 .priority-3 {
-  background-color: #fee2e2;
-  color: #e74c3c;
+  background-color: $priority-3-bg;
+  color: $priority-3-color;
 }
 
 .tags {
@@ -1226,145 +1181,6 @@ export default {
 }
 
 /* 完成动画时 checkbox 变绿 - 样式已移至无 scoped 块 */
-
-/* ===== 移动端任务项样式 ===== */
-.task-item-mobile {
-  position: relative;
-  background-color: #fff;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.task-item-mobile:last-child {
-  border-bottom: none;
-}
-
-/* 移动端优先级 badge */
-.mobile-priority-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 10px;
-  flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.mobile-priority-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.mobile-priority-badge--1 {
-  background-color: #eff6ff;
-  color: #3b82f6;
-}
-.mobile-priority-badge--1 .mobile-priority-dot {
-  background-color: #3b82f6;
-}
-
-.mobile-priority-badge--2 {
-  background-color: #fef3c7;
-  color: #f39c12;
-}
-.mobile-priority-badge--2 .mobile-priority-dot {
-  background-color: #f39c12;
-}
-
-.mobile-priority-badge--3 {
-  background-color: #fee2e2;
-  color: #e74c3c;
-}
-.mobile-priority-badge--3 .mobile-priority-dot {
-  background-color: #e74c3c;
-}
-
-/* 移动端任务项内容 */
-.mobile-task-item {
-  display: flex;
-  align-items: center;
-  padding: 14px 12px 14px 16px;
-  gap: 12px;
-}
-
-.mobile-checkbox {
-  flex-shrink: 0;
-}
-
-.mobile-task-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.mobile-task-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.mobile-task-title-row .task-title {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mobile-task-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mobile-deadline {
-  font-size: 12px;
-  color: #6c757d;
-  padding: 2px 8px;
-  background-color: #f7f8fa;
-  border-radius: 4px;
-}
-
-.mobile-deadline.overdue {
-  color: #ef4444;
-  background-color: #fef2f2;
-}
-
-.mobile-no-deadline {
-  font-size: 12px;
-  color: #9ca3af;
-  padding: 2px 8px;
-  background-color: #f7f8fa;
-  border-radius: 4px;
-}
-
-.mobile-deadline--empty {
-  color: #9ca3af;
-}
-
-.mobile-assignee {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.mobile-assignee-avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.mobile-assignee-avatar-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: #fff;
-  font-weight: 500;
-}
 </style>
 
 <!-- 无 scoped 样式块，用于覆盖子组件样式（兼容小程序） -->
