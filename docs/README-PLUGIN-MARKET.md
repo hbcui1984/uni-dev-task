@@ -1,26 +1,20 @@
 # uni-task - 轻量级团队任务管理系统
 
-基于 **uni-app + uniCloud** 开发的团队任务管理系统，一套代码，多端运行。适用于中小型团队的项目协作与任务跟踪。
-
-## 功能演示
-
-todo-功能演示GIF
+基于 `uni-app` & `uniCloud` 开发的团队任务管理系统，一套代码，多端运行。适用于中小型团队的项目协作与任务跟踪。
 
 ## 功能特性
 
 ### 项目管理
 - 项目创建、编辑、归档
 - 项目成员管理（管理员/普通成员权限区分）
-- 邀请码快速加入（支持二维码扫码）
 - 项目动态实时展示
 
 ### 任务管理
-- 任务增删改查，支持富文本描述
+- 任务增删改查
 - 任务状态流转（待处理/已完成/已归档）
 - 优先级设置（较低/普通/较高/最高）
-- 截止日期设置与逾期提醒
+- 截止日期设置
 - 任务分组管理
-- 拖拽排序（PC端）
 - 子任务支持
 - 附件上传与管理
 
@@ -32,23 +26,31 @@ todo-功能演示GIF
 
 ## 界面预览
 
-### 移动端
+### PC端
 
-| 项目列表 | 任务列表 | 任务详情 |
-|:--------:|:--------:|:--------:|
-| todo-移动端项目列表截图 | todo-移动端任务列表截图 | todo-移动端任务详情截图 |
+项目列表:
 
-| 子任务 | 成员管理 | 个人中心 |
-|:------:|:--------:|:--------:|
-| todo-移动端子任务截图 | todo-移动端成员管理截图 | todo-移动端个人中心截图 |
+![](https://mp-2da038dd-5cd3-481f-a00b-ddb04ea75ed6.cdn.bspapp.com/project-list.png)
 
-### PC端 / H5
+任务列表:
 
-todo-PC端项目列表截图
+![](https://mp-2da038dd-5cd3-481f-a00b-ddb04ea75ed6.cdn.bspapp.com/task-list.png)
 
-todo-PC端任务列表截图（含拖拽排序）
+支持子任务和评论：
 
-todo-PC端任务详情截图
+![](https://mp-2da038dd-5cd3-481f-a00b-ddb04ea75ed6.cdn.bspapp.com/sub-task-list.png)
+
+任务动态自动记录：
+
+![](https://mp-2da038dd-5cd3-481f-a00b-ddb04ea75ed6.cdn.bspapp.com/task-log.png)
+
+快捷查看“我的任务“：
+
+![](https://mp-2da038dd-5cd3-481f-a00b-ddb04ea75ed6.cdn.bspapp.com/my-task.png)
+
+### 微信小程序
+
+![](https://mp-2da038dd-5cd3-481f-a00b-ddb04ea75ed6.cdn.bspapp.com/uni-task-weixin.jpg)
 
 ## 技术栈
 
@@ -57,25 +59,10 @@ todo-PC端任务详情截图
 | 前端框架 | uni-app (Vue 3) |
 | 状态管理 | Vuex |
 | UI 组件 | uni-ui |
-| 后端服务 | uniCloud（阿里云/腾讯云） |
+| 后端服务 | uniCloud（支付宝云） |
 | 用户认证 | uni-id |
 | 数据库 | uniCloud 云数据库 |
 
-## 支持平台
-
-- H5
-- 微信小程序
-- 支付宝小程序
-- 百度小程序
-- 字节小程序
-- QQ小程序
-- 快手小程序
-- 京东小程序
-- 飞书小程序
-- 钉钉小程序
-- iOS App
-- Android App
-- HarmonyOS
 
 ## 快速开始
 
@@ -89,7 +76,7 @@ git clone https://github.com/hbcui1984/uni-task.git
 
 ### 2. 关联云服务空间
 
-1. 右键点击 `uniCloud-aliyun` 目录
+1. 右键点击 `uniCloud-alipay` 目录
 2. 选择「关联云服务空间」
 3. 如没有云服务空间，请先创建一个
 
@@ -105,18 +92,7 @@ git clone https://github.com/hbcui1984/uni-task.git
 
 ### 5. 运行项目
 
-```bash
-# 安装依赖
-npm install
-
-# 运行到 H5
-npm run dev:h5
-
-# 运行到微信小程序
-npm run dev:mp-weixin
-```
-
-或在 HBuilderX 中直接运行到浏览器/模拟器/真机。
+在 HBuilderX 中直接运行到浏览器/模拟器/真机。
 
 ## 目录结构
 
@@ -133,7 +109,7 @@ uni-task/
 ├── store/                   # Vuex 状态管理
 ├── utils/                   # 工具函数
 ├── common/                  # 公共样式与主题
-└── uniCloud-aliyun/        # 云开发
+└── uniCloud-alipay/        # 云开发
     ├── cloudfunctions/     # 云函数/云对象
     └── database/           # 数据库 Schema
 ```
@@ -193,40 +169,17 @@ uni_modules/uni-config-center/uniCloud/cloudfunctions/common/uni-config-center/u
 2. 重新关联腾讯云服务空间
 3. 上传云函数并初始化数据库
 
-### Q: 任务拖拽排序在小程序端不生效？
-
-拖拽排序功能使用 sortablejs 实现，仅支持 H5 和 PC 端。小程序端建议使用长按菜单进行排序操作。
-
 ### Q: 如何部署到自己的服务器？
 
-uniCloud 为 Serverless 架构，无需自建服务器。如需私有化部署，可参考 uni-app 官方文档的传统服务器对接方案。
+uniCloud 为 Serverless 架构，无需自建服务器。
 
-## 更新日志
-
-### v2.1.5 (2025-12)
-- 新增：已归档项目列表入口
-- 优化：移动端响应式布局
-- 优化：UI 风格统一（Vue 绿主题）
-- 修复：微信小程序样式兼容性
-
-### v2.1.0 (2025-11)
-- 新增：项目设置页面（统计面板、成员预览）
-- 新增：子任务完整功能
-- 新增：附件管理
-- 优化：任务详情页组件化重构
+如需私有化部署，可参考[uni云开发软件版](https://doc.dcloud.net.cn/uniCloud/software/)
 
 ## 开源协议
 
 [MIT License](https://opensource.org/licenses/MIT)
 
 可免费商用，欢迎二次开发。
-
-## 相关链接
-
-- GitHub：https://github.com/hbcui1984/uni-task
-- 问题反馈：https://github.com/hbcui1984/uni-task/issues
-- uni-app 官方文档：https://uniapp.dcloud.net.cn/
-- uniCloud 官方文档：https://uniapp.dcloud.net.cn/uniCloud/
 
 ## 交流反馈
 
