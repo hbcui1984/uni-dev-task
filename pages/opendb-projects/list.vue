@@ -12,8 +12,8 @@
  * 路由：/pages/opendb-projects/list
 -->
 <template>
-	<view class="container">
-		<view class="uni-header">
+	<view class="container" :class="{ 'container--immersive': useImmersiveHeader }">
+		<view class="uni-header" :class="{ 'uni-header--immersive': useImmersiveHeader }" :style="headerStyle">
 			<!-- #ifndef MP-WEIXIN -->
 			<view class="header-title">
 				<text class="title-text">我的项目</text>
@@ -57,9 +57,26 @@
 </template>
 
 <script>
+	import {
+		createTopInsetStyle,
+		getLayoutMetrics
+	} from '@/utils/layout.js'
+
 	export default {
 		data() {
-			return {}
+			return {
+				safeAreaTop: 0,
+				isMobileLayout: false,
+				useImmersiveHeader: false
+			}
+		},
+		computed: {
+			headerStyle() {
+				return createTopInsetStyle({
+					safeAreaTop: this.safeAreaTop,
+					isMobile: this.isMobileLayout
+				})
+			}
 		},
 		onPullDownRefresh() {
 			this.$refs.udb.loadData({
@@ -69,6 +86,16 @@
 			})
 		},
 		onLoad() {
+			const metrics = getLayoutMetrics()
+			this.safeAreaTop = metrics.safeAreaTop
+			this.isMobileLayout = metrics.isMobile
+			this.useImmersiveHeader = metrics.isMobile
+
+			// #ifdef MP
+			this.safeAreaTop = 0
+			this.useImmersiveHeader = false
+			// #endif
+
 			uni.$on('refresh-projects', () => {
 				this.$refs.udb && this.$refs.udb.loadData()
 			})
@@ -137,6 +164,10 @@
 		}
 	}
 
+	.container--immersive {
+		padding-top: 0;
+	}
+
 	/* PC 端容器优化 */
 	@media screen and (min-width: 768px) {
 		.container {
@@ -157,6 +188,7 @@
 		justify-content: space-between;
 		margin-bottom: 24px;
 		padding: 24px;
+		padding-top: calc(24px + var(--safe-area-top, 0px));
 		background: linear-gradient(135deg, #42b983 0%, #359568 100%);
 		border-radius: 12px;
 		box-shadow: 0 4px 14px rgba(66, 185, 131, 0.2);
@@ -226,6 +258,13 @@
 			align-items: stretch;
 			gap: 16px;
 			padding: 16px;
+			padding-top: calc(16px + var(--safe-area-top, 0px));
+		}
+
+		.uni-header--immersive {
+			margin: 0 -16px 24px;
+			padding: 16px 20px 20px;
+			border-radius: 0 0 28px 28px;
 		}
 
 		.header-title {

@@ -11,9 +11,9 @@
  * 路由：/pages/opendb-task/myTask
 -->
 <template>
-	<view class="my-task-page">
+	<view class="my-task-page" :class="{ 'my-task-page--immersive': useImmersiveHeader }">
 		<!-- 页面标题 -->
-		<view class="page-header">
+		<view class="page-header" :class="{ 'page-header--immersive': useImmersiveHeader }" :style="pageHeaderStyle">
 			<!-- #ifndef MP-WEIXIN -->
 			<text class="page-title">我的任务</text>
 			<!-- #endif -->
@@ -127,6 +127,10 @@
 <script>
 import { getCurrentUser } from '@/utils/auth.js'
 import TaskItem from '@/components/TaskItem/TaskItem.vue'
+import {
+	createTopInsetStyle,
+	getLayoutMetrics
+} from '@/utils/layout.js'
 
 export default {
 	components: {
@@ -139,10 +143,34 @@ export default {
 			projectList: [],
 			expandedProjects: {},
 			totalCount: 0,
-			memberList: []
+			memberList: [],
+			safeAreaTop: 0,
+			isMobileLayout: false,
+			useImmersiveHeader: false
+		}
+	},
+	computed: {
+		pageHeaderStyle() {
+			return createTopInsetStyle({
+				safeAreaTop: this.safeAreaTop,
+				isMobile: this.isMobileLayout
+			}, {
+				mobileBase: 16,
+				desktopBase: 0
+			})
 		}
 	},
 	onLoad() {
+		const metrics = getLayoutMetrics()
+		this.safeAreaTop = metrics.safeAreaTop
+		this.isMobileLayout = metrics.isMobile
+		this.useImmersiveHeader = metrics.isMobile
+
+		// #ifdef MP
+		this.safeAreaTop = 0
+		this.useImmersiveHeader = false
+		// #endif
+
 		const userInfo = getCurrentUser()
 		this.userId = userInfo._id
 		this.loadMyTasks()
@@ -527,6 +555,10 @@ export default {
 	}
 }
 
+.my-task-page--immersive {
+	padding-top: 0;
+}
+
 .page-header {
 	margin-bottom: 24px;
 	display: flex;
@@ -539,6 +571,15 @@ export default {
 		gap: 4px;
 		margin-bottom: 16px;
 	}
+}
+
+.page-header--immersive {
+	align-items: flex-start;
+	margin: 0 -16px 20px;
+	padding: 16px 20px 18px;
+	background: linear-gradient(180deg, #42b983 0%, #f7fbf9 100%);
+	border-radius: 0 0 28px 28px;
+	box-shadow: 0 12px 28px rgba(66, 185, 131, 0.14);
 }
 
 .page-title {
@@ -555,9 +596,17 @@ export default {
 	}
 }
 
+.page-header--immersive .page-title {
+	color: #ffffff;
+}
+
 .task-summary {
 	font-size: 14px;
 	color: #6c757d;
+}
+
+.page-header--immersive .task-summary {
+	color: rgba(255, 255, 255, 0.82);
 }
 
 .loading-container,
