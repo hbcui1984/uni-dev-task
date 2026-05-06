@@ -578,7 +578,7 @@ export default {
 	margin: 0 -16px 20px;
 	padding: 16px 20px 18px;
 	background: linear-gradient(180deg, #42b983 0%, #f7fbf9 100%);
-	border-radius: 0 0 28px 28px;
+	border-radius: 0;
 	box-shadow: 0 12px 28px rgba(66, 185, 131, 0.14);
 }
 

@@ -240,12 +240,7 @@
 		}, {
 			"path": "pages/task-logs/task-logs",
 			"style": {
-				// #ifdef MP
 				"navigationBarTitleText": "动态",
-				// #endif
-				// #ifndef MP
-				"navigationStyle": "custom",
-				// #endif
 				"enablePullDownRefresh": true,
 				"onReachBottomDistance": 100
 			}

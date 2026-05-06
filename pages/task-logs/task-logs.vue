@@ -12,8 +12,7 @@
 -->
 <template>
 	<view class="task-logs">
-		<!-- 微信小程序：系统导航栏已显示"动态"，只显示筛选胶囊 -->
-		<!-- #ifdef MP-WEIXIN -->
+		<!-- 原生导航栏下的筛选胶囊 -->
 		<view class="chip-filter-bar" v-if="hasProjects">
 			<view
 				class="filter-chip"
@@ -32,32 +31,6 @@
 				<uni-icons type="bottom" size="10" :color="selectedMemberId ? '#42b983' : '#6c757d'"></uni-icons>
 			</view>
 		</view>
-		<!-- #endif -->
-
-		<!-- H5 / App：标题行 + 筛选胶囊合并 -->
-		<!-- #ifndef MP-WEIXIN -->
-		<view class="page-header">
-			<text class="page-title">动态</text>
-			<view class="header-chips" v-if="hasProjects">
-				<view
-					class="filter-chip"
-					:class="{ 'filter-chip--active': selectedProjectId }"
-					@click="openProjectFilter"
-				>
-					<text class="filter-chip__text">{{ selectedProjectLabel }}</text>
-					<uni-icons type="bottom" size="10" :color="selectedProjectId ? '#42b983' : '#6c757d'"></uni-icons>
-				</view>
-				<view
-					class="filter-chip"
-					:class="{ 'filter-chip--active': selectedMemberId }"
-					@click="openMemberFilter"
-				>
-					<text class="filter-chip__text">{{ selectedMemberLabel }}</text>
-					<uni-icons type="bottom" size="10" :color="selectedMemberId ? '#42b983' : '#6c757d'"></uni-icons>
-				</view>
-			</view>
-		</view>
-		<!-- #endif -->
 
 		<!-- 动态列表 -->
 		<uni-list class="logs-list">
@@ -511,6 +484,10 @@
 		min-height: 100vh;
 		box-sizing: border-box;
 
+		@media screen and (max-width: 767px) {
+			padding: 16px;
+		}
+
 		@media screen and (min-width: 768px) {
 			padding: 32px 48px;
 		}
@@ -519,35 +496,12 @@
 			padding: 40px 64px;
 		}
 
-		.page-title {
-			font-size: 24px;
-			font-weight: 700;
-			color: #2c3e50;
-
-			@media screen and (min-width: 768px) {
-				font-size: 28px;
-			}
-		}
-
-		.page-header {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			flex-wrap: wrap;
-			gap: 10px;
-			margin-bottom: 16px;
-		}
-
-		.header-chips {
-			display: flex;
-			gap: 8px;
-			flex-wrap: wrap;
-		}
-
 		.chip-filter-bar {
 			display: flex;
 			gap: 8px;
+			flex-wrap: wrap;
 			margin-bottom: 12px;
+			padding: 2px 0;
 		}
 
 		.filter-chip {

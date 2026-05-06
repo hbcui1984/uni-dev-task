@@ -264,7 +264,7 @@
 		.uni-header--immersive {
 			margin: 0 -16px 24px;
 			padding: 16px 20px 20px;
-			border-radius: 0 0 28px 28px;
+			border-radius: 0;
 		}
 
 		.header-title {
