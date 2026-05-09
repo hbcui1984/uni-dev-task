@@ -495,6 +495,7 @@
 							placeholder="写下你的评论，输入@提及成员..."
 							class="comment-textarea"
 							v-model="comment"
+							:maxlength="commentMaxLength"
 							@input="handleCommentInput"
 						></textarea>
 
@@ -605,7 +606,7 @@
 					<text class="popup-title">修改评论</text>
 				</view>
 				<view class="popup-body">
-					<textarea class="popup-textarea" v-model="editCommentContent" placeholder="输入评论内容"></textarea>
+					<textarea class="popup-textarea" v-model="editCommentContent" :maxlength="commentMaxLength" placeholder="输入评论内容"></textarea>
 				</view>
 				<view class="popup-footer">
 					<button class="popup-btn popup-btn--primary" @click="editComment">确定</button>
@@ -687,6 +688,7 @@
 					class="mp-comment-textarea"
 					placeholder="写下评论，@提及成员..."
 					v-model="comment"
+					:maxlength="commentMaxLength"
 					@input="handleCommentInput"
 					:adjust-position="true"
 					auto-height
@@ -759,6 +761,7 @@
 				editTaskContent: '',
 				editingSubTaskId: '',
 				commentList: [],
+				commentMaxLength: 2000,
 				comment: '',
 				editCommentId: '',
 				editCommentContent: '',
@@ -1461,6 +1464,11 @@
 					uni.showToast({ title: '请输入评论内容', icon: 'none' })
 					return
 				}
+
+				if (this.comment.length > this.commentMaxLength) {
+					uni.showToast({ title: `评论不能超过${this.commentMaxLength}字`, icon: 'none' })
+					return
+				}
 				uni.showLoading({})
 
 				try {
@@ -1834,6 +1842,16 @@
 			},
 
 			editComment() {
+				if (!this.editCommentContent.trim()) {
+					uni.showToast({ title: '请输入评论内容', icon: 'none' })
+					return
+				}
+
+				if (this.editCommentContent.length > this.commentMaxLength) {
+					uni.showToast({ title: `评论不能超过${this.commentMaxLength}字`, icon: 'none' })
+					return
+				}
+
 				uniCloud.database().collection('task-comments').doc(this.editCommentId).update({
 					content: this.editCommentContent
 				}).then(e => {
@@ -1841,6 +1859,9 @@
 					this.loadComments()
 					this.$refs['popup-comment-edit'].close()
 					this.resetCommentPopup()
+				}).catch(err => {
+					console.error('评论修改失败:', err)
+					uni.showToast({ title: err.message || '评论修改失败', icon: 'none' })
 				})
 			},
 

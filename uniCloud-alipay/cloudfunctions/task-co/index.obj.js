@@ -901,6 +901,13 @@ module.exports = {
 			}
 		}
 
+		if (params.content.length > 2000) {
+			return {
+				errCode: 'COMMENT_TOO_LONG',
+				errMsg: '评论内容不能超过2000字'
+			}
+		}
+
 		try {
 			// 获取任务信息
 			const taskRes = await this.db.collection('opendb-task').doc(params.task_id).get()

@@ -31,6 +31,7 @@
 			"bsonType": "string",
 			"description": "评论内容",
 			"title": "评论内容",
+			"maxLength": 2000,
 			"trim": "right"
 		},
 		"like_count": {
