@@ -574,12 +574,17 @@ export default {
 }
 
 .page-header--immersive {
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 10px;
 	align-items: flex-start;
-	margin: 0 -16px 20px;
-	padding: 16px 20px 18px;
-	background: linear-gradient(180deg, #42b983 0%, #f7fbf9 100%);
+	align-items: center;
+	margin: 0 -16px 12px;
+	padding: 8px 16px 10px;
+	background: linear-gradient(180deg, #edf8f2 0%, #f7fbf9 100%);
 	border-radius: 0;
-	box-shadow: 0 12px 28px rgba(66, 185, 131, 0.14);
+	box-shadow: 0 8px 18px rgba(66, 185, 131, 0.08);
+	border-bottom: 1px solid rgba(66, 185, 131, 0.12);
 }
 
 .page-title {
@@ -597,7 +602,11 @@ export default {
 }
 
 .page-header--immersive .page-title {
-	color: #ffffff;
+	color: #1f2d3d;
+	font-size: 17px;
+	line-height: 1.25;
+	flex: 1;
+	min-width: 0;
 }
 
 .task-summary {
@@ -606,7 +615,16 @@ export default {
 }
 
 .page-header--immersive .task-summary {
-	color: rgba(255, 255, 255, 0.82);
+	color: #1f6f4f;
+	font-size: 12px;
+	line-height: 1.2;
+	padding: 3px 8px;
+	background: #ffffff;
+	border: 1px solid rgba(66, 185, 131, 0.18);
+	border-radius: 999px;
+	white-space: nowrap;
+	flex-shrink: 0;
+	box-shadow: 0 4px 10px rgba(66, 185, 131, 0.08);
 }
 
 .loading-container,
