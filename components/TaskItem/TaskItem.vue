@@ -138,6 +138,8 @@ export default {
   border-bottom: 1px solid #f0f0f0;
   gap: 10px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .mobile-checkbox {

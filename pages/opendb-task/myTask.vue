@@ -662,52 +662,56 @@ export default {
 
 .project-section {
 	background-color: #ffffff;
-	border-radius: 12px;
+	border-radius: 16px;
 	overflow: visible;
-	box-shadow: 0 2px 8px rgba(66, 185, 131, 0.08);
+	border: 1px solid rgba(66, 185, 131, 0.08);
+	box-shadow: 0 10px 28px rgba(31, 45, 61, 0.05);
 }
 
 .project-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 14px 20px;
-	background: linear-gradient(135deg, #42b983 0%, #359568 100%);
+	padding: 14px 18px 12px;
+	background: linear-gradient(180deg, #ffffff 0%, #f8fcfa 100%);
+	border-bottom: 1px solid rgba(66, 185, 131, 0.08);
+	border-left: 4px solid #42b983;
+	border-radius: 16px 16px 0 0;
 	cursor: pointer;
 	transition: all 0.25s ease;
 }
 
 .project-header:hover {
-	background: linear-gradient(135deg, #3aa876 0%, #2d7d58 100%);
+	background: linear-gradient(180deg, #f9fdfb 0%, #f1faf5 100%);
 }
 
 .project-info {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 10px;
 }
 
 
 .project-name {
 	font-size: 16px;
 	font-weight: 600;
-	color: #ffffff;
+	color: #243447;
 }
 
 .project-count {
 	font-size: 13px;
-	color: rgba(255, 255, 255, 0.8);
+	color: #6f7f8f;
 }
 
 .project-action {
-	padding: 4px;
-	border-radius: 4px;
+	padding: 6px;
+	border-radius: 999px;
 	transition: all 0.25s ease;
 }
 
 
 .project-action:hover {
-	background-color: rgba(255, 255, 255, 0.15);
+	background-color: rgba(66, 185, 131, 0.1);
 }
 
 .task-groups {
@@ -727,9 +731,9 @@ export default {
 .group-header {
 	display: flex;
 	align-items: center;
-	padding: 10px 20px 10px 32px;
-	background-color: #f4f5f7;
-	border-left: 3px solid #42b983;
+	padding: 10px 18px 8px 32px;
+	background-color: #f7faf8;
+	border-left: 2px solid rgba(66, 185, 131, 0.5);
 	gap: 6px;
 }
 
@@ -815,16 +819,16 @@ export default {
 <style lang="scss">
 /* myTask - 项目信息区域图标 */
 .my-task-page .project-info .uni-icons {
-	color: #ffffff !important;
+	color: #42b983 !important;
 }
 
 /* myTask - 项目操作按钮图标 */
 .my-task-page .project-action .uni-icons {
-	color: rgba(255, 255, 255, 0.7) !important;
+	color: #7b8a97 !important;
 }
 
 .my-task-page .project-action:hover .uni-icons {
-	color: #ffffff !important;
+	color: #2f8f64 !important;
 }
 
 /* myTask - 列表项样式优化 */
