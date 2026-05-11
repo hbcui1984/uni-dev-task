@@ -18,22 +18,32 @@
           </text>
         </view>
       </view>
-      <!-- 第二行：负责人 → 截止日期 → 优先级（从左到右，有就显示） -->
-      <view class="mtask-meta-row" v-if="(showAssignee && assigneeId) || task.deadline || task.priority != null">
-        <view v-if="showAssignee && assigneeId" class="mtask-avatar">
-          <image v-if="assigneeAvatar" :src="assigneeAvatar" class="mtask-avatar-img" mode="aspectFill"></image>
-          <view v-else class="mtask-avatar-text" :style="{ backgroundColor: getAvatarColor(assigneeDisplayName) }">
-            <text>{{ assigneeInitial }}</text>
+      <!-- 第二行：按信息存在情况显示负责人 / 截止日期 / 优先级 -->
+      <view class="mtask-meta-row" v-if="showMetaRow">
+        <view v-if="showAssigneeChip" class="mtask-chip mtask-chip--assignee">
+          <view class="mtask-avatar">
+            <image v-if="assigneeAvatar" :src="assigneeAvatar" class="mtask-avatar-img" mode="aspectFill"></image>
+            <view v-else class="mtask-avatar-text" :style="{ backgroundColor: getAvatarColor(assigneeDisplayName) }">
+              <text>{{ assigneeInitial }}</text>
+            </view>
           </view>
+          <text class="mtask-chip-text mtask-chip-text--assignee">{{ assigneeDisplayName }}</text>
         </view>
-        <picker v-if="task.deadline" mode="date" :value="deadlineValue" @change="onDeadlineChange" @click.stop>
-          <text class="mtask-deadline" :class="{ 'mtask-deadline--overdue': isOverdue(task.deadline) }">
-            {{ formatDeadlineText(task.deadline) }}
-          </text>
+
+        <picker v-if="showDeadlineChip" mode="date" :value="deadlineValue" @change="onDeadlineChange" @click.stop>
+          <view class="mtask-chip mtask-chip--deadline" :class="{ 'mtask-chip--overdue': isOverdue(task.deadline) }">
+            <uni-icons type="calendar" size="12" :color="isOverdue(task.deadline) ? '#dc2626' : '#6b7280'"></uni-icons>
+            <text class="mtask-chip-text" :class="{ 'mtask-chip-text--overdue': isOverdue(task.deadline) }">
+              {{ formatDeadlineText(task.deadline) }}
+            </text>
+          </view>
         </picker>
-        <text v-if="task.priority != null" class="mtask-priority" :class="`mtask-priority--${task.priority}`">
-          {{ getPriorityText(task.priority) }}
-        </text>
+
+        <view v-if="showPriorityChip" class="mtask-chip mtask-chip--priority" :class="`mtask-chip--priority-${task.priority}`">
+          <text class="mtask-chip-text mtask-chip-text--priority" :class="`mtask-chip-text--priority-${task.priority}`">
+            {{ getPriorityText(task.priority) }}
+          </text>
+        </view>
       </view>
     </view>
   </view>
@@ -110,6 +120,18 @@ export default {
       } catch (e) {
         return ''
       }
+    },
+    showAssigneeChip() {
+      return this.showAssignee && !!this.assigneeId && !!this.assigneeDisplayName
+    },
+    showDeadlineChip() {
+      return !!this.task.deadline
+    },
+    showPriorityChip() {
+      return this.task.priority !== null && this.task.priority !== undefined
+    },
+    showMetaRow() {
+      return this.showAssigneeChip || this.showDeadlineChip || this.showPriorityChip
     }
   },
   methods: {
@@ -127,16 +149,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/common/_priority.scss';
-
 /* ===== 任务行容器 ===== */
 .task-item-mobile {
   display: flex;
   align-items: flex-start;
-  padding: 11px 12px 11px 14px;
+  padding: 9px 12px;
   background-color: #fff;
   border-bottom: 1px solid #f0f0f0;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -144,7 +164,8 @@ export default {
 
 .mobile-checkbox {
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 3px;
+  transform: scale(0.88);
 }
 
 .mobile-task-content {
@@ -169,12 +190,13 @@ export default {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   font-size: 14px;
   color: #1f2937;
-  font-weight: 500;
-  line-height: 1.45;
+  font-weight: 600;
+  line-height: 1.36;
 }
 
 .mtask-subtask {
@@ -205,49 +227,116 @@ export default {
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  padding-top: 1px;
+}
+
+.mtask-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 20px;
+  padding: 0;
+  border-radius: 0;
+  background-color: transparent;
+  border: none;
+  max-width: 100%;
+}
+
+.mtask-chip--assignee {
+  gap: 5px;
+}
+
+.mtask-chip--deadline {
+  gap: 3px;
+  padding: 0 0 0 1px;
+  border-radius: 999px;
+  background-color: transparent;
+  border: none;
+}
+
+.mtask-chip--overdue {
+  padding: 1px 6px;
+  background-color: #fff4f3;
+  border-radius: 999px;
+}
+
+.mtask-chip--priority-0 {
+  padding: 0 2px;
+}
+
+.mtask-chip--priority-1 {
+  padding: 0 2px;
+}
+
+.mtask-chip--priority-2 {
+  padding: 0 2px;
+}
+
+.mtask-chip--priority-3 {
+  padding: 0 2px;
+}
+
+.mtask-chip-text {
+  font-size: 11px;
+  line-height: 1.2;
+  color: #7b8794;
+  white-space: nowrap;
+}
+
+.mtask-chip-text--assignee {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 112px;
+  color: #7b8794;
+}
+
+.mtask-chip-text--overdue {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.mtask-chip-text--priority {
+  font-weight: 500;
+}
+
+.mtask-chip-text--priority-0 {
+  color: #7b8794;
+}
+
+.mtask-chip-text--priority-1 {
+  color: #53759a;
+}
+
+.mtask-chip-text--priority-2 {
+  color: #a06a16;
+}
+
+.mtask-chip-text--priority-3 {
+  color: #b85450;
 }
 
 .mtask-avatar {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
 }
 
 .mtask-avatar-img {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
 }
 
 .mtask-avatar-text {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 600;
 }
-
-.mtask-deadline {
-  font-size: 12px;
-  color: #6b7280;
-  flex-shrink: 0;
-}
-
-.mtask-deadline--overdue {
-  color: #dc2626;
-}
-
-.mtask-priority {
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.mtask-priority--0 { color: $priority-0-color; }
-.mtask-priority--1 { color: $priority-1-color; }
-.mtask-priority--2 { color: $priority-2-color; }
-.mtask-priority--3 { color: $priority-3-color; }
 </style>
