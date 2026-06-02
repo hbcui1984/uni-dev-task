@@ -79,9 +79,6 @@
                 "ad" : {}
             },
             "orientation" : [ "portrait-primary" ]
-        },
-        "uniStatistics" : {
-            "enable" : false
         }
     },
     /* 小程序特有相关 */
@@ -107,15 +104,13 @@
         },
         "async" : {
             "timeout" : 20000
-        },
-        "uniStatistics" : {
-            "enable" : false
         }
     },
     "vueVersion" : "3",
     "uniStatistics" : {
         "version" : "2",
-        "enable" : false,
+        "type":"public",
+        "enable" : true,
         "debug" : false
     },
     "locale" : "zh-Hans",
