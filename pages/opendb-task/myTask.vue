@@ -755,7 +755,7 @@ export default {
 
 /* 自定义任务列表 */
 .task-list-custom {
-	padding-left: 24px;
+	padding: 6px 0 4px 18px;
 	overflow: visible;
 }
 
@@ -763,26 +763,40 @@ export default {
 .parent-task-row {
 	display: flex;
 	align-items: center;
-	padding: 10px 16px 10px 0;
+	gap: 8px;
+	margin: 8px 12px 0 4px;
+	padding: 8px 12px;
 	cursor: pointer;
 	transition: all 0.2s ease;
-	border-bottom: 1px solid #f1f3f5;
+	border: 1px solid rgba(148, 163, 184, 0.16);
+	border-radius: 12px;
+	background: linear-gradient(180deg, #fafbfc 0%, #f4f6f8 100%);
 }
 
 .parent-task-row:hover {
-	background-color: #f8f9fa;
+	background: linear-gradient(180deg, #f5f7f9 0%, #eef2f5 100%);
+}
+
+.task-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.task-meta {
+	flex-shrink: 0;
 }
 
 /* 灰色禁用的 checkbox */
 .checkbox-disabled {
-	opacity: 0.4;
+	opacity: 0.32;
 	pointer-events: none;
+	transform: scale(0.88);
 }
 
 .parent-task-title {
-	font-size: 14px;
-	color: #999;
-	line-height: 1.5;
+	font-size: 13px;
+	color: #66727f;
+	line-height: 1.45;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -795,11 +809,12 @@ export default {
 }
 
 .parent-task-assignee {
-	font-size: 12px;
-	color: #adb5bd;
-	padding: 4px 10px;
-	border-radius: 6px;
-	background-color: #f7f8fa;
+	font-size: 11px;
+	color: #8793a0;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background-color: rgba(255, 255, 255, 0.72);
+	border: 1px solid rgba(148, 163, 184, 0.12);
 	white-space: nowrap;
 }
 
@@ -807,11 +822,26 @@ export default {
 .task-row {
 	cursor: pointer;
 	overflow: visible;
+	margin: 0 0 0 4px;
+	border-radius: 14px;
 }
 
 /* 子任务缩进样式 */
 .task-row--child {
-	padding-left: 24px;
+	position: relative;
+	margin-left: 18px;
+	padding-left: 10px;
+}
+
+.task-row--child::before {
+	content: '';
+	position: absolute;
+	left: -2px;
+	top: 10px;
+	bottom: 10px;
+	width: 2px;
+	border-radius: 999px;
+	background: linear-gradient(180deg, rgba(66, 185, 131, 0.34) 0%, rgba(66, 185, 131, 0.08) 100%);
 }
 </style>
 
