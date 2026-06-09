@@ -98,16 +98,13 @@
 		},
 		onLoad() {
 			//#ifdef APP-PLUS
-			this.ucenterList[1].unshift({
-				title: '检查更新',
-				rightText: this.appVersion.version + '-' + this.appVersion.versionCode,
-				event: 'checkVersion',
-				icon: 'loop',
-				showBadge: this.appVersion.hasNew
-			})
+			this.updateCheckVersionItem()
 			//#endif
 		},
 		onShow() {
+			//#ifdef APP-PLUS
+			this.updateCheckVersionItem()
+			//#endif
 		},
 		computed: {
 			userInfo() {
@@ -118,7 +115,7 @@
 			},
 			// #ifdef APP-PLUS
 			appVersion() {
-				return getApp().appVersion
+				return getApp().appVersion || {}
 			},
 			// #endif
 			appConfig() {
@@ -126,6 +123,24 @@
 			}
 		},
 		methods: {
+			updateCheckVersionItem() {
+				const versionText = this.appVersion.version && this.appVersion.versionCode
+					? this.appVersion.version + '-' + this.appVersion.versionCode
+					: ''
+				const item = {
+					title: '检查更新',
+					rightText: versionText,
+					event: 'checkVersion',
+					icon: 'loop',
+					showBadge: !!this.appVersion.hasNew
+				}
+				const index = this.ucenterList[1].findIndex(menu => menu.event === 'checkVersion')
+				if (index === -1) {
+					this.ucenterList[1].unshift(item)
+					return
+				}
+				this.ucenterList[1].splice(index, 1, item)
+			},
 			toSettings() {
 				uni.navigateTo({
 					url: "/pages/ucenter/settings/settings"
