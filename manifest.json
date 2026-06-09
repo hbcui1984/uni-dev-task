@@ -109,9 +109,9 @@
     "vueVersion" : "3",
     "uniStatistics" : {
         "version" : "2",
-        "type":"public",
         "enable" : true,
-        "debug" : false
+        "debug" : false,
+        "type" : "public"
     },
     "locale" : "zh-Hans",
     "app-harmony" : {
